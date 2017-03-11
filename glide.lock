@@ -1,0 +1,16 @@
+hash: 88d27361006bd8dc18d032147cf43b88acd60196042409737b153039b94c7b0f
+updated: 2017-03-10T21:21:17.56221041-05:00
+imports:
+- name: github.com/auth0/go-jwt-middleware
+  version: f3f7de3b9e394e3af3b88e1b9457f6f71d1ae0ac
+- name: github.com/codegangsta/negroni
+  version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
+- name: github.com/dgrijalva/jwt-go
+  version: 2268707a8f0843315e2004ee4f1d021dc08baedf
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/mux
+  version: 599cba5e7b6137d46ddf58fb1765f5d928e69604
+- name: github.com/joho/godotenv
+  version: d10b3fbe007de7a25e086524ad17597afa3d238b
+devImports: []
