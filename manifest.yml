@@ -2,6 +2,6 @@
 applications:
 - name: admin-api
   buildpack: go_buildpack
-  memory: 512M
+  memory: 64M
   services:
    - auth0-admin-api
