@@ -4,4 +4,5 @@ import:
 - package: github.com/codegangsta/negroni
 - package: github.com/dgrijalva/jwt-go
 - package: github.com/gorilla/mux
+- package: github.com/cloudfoundry-community/go-cfenv
 - package: github.com/joho/godotenv

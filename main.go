@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
+	"github.com/cloudfoundry-community/go-cfenv"
 	"github.com/codegangsta/negroni"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
@@ -14,48 +16,61 @@ import (
 )
 
 func main() {
+	var auth0ClientSecret string
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	if appEnv, err := cfenv.Current(); err == nil {
+		if auth0Service, err := appEnv.Services.WithName("admin-api-auth0"); err == nil {
+			if clientSecret, ok := auth0Service.CredentialString("secret"); ok {
+				auth0ClientSecret = clientSecret
+			}
+		}
+	} else {
+		if err := godotenv.Load(); err == nil {
+			auth0ClientSecret = os.Getenv("AUTH0_CLIENT_SECRET")
+		}
 	}
 
-	StartServer()
+	if len(auth0ClientSecret) == 0 {
+		log.Fatal("Failed to load auth0 client secret from VCAP_SERVICES or from .env file")
+	}
 
+	port := os.Getenv("PORT")
+	if len(port) == 0 {
+		port = "3001"
+	}
+
+	startServer(port, auth0ClientSecret)
 }
 
-func StartServer() {
+func startServer(port string, auth0ClientSecret string) {
 	r := mux.NewRouter()
 
 	jwtMiddleware := jwtmiddleware.New(jwtmiddleware.Options{
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-			secret := []byte(os.Getenv("AUTH0_CLIENT_SECRET"))
-
-			if len(secret) == 0 {
-				log.Fatal("AUTH0_CLIENT_SECRET is not set")
-			}
-
+			secret := []byte(auth0ClientSecret)
 			return secret, nil
 		},
 	})
 
-	r.HandleFunc("/ping", PingHandler)
+	r.HandleFunc("/ping", pingHandler)
 	r.Handle("/secured/ping", negroni.New(
 		negroni.HandlerFunc(jwtMiddleware.HandlerWithNext),
-		negroni.Wrap(http.HandlerFunc(SecuredPingHandler)),
+		negroni.Wrap(http.HandlerFunc(securedPingHandler)),
 	))
 	http.Handle("/", r)
-	http.ListenAndServe(":3001", nil)
+
+	fmt.Print("Server started and listening on ", port)
+	http.ListenAndServe(":"+port, nil)
 }
 
-type Response struct {
+type response struct {
 	Text string `json:"text"`
 }
 
-func respondJson(text string, w http.ResponseWriter) {
-	response := Response{text}
+func respondJSON(text string, w http.ResponseWriter) {
+	r := response{text}
 
-	jsonResponse, err := json.Marshal(response)
+	jsonResponse, err := json.Marshal(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -65,10 +80,10 @@ func respondJson(text string, w http.ResponseWriter) {
 	w.Write(jsonResponse)
 }
 
-func PingHandler(w http.ResponseWriter, r *http.Request) {
-	respondJson("All good. You don't need to be authenticated to call this", w)
+func pingHandler(w http.ResponseWriter, r *http.Request) {
+	respondJSON("All good. You don't need to be authenticated to call this", w)
 }
 
-func SecuredPingHandler(w http.ResponseWriter, r *http.Request) {
-	respondJson("All good. You only get this message if you're authenticated", w)
+func securedPingHandler(w http.ResponseWriter, r *http.Request) {
+	respondJSON("All good. You only get this message if you're authenticated", w)
 }
