@@ -19,7 +19,7 @@ func main() {
 	var auth0ClientSecret string
 
 	if appEnv, err := cfenv.Current(); err == nil {
-		if auth0Service, err := appEnv.Services.WithName("admin-api-auth0"); err == nil {
+		if auth0Service, err := appEnv.Services.WithName("auth0-admin-api"); err == nil {
 			if clientSecret, ok := auth0Service.CredentialString("secret"); ok {
 				auth0ClientSecret = clientSecret
 			}

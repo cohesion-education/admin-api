@@ -1,5 +1,10 @@
 # admin-api
 
+### Build locally using the Wercker CLI
+
+  wercker --environment wercker.env build --docker-local
+
+
 
 ### Deploy to Cloud Foundry
 

@@ -4,4 +4,4 @@ applications:
   buildpack: go_buildpack
   memory: 512M
   services:
-   - admin-api-auth0
+   - auth0-admin-api

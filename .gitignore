@@ -1,4 +1,6 @@
 .env
 .DS_Store
 vendor/
+.wercker/
+wercker.env
 admin-api
