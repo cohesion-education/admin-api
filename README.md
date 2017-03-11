@@ -1,5 +1,7 @@
 # admin-api
 
+[![wercker status](https://app.wercker.com/status/20b14e1ac5148b29db7e619c1ffd9b45/s/master "wercker status")](https://app.wercker.com/project/byKey/20b14e1ac5148b29db7e619c1ffd9b45)
+
 ### Build locally using the Wercker CLI
 
   wercker --environment wercker.env build --docker-local
