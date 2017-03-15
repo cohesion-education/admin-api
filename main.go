@@ -81,7 +81,7 @@ func respondJSON(text string, w http.ResponseWriter) {
 }
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {
-	respondJSON("All good. You don't need to be authenticated to call this", w)
+	respondJSON("Hey Jim & Greg", w)
 }
 
 func securedPingHandler(w http.ResponseWriter, r *http.Request) {
