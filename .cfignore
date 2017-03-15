@@ -1,0 +1,6 @@
+.wercker/
+vendor/
+scripts/
+admin-api
+wercker.env
+wercker.yml
