@@ -29,7 +29,7 @@ func newAuth0Config() *auth0Config {
 			if domain, ok := auth0Service.CredentialString("domain"); ok {
 				config.Domain = domain
 			}
-			if callbackURL, ok := auth0Service.CredentialString("callbak-url"); ok {
+			if callbackURL, ok := auth0Service.CredentialString("callback-url"); ok {
 				config.CallbackURL = callbackURL
 			}
 		}
