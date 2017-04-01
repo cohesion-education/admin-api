@@ -1,8 +1,10 @@
 ---
 applications:
-- name: admin-api
+- name: admin
   buildpack: go_buildpack
   memory: 64M
   instances: 2
   services:
-   - auth0-admin-api
+   - auth0-admin
+  routes:
+   - route: admin.cohesioned.io

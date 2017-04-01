@@ -1,6 +1,9 @@
 .wercker/
 vendor/
 scripts/
+.git/
+tmp/
 admin-api
+manifest.yml
 wercker.env
 wercker.yml

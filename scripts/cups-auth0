@@ -1,7 +1,7 @@
-cf cups auth0-admin-api -p '{"clientid":"$AUTH0_CLIENT_ID","secret":"$AUTH0_CLIENT_SECRET","domain":"$AUTH0_DOMAIN","callback-url":"$AUTH0_CALLBACK_URL"}'
+cf cups auth0-admin -p '{"clientid":"$AUTH0_CLIENT_ID","secret":"$AUTH0_CLIENT_SECRET","domain":"$AUTH0_DOMAIN","callback-url":"$AUTH0_CALLBACK_URL"}'
 rc=$?;
 if [[ $rc != 0 ]]
 then
   echo "cups failed; falling back to uups"
-  cf uups auth0-admin-api -p '{"clientid":"$AUTH0_CLIENT_ID","secret":"$AUTH0_CLIENT_SECRET","domain":"$AUTH0_DOMAIN","callback-url":"$AUTH0_CALLBACK_URL"}'
+  cf uups auth0-admin -p '{"clientid":"$AUTH0_CLIENT_ID","secret":"$AUTH0_CLIENT_SECRET","domain":"$AUTH0_DOMAIN","callback-url":"$AUTH0_CALLBACK_URL"}'
 fi
