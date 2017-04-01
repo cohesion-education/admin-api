@@ -1,20 +1,50 @@
-hash: f43bd226ca3fe59e5cd8dadd6f15052e80096e4d6b9c25f99a29b6047ced6dd4
-updated: 2017-03-10T22:43:35.83435311-05:00
+hash: 4b5a02883b27ca64380846f435c0c6c26d2c827c53814d8abd1420790501508a
+updated: 2017-04-01T16:00:40.826416887-04:00
 imports:
 - name: github.com/auth0/go-jwt-middleware
   version: f3f7de3b9e394e3af3b88e1b9457f6f71d1ae0ac
 - name: github.com/cloudfoundry-community/go-cfenv
-  version: 3b3d4d0e3aaeae8f0b7d0d41257228e92cef463e
+  version: f920e9562d5f951cbf11785728f67258c38a10d0
 - name: github.com/codegangsta/negroni
   version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
 - name: github.com/dgrijalva/jwt-go
   version: 2268707a8f0843315e2004ee4f1d021dc08baedf
+- name: github.com/golang/protobuf
+  version: 2bba0603135d7d7f5cb73b2125beeda19c09f4ef
+  subpackages:
+  - proto
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 599cba5e7b6137d46ddf58fb1765f5d928e69604
+- name: github.com/gorilla/securecookie
+  version: e59506cc896acb7f7bf732d4fdf5e25f7ccd8983
+- name: github.com/gorilla/sessions
+  version: ba78acc856fe7c79891d516131b3d903cc8d9367
 - name: github.com/joho/godotenv
-  version: d10b3fbe007de7a25e086524ad17597afa3d238b
+  version: 325433c502d409f3c3dc820098fb0cfe38d98dc7
 - name: github.com/mitchellh/mapstructure
   version: 53818660ed4955e899c0bcafa97299a388bd7c8e
+- name: github.com/unrolled/render
+  version: 50716a0a853771bb36bfce61a45cdefdb98c2e6e
+- name: github.com/urfave/negroni
+  version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
+- name: golang.org/x/net
+  version: ffcf1bedda3b04ebb15a168a59800a73d6dc0f4d
+  subpackages:
+  - context
+- name: golang.org/x/oauth2
+  version: 7fdf09982454086d5570c7db3e11f360194830ca
+  subpackages:
+  - internal
+- name: google.golang.org/appengine
+  version: 56d253d1dd14aa01937e12c73a0971bcfd797ff2
+  subpackages:
+  - urlfetch
+  - internal
+  - internal/urlfetch
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/remote_api
 devImports: []

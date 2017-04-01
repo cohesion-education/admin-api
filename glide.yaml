@@ -6,3 +6,7 @@ import:
 - package: github.com/gorilla/mux
 - package: github.com/cloudfoundry-community/go-cfenv
 - package: github.com/joho/godotenv
+- package: github.com/gorilla/sessions
+- package: github.com/unrolled/render
+- package: github.com/urfave/negroni
+- package: golang.org/x/oauth2
