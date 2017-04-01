@@ -19,7 +19,7 @@ func newAuth0Config() *auth0Config {
 	config := &auth0Config{}
 
 	if appEnv, err := cfenv.Current(); err == nil {
-		if auth0Service, err := appEnv.Services.WithName("auth0-admin-api"); err == nil {
+		if auth0Service, err := appEnv.Services.WithName("auth0-admin"); err == nil {
 			if clientID, ok := auth0Service.CredentialString("clientid"); ok {
 				config.ClientID = clientID
 			}
