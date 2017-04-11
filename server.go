@@ -2,7 +2,11 @@ package main
 
 import (
 	"encoding/gob"
+	"log"
 	"net/http"
+	"time"
+
+	mgo "gopkg.in/mgo.v2"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -20,7 +24,27 @@ func newServer() *negroni.Negroni {
 
 	config := newAuth0Config()
 
-	r := render.New()
+	mongoDialInfo := &mgo.DialInfo{
+		Addrs:    []string{"127.0.0.1"},
+		Database: "cohesion-education",
+		Username: "admin",
+		Password: "password",
+		Source:   "admin",
+		Timeout:  60 * time.Second,
+	}
+	session, err := mgo.DialWithInfo(mongoDialInfo)
+
+	//session, err := mgo.Dial(" mongodb://admin:password@127.0.0.1:27017/cohesion-education?authSource=admin")
+	if err != nil {
+		log.Fatalf("Failed to connect to mongodb: %v", err)
+	}
+
+	taxonomyRepo := &taxonomyRepository{session: session}
+
+	r := render.New(render.Options{
+		Layout: "layout",
+		RenderPartialsWithoutPrefix: true,
+	})
 	n := negroni.Classic()
 	mx := mux.NewRouter()
 
@@ -32,6 +56,7 @@ func newServer() *negroni.Negroni {
 	mx.Handle("/callback", callbackHandler(config, store)).Methods("GET")
 	mx.Handle("/dashboard", secure(dashboardHandler(r, store))).Methods("GET")
 	mx.Handle("/users", secure(userListHandler(r, store))).Methods("GET")
+	mx.Handle("/taxonomy", secure(taxonomyListHandler(r, taxonomyRepo))).Methods("GET")
 
 	n.UseHandler(mx)
 

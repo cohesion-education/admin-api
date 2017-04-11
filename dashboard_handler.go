@@ -25,6 +25,6 @@ func dashboardHandler(r *render.Render, store sessions.Store) http.HandlerFunc {
 		w.Header().Set("Pragma", "no-cache")
 		w.Header().Set("X-Accel-Expires", "0")
 
-		r.HTML(w, http.StatusOK, "ubold/index-full", profile)
+		r.HTML(w, http.StatusOK, "admin/dashboard", profile)
 	}
 }

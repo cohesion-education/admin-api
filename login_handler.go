@@ -20,6 +20,6 @@ func loginViewHandler(r *render.Render, store sessions.Store) http.HandlerFunc {
 			return
 		}
 
-		r.HTML(w, http.StatusOK, "ubold/login", nil)
+		r.HTML(w, http.StatusOK, "ubold/login", nil, render.HTMLOptions{Layout: ""})
 	}
 }
