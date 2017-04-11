@@ -139,11 +139,11 @@ File: Responsive
   .topbar-left {
     width: 70px !important;
   }
-  .logo .icon-c-logo {
+  .logo .icon-c-collapsed {
     display: inline-block !important;
     line-height: 58px !important;
   }
-  .logo span {
+  .logo .icon-c-logo {
     display: none !important;
   }
   .content-page {

@@ -1126,24 +1126,11 @@ pre {
 .topbar .waves-effect.waves-light .waves-ripple {
   background-color: rgba(54, 64, 74, 0.4);
 }
-.logo {
-  color: #36404a !important;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: .05em;
-  line-height: 60px;
-  text-transform: uppercase;
+.logo .icon-c-logo{
+  margin-left: 1em;
 }
-.logo h1 {
-  height: 50px;
-  margin: 0px auto;
-  text-align: center;
-}
-.logo i {
-  color: #5fbeaa;
-  font-size: 18px;
-}
-.logo .icon-c-logo {
+
+.logo .icon-c-collapsed {
   display: none;
 }
 .navbar-default {
@@ -1610,11 +1597,11 @@ body.fixed-left .side-menu.left {
 #wrapper.enlarged .topbar .topbar-left {
   width: 70px !important;
 }
-#wrapper.enlarged .topbar .topbar-left .logo span {
+#wrapper.enlarged .topbar .topbar-left .logo .icon-c-logo {
   display: none;
   opacity: 0;
 }
-#wrapper.enlarged .topbar .topbar-left .logo .icon-c-logo {
+#wrapper.enlarged .topbar .topbar-left .logo .icon-c-collapsed {
   display: block;
   line-height: 60px;
 }
