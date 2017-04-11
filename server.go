@@ -1,67 +1,60 @@
 package main
 
 import (
-	"encoding/gob"
 	"net/http"
 
+	mgo "gopkg.in/mgo.v2"
+
 	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
 )
 
-var (
-	store sessions.Store
-)
+type handlerConfig struct {
+	renderer     *render.Render
+	mongoSession *mgo.Session
+}
 
-func newServer() *negroni.Negroni {
-	store = sessions.NewCookieStore([]byte("todo-inject-me"))
-	gob.Register(map[string]interface{}{})
-
-	config := newAuth0Config()
-
-	// mongoDialInfo := &mgo.DialInfo{
-	// 	Addrs:    []string{"127.0.0.1"},
-	// 	Database: "cohesion-education",
-	// 	Username: "admin",
-	// 	Password: "password",
-	// 	Source:   "admin",
-	// 	Timeout:  60 * time.Second,
-	// }
-	// session, err := mgo.DialWithInfo(mongoDialInfo)
-	//
-	// //session, err := mgo.Dial(" mongodb://admin:password@127.0.0.1:27017/cohesion-education?authSource=admin")
-	// if err != nil {
-	// 	log.Fatalf("Failed to connect to mongodb: %v", err)
-	// }
-	//
-	// taxonomyRepo := &taxonomyRepository{session: session}
-
-	r := render.New(render.Options{
+func newHandlerConfig() *handlerConfig {
+	renderer := render.New(render.Options{
 		Layout: "layout",
 		RenderPartialsWithoutPrefix: true,
 	})
+
+	mongoSession := newMongoSession()
+
+	return &handlerConfig{
+		mongoSession: mongoSession,
+		renderer:     renderer,
+	}
+}
+
+func newServer() *negroni.Negroni {
 	n := negroni.Classic()
 	mx := mux.NewRouter()
 
-	// This will serve files under /assets/<filename>
-	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./templates/ubold/assets/"))))
+	handlerConfig := newHandlerConfig()
+	authConfig := newAuthConfig()
 
-	mx.HandleFunc("/", loginViewHandler(r, store)).Methods("GET")
-	mx.HandleFunc("/logout", logoutHandler(r, store)).Methods("GET")
-	mx.Handle("/callback", callbackHandler(config, store)).Methods("GET")
-	mx.Handle("/dashboard", secure(dashboardHandler(r, store))).Methods("GET")
-	mx.Handle("/users", secure(userListHandler(r, store))).Methods("GET")
-	mx.Handle("/taxonomy", secure(taxonomyListHandler(r, nil))).Methods("GET")
+	// This will serve files under /assets/<filename>
+	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
+
+	mx.HandleFunc("/", loginViewHandler(authConfig, handlerConfig)).Methods("GET")
+	mx.HandleFunc("/logout", logoutHandler(handlerConfig)).Methods("GET")
+	mx.Handle("/callback", callbackHandler(authConfig)).Methods("GET")
+
+	isAuthenticatedHandler := isAuthenticatedHandler(authConfig)
+	mx.Handle("/dashboard", secure(isAuthenticatedHandler, dashboardHandler(handlerConfig))).Methods("GET")
+	mx.Handle("/taxonomy", secure(isAuthenticatedHandler, taxonomyListHandler(handlerConfig))).Methods("GET")
 
 	n.UseHandler(mx)
 
 	return n
 }
 
-func secure(handlerFunc http.HandlerFunc) *negroni.Negroni {
+func secure(handlerWithNext negroni.HandlerFunc, handlerFunc http.HandlerFunc) *negroni.Negroni {
 	return negroni.New(
-		negroni.HandlerFunc(isAuthenticatedHandler(store)),
+		negroni.HandlerFunc(handlerWithNext),
 		negroni.Wrap(handlerFunc),
 	)
 }

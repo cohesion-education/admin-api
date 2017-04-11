@@ -1,24 +1,28 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
-	"github.com/gorilla/sessions"
 	"github.com/urfave/negroni"
 )
 
-func isAuthenticatedHandler(store sessions.Store) negroni.HandlerFunc {
+func isAuthenticatedHandler(config *authConfig) negroni.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		session, err := store.Get(r, "auth-session")
+		session, err := config.getCurrentSession(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		if _, ok := session.Values["profile"]; !ok {
+		profile, ok := session.Values["profile"]
+		if !ok {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
-			next(w, r)
+			ctx := r.Context()
+			ctx = context.WithValue(ctx, "current-user", profile)
+
+			next(w, r.WithContext(ctx))
 		}
 	}
 }

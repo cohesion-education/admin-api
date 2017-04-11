@@ -1,22 +1,32 @@
 package main
 
 import (
+	"encoding/gob"
 	"log"
+	"net/http"
 	"os"
 
 	cfenv "github.com/cloudfoundry-community/go-cfenv"
+	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
 )
 
-type auth0Config struct {
+const authSessionCookieName = "auth-session"
+
+type authConfig struct {
+	sessionStore sessions.Store
 	ClientID     string
 	ClientSecret string
 	Domain       string
 	CallbackURL  string
 }
 
-func newAuth0Config() *auth0Config {
-	config := &auth0Config{}
+func (config *authConfig) getCurrentSession(r *http.Request) (*sessions.Session, error) {
+	return config.sessionStore.Get(r, authSessionCookieName)
+}
+
+func newAuthConfig() *authConfig {
+	config := &authConfig{}
 
 	if appEnv, err := cfenv.Current(); err == nil {
 		if auth0Service, err := appEnv.Services.WithName("auth0-admin"); err == nil {
@@ -79,6 +89,12 @@ func newAuth0Config() *auth0Config {
 	if len(missingConfig) > 0 {
 		log.Fatalf("Failed to load auth0 %v from either VCAP_SERVICES or from .env file", missingConfig)
 	}
+
+	//TODO - get this from env var
+	sessionStore := sessions.NewCookieStore([]byte("todo-inject-me"))
+	gob.Register(map[string]interface{}{})
+
+	config.sessionStore = sessionStore
 
 	return config
 }

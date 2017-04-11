@@ -3,15 +3,14 @@ package main
 import (
 	"net/http"
 
-	"github.com/gorilla/sessions"
 	"github.com/unrolled/render"
 )
 
-func loginViewHandler(r *render.Render, store sessions.Store) http.HandlerFunc {
+func loginViewHandler(ac *authConfig, hc *handlerConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		session, err := store.Get(req, "auth-session")
+		session, err := ac.getCurrentSession(req)
 		if err != nil {
-			r.Text(w, http.StatusInternalServerError, err.Error())
+			hc.renderer.Text(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -20,6 +19,6 @@ func loginViewHandler(r *render.Render, store sessions.Store) http.HandlerFunc {
 			return
 		}
 
-		r.HTML(w, http.StatusOK, "ubold/login", nil, render.HTMLOptions{Layout: ""})
+		hc.renderer.HTML(w, http.StatusOK, "ubold/login", nil, render.HTMLOptions{Layout: ""})
 	}
 }

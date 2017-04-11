@@ -5,11 +5,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/gorilla/sessions"
 	"golang.org/x/oauth2"
 )
 
-func callbackHandler(config *auth0Config, store sessions.Store) http.HandlerFunc {
+func callbackHandler(config *authConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		domain := config.Domain
 
@@ -18,6 +17,7 @@ func callbackHandler(config *auth0Config, store sessions.Store) http.HandlerFunc
 			ClientSecret: config.ClientSecret,
 			RedirectURL:  config.CallbackURL,
 			Scopes:       []string{"openid", "profile"},
+
 			Endpoint: oauth2.Endpoint{
 				AuthURL:  "https://" + domain + "/authorize",
 				TokenURL: "https://" + domain + "/oauth/token",
@@ -53,7 +53,7 @@ func callbackHandler(config *auth0Config, store sessions.Store) http.HandlerFunc
 			return
 		}
 
-		session, err := store.Get(r, "auth-session")
+		session, err := config.getCurrentSession(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
