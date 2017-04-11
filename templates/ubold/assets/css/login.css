@@ -7,13 +7,21 @@ body {
 #logo{
   display: block;
   margin: 0 auto;
+  width: 35em;
 }
 
 .form-signin {
     margin: 0 auto;
-    max-width: 500px;
     padding: 15px;
 }
+
+.form-signin img {
+  display: block;
+  margin: 0 auto;
+  margin-top: 5em;
+  cursor: pointer;
+}
+
 .form-signin .form-signin-heading, .form-signin {
     margin-bottom: 10px;
 }
