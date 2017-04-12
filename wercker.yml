@@ -55,6 +55,13 @@ build:
           cf version
 
     - script:
+        name: get-autopilot-plugin
+        code: |
+          wget -O autopilot https://github.com/contraband/autopilot/releases/download/0.0.3/autopilot-linux
+          chmod +x autopilot
+          cf install-plugin autopilot -f
+
+    - script:
         name: cf-login
         code: |
           cf login -a https://api.run.pivotal.io -u $CF_USER -p "$CF_PASS" -o cohesioned -s development
@@ -66,4 +73,4 @@ build:
     - script:
         name: cf-push-to-dev
         code: |
-          cf push
+          cf zero-downtime-push admin -f manifest.yml
