@@ -2,13 +2,12 @@ package main
 
 import (
 	"encoding/gob"
-	"log"
+	"fmt"
 	"net/http"
 	"os"
 
 	cfenv "github.com/cloudfoundry-community/go-cfenv"
 	"github.com/gorilla/sessions"
-	"github.com/joho/godotenv"
 )
 
 const authSessionCookieName = "auth-session"
@@ -25,7 +24,7 @@ func (config *authConfig) getCurrentSession(r *http.Request) (*sessions.Session,
 	return config.sessionStore.Get(r, authSessionCookieName)
 }
 
-func newAuthConfig() *authConfig {
+func newAuthConfig() (*authConfig, error) {
 	config := &authConfig{}
 
 	if appEnv, err := cfenv.Current(); err == nil {
@@ -46,27 +45,19 @@ func newAuthConfig() *authConfig {
 	}
 
 	if len(config.ClientID) == 0 {
-		if err := godotenv.Load(); err == nil {
-			config.ClientID = os.Getenv("AUTH0_CLIENT_ID")
-		}
+		config.ClientID = os.Getenv("AUTH0_CLIENT_ID")
 	}
 
 	if len(config.ClientSecret) == 0 {
-		if err := godotenv.Load(); err == nil {
-			config.ClientSecret = os.Getenv("AUTH0_CLIENT_SECRET")
-		}
+		config.ClientSecret = os.Getenv("AUTH0_CLIENT_SECRET")
 	}
 
 	if len(config.Domain) == 0 {
-		if err := godotenv.Load(); err == nil {
-			config.Domain = os.Getenv("AUTH0_DOMAIN")
-		}
+		config.Domain = os.Getenv("AUTH0_DOMAIN")
 	}
 
 	if len(config.CallbackURL) == 0 {
-		if err := godotenv.Load(); err == nil {
-			config.CallbackURL = os.Getenv("AUTH0_CALLBACK_URL")
-		}
+		config.CallbackURL = os.Getenv("AUTH0_CALLBACK_URL")
 	}
 
 	var missingConfig []string
@@ -87,14 +78,13 @@ func newAuthConfig() *authConfig {
 	}
 
 	if len(missingConfig) > 0 {
-		log.Fatalf("Failed to load auth0 %v from either VCAP_SERVICES or from .env file", missingConfig)
+		return nil, fmt.Errorf("Failed to load auth0 service from either VCAP_SERVICES or from environment vars - missing %v", missingConfig)
 	}
 
 	//TODO - get this from env var
 	sessionStore := sessions.NewCookieStore([]byte("todo-inject-me"))
 	gob.Register(map[string]interface{}{})
-
 	config.sessionStore = sessionStore
 
-	return config
+	return config, nil
 }

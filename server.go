@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	mgo "gopkg.in/mgo.v2"
@@ -37,7 +38,10 @@ func newServer() *negroni.Negroni {
 	mx := mux.NewRouter()
 
 	handlerConfig := newHandlerConfig()
-	authConfig := newAuthConfig()
+	authConfig, err := newAuthConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// This will serve files under /assets/<filename>
 	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))

@@ -6,6 +6,40 @@ import (
 	"testing"
 )
 
+func TestIsAuthenticatedHandlerWhenNotAuthenticatedRedirectsToRoot(t *testing.T) {
+	req, err := http.NewRequest("GET", "/dashboard", nil)
+	if err != nil {
+		t.Fatalf("Failed to initialize new request %v", err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := isAuthenticatedHandler(ac)
+
+	mockNextHandlerCalled := false
+	mockNextHandler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		mockNextHandlerCalled = true
+	})
+
+	handler.ServeHTTP(rr, req, mockNextHandler)
+
+	if mockNextHandlerCalled {
+		t.Errorf("next handler was called but it should not have been")
+	}
+
+	if status := rr.Code; status != http.StatusSeeOther {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusSeeOther)
+	}
+
+	location, err := rr.Result().Location()
+	if err != nil {
+		t.Fatalf("unable to retreive rr.Result().Location() %v", err)
+	}
+
+	if "/" != location.Path {
+		t.Errorf("Expected request redirect url to be %s but was %s", "/", req.URL.Path)
+	}
+}
+
 func TestIsAuthenticatedHandlerWhenAuthenticatedProceedsToNext(t *testing.T) {
 	req, err := http.NewRequest("GET", "/dashboard", nil)
 	if err != nil {
