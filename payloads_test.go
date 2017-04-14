@@ -7,7 +7,8 @@ const auth0ServicePayload = `{
     "clientid":"test-client-id",
     "secret":"test-secret",
     "domain":"test-domain",
-    "callback-url":"test-callback-url"
+    "callback-url":"test-callback-url",
+    "session-auth-key":"abc12345"
   },
   "syslog_drain_url": "",
   "volume_mounts": [],
@@ -20,7 +21,8 @@ const auth0ServicePartialPayload = `{
   "credentials":{
     "secret":"test-secret",
     "domain":"test-domain",
-    "callback-url":"test-callback-url"
+    "callback-url":"test-callback-url",
+    "session-auth-key":"abc12345"
   },
   "syslog_drain_url": "",
   "volume_mounts": [],

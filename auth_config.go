@@ -13,11 +13,12 @@ import (
 const authSessionCookieName = "auth-session"
 
 type authConfig struct {
-	sessionStore sessions.Store
-	ClientID     string
-	ClientSecret string
-	Domain       string
-	CallbackURL  string
+	sessionStore        sessions.Store
+	sessionStoreAuthKey string
+	ClientID            string
+	ClientSecret        string
+	Domain              string
+	CallbackURL         string
 }
 
 func (config *authConfig) getCurrentSession(r *http.Request) (*sessions.Session, error) {
@@ -41,6 +42,9 @@ func newAuthConfig() (*authConfig, error) {
 			if callbackURL, ok := auth0Service.CredentialString("callback-url"); ok {
 				config.CallbackURL = callbackURL
 			}
+			if sessionStoreAuthKey, ok := auth0Service.CredentialString("session-auth-key"); ok {
+				config.sessionStoreAuthKey = sessionStoreAuthKey
+			}
 		}
 	}
 
@@ -60,6 +64,10 @@ func newAuthConfig() (*authConfig, error) {
 		config.CallbackURL = os.Getenv("AUTH0_CALLBACK_URL")
 	}
 
+	if len(config.sessionStoreAuthKey) == 0 {
+		config.sessionStoreAuthKey = os.Getenv("SESSION_AUTH_KEY")
+	}
+
 	var missingConfig []string
 	if len(config.ClientID) == 0 {
 		missingConfig = append(missingConfig, "ClientID")
@@ -77,12 +85,15 @@ func newAuthConfig() (*authConfig, error) {
 		missingConfig = append(missingConfig, "CallbackURL")
 	}
 
+	if len(config.sessionStoreAuthKey) == 0 {
+		missingConfig = append(missingConfig, "SessionAuthKey")
+	}
+
 	if len(missingConfig) > 0 {
 		return nil, fmt.Errorf("Failed to load auth0 service from either VCAP_SERVICES or from environment vars - missing %v", missingConfig)
 	}
 
-	//TODO - get this from env var
-	sessionStore := sessions.NewCookieStore([]byte("todo-inject-me"))
+	sessionStore := sessions.NewCookieStore([]byte(config.sessionStoreAuthKey))
 	gob.Register(map[string]interface{}{})
 	config.sessionStore = sessionStore
 
