@@ -6,5 +6,6 @@ applications:
   instances: 2
   services:
    - auth0-admin
+   - free-redis-service
   routes:
    - route: admin.cohesioned.io

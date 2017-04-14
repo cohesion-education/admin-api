@@ -10,22 +10,24 @@ import (
 	"github.com/urfave/negroni"
 )
 
+type key int
+
+const (
+	currentUserKey key = iota
+)
+
 type handlerConfig struct {
 	renderer     *render.Render
 	mongoSession *mgo.Session
 }
 
 func newHandlerConfig() *handlerConfig {
-	renderer := render.New(render.Options{
-		Layout: "layout",
-		RenderPartialsWithoutPrefix: true,
-	})
-
-	mongoSession := newMongoSession()
-
 	return &handlerConfig{
-		mongoSession: mongoSession,
-		renderer:     renderer,
+		mongoSession: newMongoSession(),
+		renderer: render.New(render.Options{
+			Layout: "layout",
+			RenderPartialsWithoutPrefix: true,
+		}),
 	}
 }
 
@@ -39,7 +41,7 @@ func newServer() *negroni.Negroni {
 	// This will serve files under /assets/<filename>
 	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
 
-	mx.HandleFunc("/", loginViewHandler(authConfig, handlerConfig)).Methods("GET")
+	mx.HandleFunc("/", loginViewHandler(handlerConfig)).Methods("GET")
 	mx.HandleFunc("/logout", logoutHandler(handlerConfig)).Methods("GET")
 	mx.Handle("/callback", callbackHandler(authConfig)).Methods("GET")
 

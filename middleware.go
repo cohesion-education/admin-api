@@ -20,7 +20,7 @@ func isAuthenticatedHandler(config *authConfig) negroni.HandlerFunc {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
 			ctx := r.Context()
-			ctx = context.WithValue(ctx, "current-user", profile)
+			ctx = context.WithValue(ctx, currentUserKey, profile)
 
 			next(w, r.WithContext(ctx))
 		}
