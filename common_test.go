@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"net/http"
 
+	"github.com/gorilla/sessions"
 	"github.com/unrolled/render"
 )
 
@@ -12,6 +13,10 @@ var (
 		Layout: "layout",
 		RenderPartialsWithoutPrefix: true,
 	})
+
+	ac = &authConfig{
+		sessionStore: sessions.NewFilesystemStore("/tmp", []byte("oursecret")),
+	}
 
 	hc = &handlerConfig{
 		renderer:     renderer,

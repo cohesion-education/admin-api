@@ -61,7 +61,7 @@ func callbackHandler(config *authConfig) http.HandlerFunc {
 
 		session.Values["id_token"] = token.Extra("id_token")
 		session.Values["access_token"] = token.AccessToken
-		session.Values["profile"] = profile
+		session.Values[currentUserSessionKey] = profile
 		err = session.Save(r, w)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

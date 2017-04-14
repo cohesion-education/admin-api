@@ -13,7 +13,8 @@ import (
 type key int
 
 const (
-	currentUserKey key = iota
+	currentUserKey        key    = iota
+	currentUserSessionKey string = "profile"
 )
 
 type handlerConfig struct {

@@ -15,7 +15,7 @@ func isAuthenticatedHandler(config *authConfig) negroni.HandlerFunc {
 			return
 		}
 
-		profile, ok := session.Values["profile"]
+		profile, ok := session.Values[currentUserSessionKey]
 		if !ok {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
