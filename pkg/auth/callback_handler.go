@@ -1,21 +1,23 @@
-package main
+package auth
 
 import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 
+	"github.com/cohesion-education/admin-api/pkg/config"
+
 	"golang.org/x/oauth2"
 )
 
-func callbackHandler(config *authConfig) http.HandlerFunc {
+func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		domain := config.Domain
+		domain := cfg.Domain
 
 		conf := &oauth2.Config{
-			ClientID:     config.ClientID,
-			ClientSecret: config.ClientSecret,
-			RedirectURL:  config.CallbackURL,
+			ClientID:     cfg.ClientID,
+			ClientSecret: cfg.ClientSecret,
+			RedirectURL:  cfg.CallbackURL,
 			Scopes:       []string{"openid", "profile"},
 
 			Endpoint: oauth2.Endpoint{
@@ -53,7 +55,7 @@ func callbackHandler(config *authConfig) http.HandlerFunc {
 			return
 		}
 
-		session, err := config.getCurrentSession(r)
+		session, err := cfg.GetCurrentSession(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -61,7 +63,7 @@ func callbackHandler(config *authConfig) http.HandlerFunc {
 
 		session.Values["id_token"] = token.Extra("id_token")
 		session.Values["access_token"] = token.AccessToken
-		session.Values[currentUserSessionKey] = profile
+		session.Values[config.CurrentUserSessionKey] = profile
 		err = session.Save(r, w)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

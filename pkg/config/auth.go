@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"encoding/gob"
@@ -10,23 +10,29 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-const authSessionCookieName = "auth-session"
-
-type authConfig struct {
-	sessionStore        sessions.Store
-	sessionStoreAuthKey string
-	ClientID            string
-	ClientSecret        string
-	Domain              string
-	CallbackURL         string
+type AuthConfig struct {
+	SessionStore sessions.Store
+	ClientID     string
+	ClientSecret string
+	Domain       string
+	CallbackURL  string
 }
 
-func (config *authConfig) getCurrentSession(r *http.Request) (*sessions.Session, error) {
-	return config.sessionStore.Get(r, authSessionCookieName)
+func (config *AuthConfig) GetCurrentSession(r *http.Request) (*sessions.Session, error) {
+	return config.SessionStore.Get(r, AuthSessionCookieName)
 }
 
-func newAuthConfig() (*authConfig, error) {
-	config := &authConfig{}
+func newSessionStore(authKey string) sessions.Store {
+	if len(authKey) == 0 {
+		return nil
+	}
+	gob.Register(map[string]interface{}{})
+	sessionStore := sessions.NewCookieStore([]byte(authKey))
+	return sessionStore
+}
+
+func NewAuthConfig() (*AuthConfig, error) {
+	config := &AuthConfig{}
 
 	if appEnv, err := cfenv.Current(); err == nil {
 		if auth0Service, err := appEnv.Services.WithName("auth0-admin"); err == nil {
@@ -43,7 +49,7 @@ func newAuthConfig() (*authConfig, error) {
 				config.CallbackURL = callbackURL
 			}
 			if sessionStoreAuthKey, ok := auth0Service.CredentialString("session-auth-key"); ok {
-				config.sessionStoreAuthKey = sessionStoreAuthKey
+				config.SessionStore = newSessionStore(sessionStoreAuthKey)
 			}
 		}
 	}
@@ -64,8 +70,8 @@ func newAuthConfig() (*authConfig, error) {
 		config.CallbackURL = os.Getenv("AUTH0_CALLBACK_URL")
 	}
 
-	if len(config.sessionStoreAuthKey) == 0 {
-		config.sessionStoreAuthKey = os.Getenv("SESSION_AUTH_KEY")
+	if config.SessionStore == nil {
+		config.SessionStore = newSessionStore(os.Getenv("SESSION_AUTH_KEY"))
 	}
 
 	var missingConfig []string
@@ -85,17 +91,13 @@ func newAuthConfig() (*authConfig, error) {
 		missingConfig = append(missingConfig, "CallbackURL")
 	}
 
-	if len(config.sessionStoreAuthKey) == 0 {
-		missingConfig = append(missingConfig, "SessionAuthKey")
+	if config.SessionStore == nil {
+		missingConfig = append(missingConfig, "SessionStoreAuthKey")
 	}
 
 	if len(missingConfig) > 0 {
 		return nil, fmt.Errorf("Failed to load auth0 service from either VCAP_SERVICES or from environment vars - missing %v", missingConfig)
 	}
-
-	sessionStore := sessions.NewCookieStore([]byte(config.sessionStoreAuthKey))
-	gob.Register(map[string]interface{}{})
-	config.sessionStore = sessionStore
 
 	return config, nil
 }

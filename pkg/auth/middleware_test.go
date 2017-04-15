@@ -1,9 +1,13 @@
-package main
+package auth_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/cohesion-education/admin-api/fakes"
+	"github.com/cohesion-education/admin-api/pkg/auth"
+	"github.com/cohesion-education/admin-api/pkg/config"
 )
 
 func TestIsAuthenticatedHandlerWhenNotAuthenticatedRedirectsToRoot(t *testing.T) {
@@ -13,7 +17,7 @@ func TestIsAuthenticatedHandlerWhenNotAuthenticatedRedirectsToRoot(t *testing.T)
 	}
 
 	rr := httptest.NewRecorder()
-	handler := isAuthenticatedHandler(ac)
+	handler := auth.IsAuthenticatedHandler(fakes.FakeAuthConfig)
 
 	mockNextHandlerCalled := false
 	mockNextHandler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -47,21 +51,21 @@ func TestIsAuthenticatedHandlerWhenAuthenticatedProceedsToNext(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := isAuthenticatedHandler(ac)
-	session, err := ac.getCurrentSession(req)
+	handler := auth.IsAuthenticatedHandler(fakes.FakeAuthConfig)
+	session, err := fakes.FakeAuthConfig.GetCurrentSession(req)
 	if err != nil {
 		t.Fatalf("Failed to get current session %v", err)
 	}
 
 	profile := make(map[string]interface{})
 	profile["picture"] = "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg"
-	session.Values[currentUserSessionKey] = profile
+	session.Values[config.CurrentUserSessionKey] = profile
 
 	mockNextHandlerCalled := false
 	mockNextHandler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		mockNextHandlerCalled = true
 		ctx := req.Context()
-		if ctx.Value(currentUserKey) == nil {
+		if ctx.Value(config.CurrentUserKey) == nil {
 			t.Errorf("middleware did not set current user in the context as expected")
 		}
 	})

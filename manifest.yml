@@ -8,3 +8,5 @@ applications:
    - auth0-admin
   routes:
    - route: admin.cohesioned.io
+  env:
+    DATASTORE_PROJECT_ID: cohesion-education-164614

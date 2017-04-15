@@ -1,9 +1,40 @@
-<!-- Page-Title -->
+
 <div class="row">
-    <div class="col-sm-12">
-        <h4 class="page-title">Top Level Taxonomies</h4>
+    <div class="col-sm-12" id="taxonomy-list">
+        <h4 class="page-title">Taxonomy Management</h4>
         <ul>
-          <li><a href="/taxonomy/abc123">abc123</a></li>
+          {{range .list}}
+          <li><a href="/taxonomy/{{.ID}}">{{.Name}}</a>
+            <ul>
+              {{range .Children}}
+              <li><a href="/taxonomy/{{.ID}}">{{.Name}}</a>
+                  <ul>
+                    {{range .Children}}
+                      <li><a href="/taxonomy/{{.ID}}">{{.Name}}</a>
+                        <ul>
+                          {{range .Children}}
+                            <li><a href="/taxonomy/{{.ID}}">{{.Name}}</a>
+                              <ul>
+                                {{range .Children}}
+                                  <li><a href="/taxonomy/{{.ID}}">{{.Name}}</a></li>
+                                {{end}}
+                                <li class="add"><a class="add-taxonomy" href="/taxonomy/add/{{.ID}}">Add</a></li>
+                              </ul>
+                            </li>
+                          {{end}}
+                          <li class="add"><a class="add-taxonomy" href="/taxonomy/add/{{.ID}}">Add</a></li>
+                        </ul>
+                      </li>
+                    {{end}}
+                    <li class="add"><a class="add-taxonomy" href="/taxonomy/add/{{.ID}}">Add</a></li>
+                  </ul>
+              </li>
+              {{end}}
+              <li class="add"><a class="add-taxonomy" href="/taxonomy/add/{{.ID}}">Add</a></li>
+            </ul>
+          </li>
+          {{end}}
+          <li class="add"><a class="add-taxonomy" href="/taxonomy/add">Add</a></li>
         </ul>
     </div>
 </div>

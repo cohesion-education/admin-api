@@ -1,15 +1,15 @@
-package main
+package auth
 
 import (
-	"fmt"
 	"net/http"
+
+	"github.com/cohesion-education/admin-api/pkg/config"
 )
 
-func logoutHandler(config *handlerConfig) http.HandlerFunc {
+func LogoutHandler(cfg *config.HandlerConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("logging out... goodbye")
 		cookie := &http.Cookie{
-			Name:   authSessionCookieName,
+			Name:   config.AuthSessionCookieName,
 			Value:  "",
 			Path:   "/",
 			MaxAge: -1,

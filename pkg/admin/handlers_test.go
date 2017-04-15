@@ -1,4 +1,4 @@
-package main
+package admin_test
 
 import (
 	"bytes"
@@ -6,6 +6,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/cohesion-education/admin-api/fakes"
+	"github.com/cohesion-education/admin-api/pkg/admin"
+	"github.com/cohesion-education/admin-api/pkg/common"
+	"github.com/cohesion-education/admin-api/pkg/config"
 )
 
 func TestDashboardHandlerWhileLoggedInDirectsUserToDashboard(t *testing.T) {
@@ -14,13 +19,12 @@ func TestDashboardHandlerWhileLoggedInDirectsUserToDashboard(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	profile := make(map[string]interface{})
-	profile["picture"] = "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg"
+	profile := fakes.FakeProfile()
 
 	rr := httptest.NewRecorder()
-	handler := dashboardHandler(hc)
+	handler := admin.DashboardViewHandler(fakes.FakeHandlerConfig)
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, currentUserKey, profile)
+	ctx = context.WithValue(ctx, config.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
 	handler.ServeHTTP(rr, req)
@@ -29,7 +33,9 @@ func TestDashboardHandlerWhileLoggedInDirectsUserToDashboard(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
 
-	expectedBody := renderHTML("admin/dashboard", profile)
+	dashboard := &common.DashboardView{}
+	dashboard.Set("profile", profile)
+	expectedBody := fakes.RenderHTML("admin/dashboard", dashboard)
 	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
 		t.Errorf("The expected HTML was not generated in the call to dashboardHandler: Expected:\n\n%sActual:\n\n%s", string(expectedBody), rr.Body.String())
 	}

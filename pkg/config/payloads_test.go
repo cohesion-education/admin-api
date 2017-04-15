@@ -1,8 +1,8 @@
-package main
+package config_test
 
 import "fmt"
 
-const auth0ServicePayload = `{
+const Auth0ServicePayload = `{
   "credentials":{
     "clientid":"test-client-id",
     "secret":"test-secret",
@@ -17,7 +17,7 @@ const auth0ServicePayload = `{
   "tags": []
 }`
 
-const auth0ServicePartialPayload = `{
+const Auth0ServicePartialPayload = `{
   "credentials":{
     "secret":"test-secret",
     "domain":"test-domain",
@@ -31,19 +31,19 @@ const auth0ServicePartialPayload = `{
   "tags": []
 }`
 
-var vcapApplicationPayload = `{
+var VcapApplicationPayload = `{
   "application_name": "test-app",
   "name": "test-app"
 }`
 
-var vcapServicesPayload = fmt.Sprintf(`{
+var VcapServicesPayload = fmt.Sprintf(`{
   "user-provided": [
     %s
   ]
-}`, auth0ServicePayload)
+}`, Auth0ServicePayload)
 
-var vcapServicesPartialPayload = fmt.Sprintf(`{
+var VcapServicesPartialPayload = fmt.Sprintf(`{
   "user-provided": [
     %s
   ]
-}`, auth0ServicePartialPayload)
+}`, Auth0ServicePartialPayload)

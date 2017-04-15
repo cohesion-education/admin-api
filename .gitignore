@@ -6,3 +6,4 @@ tmp/
 wercker.env
 credentials.json
 admin-api
+mongo-setup.md

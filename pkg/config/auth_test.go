@@ -1,21 +1,23 @@
-package main
+package config_test
 
 import (
 	"os"
 	"testing"
+
+	"github.com/cohesion-education/admin-api/pkg/config"
 )
 
 func TestNewAuthConfigWithoutEnvVarsOrVcapServicesFails(t *testing.T) {
-	if _, err := newAuthConfig(); err == nil {
+	if _, err := config.NewAuthConfig(); err == nil {
 		t.Error("neither VCAP_SERVICES nor env vars were set - an error should've been returned from newAuthConfig() but was not")
 	}
 }
 
 func TestNewAuthConfigViaVcapServices(t *testing.T) {
-	os.Setenv("VCAP_APPLICATION", vcapApplicationPayload)
-	os.Setenv("VCAP_SERVICES", vcapServicesPayload)
+	os.Setenv("VCAP_APPLICATION", VcapApplicationPayload)
+	os.Setenv("VCAP_SERVICES", VcapServicesPayload)
 
-	if _, err := newAuthConfig(); err != nil {
+	if _, err := config.NewAuthConfig(); err != nil {
 		t.Errorf("expected no error but got %v", err)
 	}
 
@@ -23,10 +25,10 @@ func TestNewAuthConfigViaVcapServices(t *testing.T) {
 }
 
 func TestNewAuthConfigViaPartialVcapServices(t *testing.T) {
-	os.Setenv("VCAP_APPLICATION", vcapApplicationPayload)
-	os.Setenv("VCAP_SERVICES", vcapServicesPartialPayload)
+	os.Setenv("VCAP_APPLICATION", VcapApplicationPayload)
+	os.Setenv("VCAP_SERVICES", VcapServicesPartialPayload)
 
-	_, err := newAuthConfig()
+	_, err := config.NewAuthConfig()
 
 	if err == nil {
 		t.Error("expected an error")
@@ -48,7 +50,7 @@ func TestNewAuthConfigViaEnvVars(t *testing.T) {
 	os.Setenv("AUTH0_CALLBACK_URL", "test-callback-url")
 	os.Setenv("SESSION_AUTH_KEY", "test-key")
 
-	if _, err := newAuthConfig(); err != nil {
+	if _, err := config.NewAuthConfig(); err != nil {
 		t.Errorf("expected no error but got %v", err)
 	}
 
@@ -61,7 +63,7 @@ func TestNewAuthConfigViaPartialEnvVars(t *testing.T) {
 	os.Setenv("AUTH0_CALLBACK_URL", "test-callback-url")
 	os.Setenv("SESSION_AUTH_KEY", "test-key")
 
-	_, err := newAuthConfig()
+	_, err := config.NewAuthConfig()
 
 	if err == nil {
 		t.Error("expected an error")

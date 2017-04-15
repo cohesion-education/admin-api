@@ -1,44 +1,43 @@
-package main
+package cohesioned
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
-	mgo "gopkg.in/mgo.v2"
-
+	"github.com/cohesion-education/admin-api/pkg/admin"
+	"github.com/cohesion-education/admin-api/pkg/auth"
+	"github.com/cohesion-education/admin-api/pkg/config"
+	"github.com/cohesion-education/admin-api/pkg/gcp"
+	"github.com/cohesion-education/admin-api/pkg/taxonomy"
 	"github.com/gorilla/mux"
-	"github.com/unrolled/render"
+	"github.com/joho/godotenv"
 	"github.com/urfave/negroni"
 )
 
-type key int
-
-const (
-	currentUserKey        key    = iota
-	currentUserSessionKey string = "profile"
-)
-
-type handlerConfig struct {
-	renderer     *render.Render
-	mongoSession *mgo.Session
-}
-
-func newHandlerConfig() *handlerConfig {
-	return &handlerConfig{
-		mongoSession: newMongoSession(),
-		renderer: render.New(render.Options{
-			Layout: "layout",
-			RenderPartialsWithoutPrefix: true,
-		}),
-	}
-}
-
 func newServer() *negroni.Negroni {
+	if err := godotenv.Load(); err != nil {
+		fmt.Println("Failed to load .env file. Components will fallback to loading from VCAP_SERVICES or env vars")
+	}
+
 	n := negroni.Classic()
 	mx := mux.NewRouter()
 
-	handlerConfig := newHandlerConfig()
-	authConfig, err := newAuthConfig()
+	ctx := context.TODO()
+	gcpProjectID := os.Getenv("DATASTORE_PROJECT_ID")
+	datastoreClient, err := gcp.NewDatastoreClient(ctx, gcpProjectID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	handlerConfig, err := config.NewHandlerConfig(datastoreClient)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	authConfig, err := config.NewAuthConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,13 +45,14 @@ func newServer() *negroni.Negroni {
 	// This will serve files under /assets/<filename>
 	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
 
-	mx.HandleFunc("/", loginViewHandler(handlerConfig)).Methods("GET")
-	mx.HandleFunc("/logout", logoutHandler(handlerConfig)).Methods("GET")
-	mx.Handle("/callback", callbackHandler(authConfig)).Methods("GET")
+	mx.HandleFunc("/", auth.LoginViewHandler(handlerConfig)).Methods("GET")
+	mx.HandleFunc("/logout", auth.LogoutHandler(handlerConfig)).Methods("GET")
+	mx.Handle("/callback", auth.CallbackHandler(authConfig)).Methods("GET")
 
-	isAuthenticatedHandler := isAuthenticatedHandler(authConfig)
-	mx.Handle("/dashboard", secure(isAuthenticatedHandler, dashboardHandler(handlerConfig))).Methods("GET")
-	mx.Handle("/taxonomy", secure(isAuthenticatedHandler, taxonomyListHandler(handlerConfig))).Methods("GET")
+	isAuthenticatedHandler := auth.IsAuthenticatedHandler(authConfig)
+	mx.Handle("/dashboard", secure(isAuthenticatedHandler, admin.DashboardViewHandler(handlerConfig))).Methods("GET")
+	mx.Handle("/taxonomy", secure(isAuthenticatedHandler, taxonomy.ListHandler(handlerConfig))).Methods("GET")
+	mx.Handle("/api/taxonomy", secure(isAuthenticatedHandler, taxonomy.AddHandler(handlerConfig))).Methods("POST")
 
 	n.UseHandler(mx)
 

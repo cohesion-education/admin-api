@@ -1,4 +1,4 @@
-{{ define "head-scripts-taxonomy/list" }}
+{{ define "head-scripts" }}
 <!-- HTML5 Shiv and Respond.js IE8 support of HTML5 elements and media queries -->
 <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
 <!--[if lt IE 9]>
@@ -8,15 +8,29 @@
 <script src="/assets/js/jquery.min.js"></script>
 <script src="/assets/js/auth0-variables.js"></script>
 <script src="/assets/js/dashboard.js"></script>
-<script src="/assets/js/taxonomy.js"></script>
 {{ end }}
 
-{{ define "stylesheets-taxonomy/list" }}
+{{ define "stylesheets" }}
 <link href="/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
 <link href="/assets/css/core.css" rel="stylesheet" type="text/css" />
 <link href="/assets/css/components.css" rel="stylesheet" type="text/css" />
 <link href="/assets/css/icons.css" rel="stylesheet" type="text/css" />
 <link href="/assets/css/pages.css" rel="stylesheet" type="text/css" />
 <link href="/assets/css/responsive.css" rel="stylesheet" type="text/css" />
-<link href="/assets/css/taxonomy.css" rel="stylesheet" type="text/css" />
+{{ end }}
+
+{{ define "footer" }}
+<footer class="footer text-right">
+    © 2017. All rights reserved.
+</footer>
+{{ end }}
+
+{{ define "footer-scripts" }}
+<script>
+    var resizefunc = [];
+</script>
+
+<script src="/assets/js/jquery.min.js"></script>
+<script src="/assets/js/bootstrap.min.js"></script>
+<script src="/assets/js/jquery.core.js"></script>
 {{ end }}

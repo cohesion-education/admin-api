@@ -1,4 +1,4 @@
-package main
+package cohesioned
 
 import (
 	"fmt"
