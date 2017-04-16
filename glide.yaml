@@ -10,3 +10,4 @@ import:
 - package: github.com/unrolled/render
 - package: github.com/urfave/negroni
 - package: golang.org/x/oauth2
+- package: cloud.google.com/go
