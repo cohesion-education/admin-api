@@ -3,10 +3,11 @@ package auth
 import (
 	"net/http"
 
-	"github.com/cohesion-education/admin-api/pkg/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
+	"github.com/unrolled/render"
 )
 
-func LogoutHandler(cfg *config.HandlerConfig) http.HandlerFunc {
+func LogoutHandler(r *render.Render) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cookie := &http.Cookie{
 			Name:   config.AuthSessionCookieName,

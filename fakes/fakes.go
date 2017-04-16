@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"net/http"
 
-	"github.com/cohesion-education/admin-api/pkg/config"
+	"cloud.google.com/go/datastore"
+
+	"github.com/cohesion-education/admin-api/pkg/cohesioned"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 	"github.com/gorilla/sessions"
 	"github.com/unrolled/render"
 )
@@ -13,16 +16,11 @@ var (
 	FakeRenderer = render.New(render.Options{
 		Layout: "layout",
 		RenderPartialsWithoutPrefix: true,
-		Directory:                   "../../templates",
+		Directory:                   "../../../templates",
 	})
 
 	FakeAuthConfig = &config.AuthConfig{
 		SessionStore: sessions.NewFilesystemStore("/tmp", []byte("oursecret")),
-	}
-
-	FakeHandlerConfig = &config.HandlerConfig{
-		Renderer:        FakeRenderer,
-		DatastoreClient: nil,
 	}
 )
 
@@ -44,4 +42,35 @@ func RenderHTML(templateFileName string, data interface{}, htmlOpt ...render.HTM
 	}
 
 	return buffer.Bytes()
+}
+
+type FakeTaxonomyRepo struct {
+	list []*cohesioned.Taxonomy
+	err  error
+	key  *datastore.Key
+}
+
+func (r *FakeTaxonomyRepo) ListReturns(list []*cohesioned.Taxonomy, err error) {
+	r.list = list
+	r.err = err
+}
+
+func (r *FakeTaxonomyRepo) ListChildrenReturns(list []*cohesioned.Taxonomy, err error) {
+	r.list = list
+	r.err = err
+}
+
+func (r *FakeTaxonomyRepo) AddReturns(key string, err error) {
+	r.key = &datastore.Key{Name: key}
+	r.err = err
+}
+
+func (r *FakeTaxonomyRepo) List() ([]*cohesioned.Taxonomy, error) {
+	return r.list, r.err
+}
+func (r *FakeTaxonomyRepo) ListChildren(parentID int64) ([]*cohesioned.Taxonomy, error) {
+	return r.list, r.err
+}
+func (r *FakeTaxonomyRepo) Add(t *cohesioned.Taxonomy) (*datastore.Key, error) {
+	return r.key, r.err
 }

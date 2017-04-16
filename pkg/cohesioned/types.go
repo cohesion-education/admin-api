@@ -1,11 +1,10 @@
-package taxonomy
+package cohesioned
 
 import (
 	"time"
 )
 
 type Taxonomy struct {
-	repo     Repo
 	id       int64
 	Name     string    `datastore:"name"`
 	Created  time.Time `datastore:"created"`
@@ -17,18 +16,6 @@ func (t *Taxonomy) ID() int64 {
 	return t.id
 }
 
-func (t *Taxonomy) Children() []*Taxonomy {
-	children, err := t.repo.ListChildren(t.id)
-	if err != nil {
-		return nil
-	}
-	return children
-}
-
-func (t *Taxonomy) Parent() *Taxonomy {
-	if t.ParentID != -1 {
-
-	}
-
-	return nil
+func (t *Taxonomy) SetID(id int64) {
+	t.id = id
 }

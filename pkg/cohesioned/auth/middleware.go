@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/cohesion-education/admin-api/pkg/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 	"github.com/urfave/negroni"
 )
 

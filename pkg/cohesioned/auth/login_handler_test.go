@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/cohesion-education/admin-api/fakes"
-	"github.com/cohesion-education/admin-api/pkg/auth"
-	"github.com/cohesion-education/admin-api/pkg/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 )
 
 func TestLoginViewHandlerWhileNotLoggedInDirectsUserToLoginPage(t *testing.T) {
@@ -19,7 +19,7 @@ func TestLoginViewHandlerWhileNotLoggedInDirectsUserToLoginPage(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := auth.LoginViewHandler(fakes.FakeHandlerConfig)
+	handler := auth.LoginViewHandler(fakes.FakeRenderer)
 
 	handler.ServeHTTP(rr, req)
 
@@ -43,7 +43,7 @@ func TestLoginViewHandlerWhileLoggedInDirectsUserToDashboard(t *testing.T) {
 	profile["picture"] = "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg"
 
 	rr := httptest.NewRecorder()
-	handler := auth.LoginViewHandler(fakes.FakeHandlerConfig)
+	handler := auth.LoginViewHandler(fakes.FakeRenderer)
 	ctx := req.Context()
 	ctx = context.WithValue(ctx, config.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
@@ -59,7 +59,7 @@ func TestLoginViewHandlerWhileLoggedInDirectsUserToDashboard(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if location.Path != "/dashboard" {
+	if location.Path != "/admin/dashboard" {
 		t.Errorf("Expected to get redirected to /dashboard but was redirected to %s", location.Path)
 	}
 }

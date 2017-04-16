@@ -3,7 +3,7 @@ package common
 import (
 	"net/http"
 
-	"github.com/cohesion-education/admin-api/pkg/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 )
 
 type DashboardView map[string]interface{}

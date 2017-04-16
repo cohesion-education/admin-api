@@ -8,9 +8,10 @@ import (
 	"testing"
 
 	"github.com/cohesion-education/admin-api/fakes"
-	"github.com/cohesion-education/admin-api/pkg/common"
-	"github.com/cohesion-education/admin-api/pkg/config"
-	"github.com/cohesion-education/admin-api/pkg/taxonomy"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/common"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/taxonomy"
 )
 
 func TestListHandler(t *testing.T) {
@@ -20,8 +21,11 @@ func TestListHandler(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	//TODO - this won't work until we either inject the taxonomy repo, or mock the datastore client
-	handler := taxonomy.ListHandler(fakes.FakeHandlerConfig)
+
+	repo := new(fakes.FakeTaxonomyRepo)
+	repo.ListReturns([]*cohesioned.Taxonomy{}, nil)
+
+	handler := taxonomy.ListHandler(fakes.FakeRenderer, repo)
 	profile := fakes.FakeProfile()
 
 	ctx := req.Context()
@@ -36,7 +40,7 @@ func TestListHandler(t *testing.T) {
 
 	dashboard := &common.DashboardView{}
 	dashboard.Set("profile", profile)
-	dashboard.Set("list", []taxonomy.Taxonomy{})
+	dashboard.Set("list", []*cohesioned.Taxonomy{})
 
 	expectedBody := fakes.RenderHTML("taxonomy/list", dashboard)
 	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {

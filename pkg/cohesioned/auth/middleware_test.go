@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/cohesion-education/admin-api/fakes"
-	"github.com/cohesion-education/admin-api/pkg/auth"
-	"github.com/cohesion-education/admin-api/pkg/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 )
 
 func TestIsAuthenticatedHandlerWhenNotAuthenticatedRedirectsToRoot(t *testing.T) {

@@ -1,7 +1,6 @@
-package cohesioned
+package main
 
 import (
-	"fmt"
 	"os"
 )
 
@@ -12,6 +11,5 @@ func main() {
 	}
 
 	s := newServer()
-	fmt.Print("Server started and listening on ", port)
 	s.Run(":" + port)
 }

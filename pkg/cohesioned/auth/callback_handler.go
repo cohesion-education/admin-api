@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/cohesion-education/admin-api/pkg/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 
 	"golang.org/x/oauth2"
 )
@@ -70,6 +70,6 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 			return
 		}
 
-		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
 	}
 }

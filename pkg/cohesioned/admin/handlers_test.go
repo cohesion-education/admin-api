@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/cohesion-education/admin-api/fakes"
-	"github.com/cohesion-education/admin-api/pkg/admin"
-	"github.com/cohesion-education/admin-api/pkg/common"
-	"github.com/cohesion-education/admin-api/pkg/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/admin"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/common"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 )
 
 func TestDashboardHandlerWhileLoggedInDirectsUserToDashboard(t *testing.T) {
@@ -22,7 +22,7 @@ func TestDashboardHandlerWhileLoggedInDirectsUserToDashboard(t *testing.T) {
 	profile := fakes.FakeProfile()
 
 	rr := httptest.NewRecorder()
-	handler := admin.DashboardViewHandler(fakes.FakeHandlerConfig)
+	handler := admin.DashboardViewHandler(fakes.FakeRenderer)
 	ctx := req.Context()
 	ctx = context.WithValue(ctx, config.CurrentUserKey, profile)
 	req = req.WithContext(ctx)

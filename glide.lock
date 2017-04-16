@@ -1,6 +1,13 @@
-hash: a66dfda8e769fbac20e851bfa3d4258c3292218044740220b1a0081f24a3565a
-updated: 2017-04-11T09:50:12.116479087-04:00
+hash: 4b5a02883b27ca64380846f435c0c6c26d2c827c53814d8abd1420790501508a
+updated: 2017-04-15T23:43:24.078993044-04:00
 imports:
+- name: cloud.google.com/go
+  version: 1ec09e65be459e9a0c9014ff8e4591d8c2f1bed6
+  subpackages:
+  - internal/fields
+  - datastore
+  - internal/version
+  - internal/atomiccache
 - name: github.com/auth0/go-jwt-middleware
   version: f3f7de3b9e394e3af3b88e1b9457f6f71d1ae0ac
 - name: github.com/cloudfoundry-community/go-cfenv
@@ -9,49 +16,18 @@ imports:
   version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
 - name: github.com/dgrijalva/jwt-go
   version: 2268707a8f0843315e2004ee4f1d021dc08baedf
-- name: github.com/golang/protobuf
-  version: 2bba0603135d7d7f5cb73b2125beeda19c09f4ef
-  subpackages:
-  - proto
-- name: github.com/gorilla/context
-  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 599cba5e7b6137d46ddf58fb1765f5d928e69604
-- name: github.com/gorilla/securecookie
-  version: e59506cc896acb7f7bf732d4fdf5e25f7ccd8983
 - name: github.com/gorilla/sessions
   version: ba78acc856fe7c79891d516131b3d903cc8d9367
 - name: github.com/joho/godotenv
   version: 325433c502d409f3c3dc820098fb0cfe38d98dc7
-- name: github.com/mitchellh/mapstructure
-  version: 53818660ed4955e899c0bcafa97299a388bd7c8e
 - name: github.com/unrolled/render
   version: 50716a0a853771bb36bfce61a45cdefdb98c2e6e
 - name: github.com/urfave/negroni
   version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
-- name: golang.org/x/net
-  version: d1e1b351919c6738fdeb9893d5c998b161464f0c
-  subpackages:
-  - context
 - name: golang.org/x/oauth2
-  version: 7fdf09982454086d5570c7db3e11f360194830ca
+  version: a6bd8cefa1811bd24b86f8902872e4e8225f74c4
   subpackages:
   - internal
-- name: google.golang.org/appengine
-  version: 170382fa85b10b94728989dfcf6cc818b335c952
-  subpackages:
-  - urlfetch
-  - internal
-  - internal/urlfetch
-  - internal/base
-  - internal/datastore
-  - internal/log
-  - internal/remote_api
-- name: gopkg.in/mgo.v2
-  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
-  subpackages:
-  - bson
-  - internal/sasl
-  - internal/scram
-  - internal/json
 devImports: []

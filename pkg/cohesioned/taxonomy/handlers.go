@@ -5,36 +5,36 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/cohesion-education/admin-api/pkg/common"
-	"github.com/cohesion-education/admin-api/pkg/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/common"
+	"github.com/unrolled/render"
 )
 
-func ListHandler(cfg *config.HandlerConfig) http.HandlerFunc {
+func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		repo := NewGCPDatastoreRepo(cfg.DatastoreClient)
+
 		list, err := repo.List()
 		if err != nil {
-			cfg.Renderer.Text(w, http.StatusInternalServerError, err.Error())
+			r.Text(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
 		dashboard := common.NewDashboardViewWithProfile(req)
 		dashboard.Set("list", list)
-		cfg.Renderer.HTML(w, http.StatusOK, "taxonomy/list", dashboard)
+		r.HTML(w, http.StatusOK, "taxonomy/list", dashboard)
 		return
 	}
 }
 
-func AddHandler(cfg *config.HandlerConfig) http.HandlerFunc {
+func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		defer req.Body.Close()
-		repo := NewGCPDatastoreRepo(cfg.DatastoreClient)
 		decoder := json.NewDecoder(req.Body)
 
-		var t Taxonomy
+		var t cohesioned.Taxonomy
 
 		if err := decoder.Decode(&t); err != nil {
-			cfg.Renderer.Text(w, http.StatusInternalServerError, "failed to unmarshall json: "+err.Error())
+			r.Text(w, http.StatusInternalServerError, "failed to unmarshall json: "+err.Error())
 			return
 		}
 
@@ -46,11 +46,11 @@ func AddHandler(cfg *config.HandlerConfig) http.HandlerFunc {
 		fmt.Println("adding taxonomy ", t)
 		key, err := repo.Add(&t)
 		if err != nil {
-			cfg.Renderer.Text(w, http.StatusInternalServerError, "Failed to add Taxonomy: "+err.Error())
+			r.Text(w, http.StatusInternalServerError, "Failed to add Taxonomy: "+err.Error())
 			return
 		}
 
 		// http.Redirect(w, req, "/taxonomy", http.StatusSeeOther)
-		cfg.Renderer.JSON(w, http.StatusOK, key.ID)
+		r.JSON(w, http.StatusOK, key.ID)
 	}
 }

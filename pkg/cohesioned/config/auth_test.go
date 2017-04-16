@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cohesion-education/admin-api/pkg/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 )
 
 func TestNewAuthConfigWithoutEnvVarsOrVcapServicesFails(t *testing.T) {
