@@ -8,7 +8,8 @@ echo $(cat <<-EOF
   "callback-url":"$AUTH0_CALLBACK_URL",
   "session-auth-key":"$SESSION_AUTH_KEY"
 }
-EOF)  > credentials.json
+EOF
+) > credentials.json
 
 cf cups auth0-admin -p credentials.json
 rc=$?;

@@ -49,7 +49,9 @@ func NewAuthConfig() (*AuthConfig, error) {
 				config.CallbackURL = callbackURL
 			}
 			if sessionStoreAuthKey, ok := auth0Service.CredentialString("session-auth-key"); ok {
+				fmt.Println("found session store auth key in vcap_services; initializing session store using ", sessionStoreAuthKey)
 				config.SessionStore = newSessionStore(sessionStoreAuthKey)
+				fmt.Printf("config.sessionStore=%v", config.SessionStore)
 			}
 		}
 	}
