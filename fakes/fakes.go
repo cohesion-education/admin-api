@@ -44,6 +44,16 @@ func RenderHTML(templateFileName string, data interface{}, htmlOpt ...render.HTM
 	return buffer.Bytes()
 }
 
+func RenderJSON(data interface{}) []byte {
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	err := FakeRenderer.JSON(buffer, http.StatusOK, data)
+	if err != nil {
+		panic("Failed to render JSON: " + err.Error())
+	}
+
+	return buffer.Bytes()
+}
+
 type FakeTaxonomyRepo struct {
 	list []*cohesioned.Taxonomy
 	err  error

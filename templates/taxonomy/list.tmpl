@@ -4,37 +4,9 @@
         <h4 class="page-title">Taxonomy Management</h4>
         <ul>
           {{range .list}}
-          <li><a href="/taxonomy/{{.ID}}">{{.Name}}</a>
-            <ul>
-              {{range .Children}}
-              <li><a href="/taxonomy/{{.ID}}">{{.Name}}</a>
-                  <ul>
-                    {{range .Children}}
-                      <li><a href="/taxonomy/{{.ID}}">{{.Name}}</a>
-                        <ul>
-                          {{range .Children}}
-                            <li><a href="/taxonomy/{{.ID}}">{{.Name}}</a>
-                              <ul>
-                                {{range .Children}}
-                                  <li><a href="/taxonomy/{{.ID}}">{{.Name}}</a></li>
-                                {{end}}
-                                <li class="add"><a class="add-taxonomy" href="/taxonomy/add/{{.ID}}">Add</a></li>
-                              </ul>
-                            </li>
-                          {{end}}
-                          <li class="add"><a class="add-taxonomy" href="/taxonomy/add/{{.ID}}">Add</a></li>
-                        </ul>
-                      </li>
-                    {{end}}
-                    <li class="add"><a class="add-taxonomy" href="/taxonomy/add/{{.ID}}">Add</a></li>
-                  </ul>
-              </li>
-              {{end}}
-              <li class="add"><a class="add-taxonomy" href="/taxonomy/add/{{.ID}}">Add</a></li>
-            </ul>
-          </li>
+          <li><a href="/api/taxonomy/{{.ID}}/children" class="taxonomy">{{.Name}}</a></li>
           {{end}}
-          <li class="add"><a class="add-taxonomy" href="/taxonomy/add">Add</a></li>
+          <li class="add"><a class="add-taxonomy" href="/api/taxonomy/add">Add</a></li>
         </ul>
     </div>
 </div>

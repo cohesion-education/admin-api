@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/common"
+	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
 )
 
@@ -52,5 +54,43 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 		// http.Redirect(w, req, "/taxonomy", http.StatusSeeOther)
 		r.JSON(w, http.StatusOK, key.ID)
+	}
+}
+
+func ListChildrenHandler(r *render.Render, repo Repo) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		vars := mux.Vars(req)
+
+		parentID, err := strconv.ParseInt(vars["id"], 10, 64)
+		if err != nil {
+			data := struct {
+				Error string `json:"error"`
+			}{
+				fmt.Sprintf("%s is not a valid id %v", vars["id"], err),
+			}
+			r.JSON(w, http.StatusNotFound, data)
+			return
+		}
+
+		list, err := repo.ListChildren(parentID)
+		if err != nil {
+			data := struct {
+				Error error `json:"error"`
+			}{
+				err,
+			}
+			r.JSON(w, http.StatusInternalServerError, data)
+			return
+		}
+
+		data := struct {
+			Children []*cohesioned.Taxonomy `json:"children"`
+			ParentID int64                  `json:"parent_id"`
+		}{
+			list,
+			parentID,
+		}
+
+		r.JSON(w, http.StatusOK, data)
 	}
 }

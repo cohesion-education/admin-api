@@ -58,6 +58,7 @@ func newServer() *negroni.Negroni {
 	mx.Handle("/admin/dashboard", secure(isAuthenticatedHandler, admin.DashboardViewHandler(renderer))).Methods("GET")
 	mx.Handle("/admin/taxonomy", secure(isAuthenticatedHandler, taxonomy.ListHandler(renderer, taxonomyRepo))).Methods("GET")
 	mx.Handle("/api/taxonomy", secure(isAuthenticatedHandler, taxonomy.AddHandler(renderer, taxonomyRepo))).Methods("POST")
+	mx.Handle("/api/taxonomy/{id:[0-9]+}/children", secure(isAuthenticatedHandler, taxonomy.ListChildrenHandler(renderer, taxonomyRepo))).Methods("GET")
 
 	n.UseHandler(mx)
 
