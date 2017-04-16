@@ -46,8 +46,10 @@ build:
         code: |
           go test $(glide novendor)
 
+deploy:
+  steps:
     - script:
-        name: download-cf-cli
+        name: install-cf-cli
         code: |
           wget -O cf.tgz https://cli.run.pivotal.io/stable?release=linux64-binary
           tar -zxf cf.tgz
@@ -55,7 +57,7 @@ build:
           cf version
 
     - script:
-        name: get-autopilot-plugin
+        name: install-autopilot-plugin
         code: |
           wget -O autopilot https://github.com/contraband/autopilot/releases/download/0.0.3/autopilot-linux
           chmod +x autopilot
