@@ -72,6 +72,7 @@ deploy:
         name: cups-auth0
         code: |
           ./scripts/cups-auth0
+          
     - script:
         name: cf-push-to-dev
         code: |
