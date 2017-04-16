@@ -40,7 +40,6 @@ function getTaxonomyChildren(){
      type: "GET",
      url: url,
      success: function(result){
-       alert(JSON.stringify(result))
        var childrenHtml = '<ul style="display:none">'
        if (result.children != null) {
          for (var i in result.children) {
