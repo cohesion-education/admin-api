@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/cohesion-education/admin-api/fakes"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 )
@@ -40,8 +39,7 @@ func TestLoginViewHandlerWhileLoggedInDirectsUserToDashboard(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	profile := &cohesioned.Profile{}
-	profile.PictureURL = "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg"
+	profile := fakes.FakeProfile()
 
 	rr := httptest.NewRecorder()
 	handler := auth.LoginViewHandler(fakes.FakeRenderer)

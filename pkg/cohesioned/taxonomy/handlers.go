@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strconv"
 
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/common"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
 )
@@ -39,6 +41,20 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			r.Text(w, http.StatusInternalServerError, "failed to unmarshall json: "+err.Error())
 			return
 		}
+
+		profile, ok := req.Context().Value(config.CurrentUserKey).(*cohesioned.Profile)
+		if profile == nil {
+			r.Text(w, http.StatusInternalServerError, "middleware did not set profile in the context as expected")
+			return
+		}
+
+		if !ok {
+			errMsg := fmt.Sprintf("profile not of the proper type: %s", reflect.TypeOf(profile).String())
+			r.Text(w, http.StatusInternalServerError, errMsg)
+			return
+		}
+
+		t.CreatedBy = profile
 
 		//TODO - validate taxonomy, and if fail, redirect back to form page with validation failure messages
 		// dashboard := newDashboardWithProfile(req)

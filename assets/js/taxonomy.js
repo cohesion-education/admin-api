@@ -100,21 +100,19 @@ function addTaxonomyFormSubmitHandler(){
   $.ajax({
      type: "POST",
      url: "/api/taxonomy",
-     data: data,
-     success: function(result){
-       taxonomyID = result
+     data: data
+   }).done(function(result){
+     taxonomyID = result
 
-       var li = newChildTaxonomyLITemplate
-                  .replace("[id]", taxonomyID)
-                  .replace("[name]", taxonomy.name)
-                  .replace("[id]", taxonomyID)
+     var li = newChildTaxonomyLITemplate
+                .replace("[id]", taxonomyID)
+                .replace("[name]", taxonomy.name)
+                .replace("[id]", taxonomyID)
 
-       $('form#' + getAddTaxonomyFormID(taxonomy.parent_id)).parent().replaceWith(li)
-       reinitOnclickBindings()
-     },
-     error: function(jqXHR, message){
-       alert("Failed to add Taxonomy " + message)
-     }
+     $('form#' + getAddTaxonomyFormID(taxonomy.parent_id)).parent().replaceWith(li)
+     reinitOnclickBindings()
+   }).fail(function( jqXHR, textStatus, errorThrown ){
+     alert("Failed to Add Taxonomy. " + errorThrown + ": " + jqXHR.responseText)
    });
 
   return false

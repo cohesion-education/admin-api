@@ -3,9 +3,12 @@ package auth_test
 import (
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/cohesion-education/admin-api/fakes"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 )
@@ -30,17 +33,13 @@ func TestIsAuthenticatedHandlerWhenNotAuthenticatedRedirectsToRoot(t *testing.T)
 		t.Errorf("next handler was called but it should not have been")
 	}
 
-	if status := rr.Code; status != http.StatusSeeOther {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusSeeOther)
+	if status := rr.Code; status != http.StatusInternalServerError {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusInternalServerError)
 	}
 
-	location, err := rr.Result().Location()
-	if err != nil {
-		t.Fatalf("unable to retreive rr.Result().Location() %v", err)
-	}
-
-	if "/" != location.Path {
-		t.Errorf("Expected request redirect url to be %s but was %s", "/", req.URL.Path)
+	expectedBody := "Failed to get current user from session"
+	if strings.Compare(strings.Trim(rr.Body.String(), "\n"), expectedBody) != 0 {
+		t.Errorf("handler returned wrong response body: got %s want %s", rr.Body.String(), expectedBody)
 	}
 }
 
@@ -57,16 +56,21 @@ func TestIsAuthenticatedHandlerWhenAuthenticatedProceedsToNext(t *testing.T) {
 		t.Fatalf("Failed to get current session %v", err)
 	}
 
-	profile := make(map[string]interface{})
-	profile["picture"] = "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg"
+	profile := fakes.FakeProfile()
 	session.Values[config.CurrentUserSessionKey] = profile
 
 	mockNextHandlerCalled := false
 	mockNextHandler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		mockNextHandlerCalled = true
-		ctx := req.Context()
-		if ctx.Value(config.CurrentUserKey) == nil {
+
+		profile := req.Context().Value(config.CurrentUserKey)
+		if profile == nil {
 			t.Errorf("middleware did not set current user in the context as expected")
+		}
+
+		_, ok := profile.(*cohesioned.Profile)
+		if !ok {
+			t.Errorf("current user was not of type cohesioned.Profile; type: " + reflect.TypeOf(profile).Name())
 		}
 	})
 

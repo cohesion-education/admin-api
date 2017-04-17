@@ -30,9 +30,12 @@ func init() {
 }
 
 func FakeProfile() *cohesioned.Profile {
-	profile := &cohesioned.Profile{}
-	profile.PictureURL = "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg"
-	return profile
+	return &cohesioned.Profile{
+		FullName:   "Test User",
+		Email:      "hello@domain.com",
+		UserID:     "abc|123",
+		PictureURL: "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg",
+	}
 }
 
 func RenderHTMLWithNoLayout(templateFileName string, data interface{}) []byte {

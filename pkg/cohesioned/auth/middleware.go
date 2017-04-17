@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
@@ -12,18 +13,18 @@ func IsAuthenticatedHandler(cfg *config.AuthConfig) negroni.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		session, err := cfg.GetCurrentSession(r)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to get current session"+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		profile, ok := session.Values[config.CurrentUserSessionKey]
 		if !ok {
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-		} else {
-			ctx := r.Context()
-			ctx = context.WithValue(ctx, config.CurrentUserKey, profile)
-
-			next(w, r.WithContext(ctx))
+			http.Error(w, "Failed to get current user from session", http.StatusInternalServerError)
+			return
 		}
+
+		fmt.Printf("profile: %v\n", profile)
+		ctx := context.WithValue(r.Context(), config.CurrentUserKey, profile)
+		next(w, r.WithContext(ctx))
 	}
 }

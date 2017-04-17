@@ -6,10 +6,11 @@ import (
 )
 
 type Taxonomy struct {
-	id       int64
-	Name     string    `datastore:"name" json:"name"`
-	Created  time.Time `datastore:"created" json:"created"`
-	ParentID int64     `datastore:"parent_id" schema:"parent_id" json:"parent_id"`
+	id        int64
+	Created   time.Time `datastore:"created" json:"created"`
+	CreatedBy *Profile  `datastore:"created_by" json:"created_by"`
+	Name      string    `datastore:"name" json:"name"`
+	ParentID  int64     `datastore:"parent_id" schema:"parent_id" json:"parent_id"`
 }
 
 func (t *Taxonomy) MarshalJSON() ([]byte, error) {

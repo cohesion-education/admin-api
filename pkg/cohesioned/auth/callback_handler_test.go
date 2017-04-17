@@ -8,6 +8,7 @@ import (
 
 	"github.com/cohesion-education/admin-api/fakes"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 )
 
 func TestCallbackHandler(t *testing.T) {
@@ -52,5 +53,19 @@ func TestCallbackHandler(t *testing.T) {
 
 	if "/admin/dashboard" != location.Path {
 		t.Errorf("Expected request redirect url to be %s but was %s", "/admin/dashboard", req.URL.Path)
+	}
+
+	session, err := fakes.FakeAuthConfig.GetCurrentSession(req)
+	if err != nil {
+		t.Fatalf("Failed to get current session %v", err)
+	}
+
+	profile, ok := session.Values[config.CurrentUserSessionKey]
+	if !ok {
+		t.Errorf("Session did not contain current user")
+	}
+
+	if profile == nil {
+		t.Errorf("Session contained nil profile")
 	}
 }
