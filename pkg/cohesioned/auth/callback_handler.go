@@ -5,15 +5,14 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 
 	"golang.org/x/oauth2"
 )
 
 func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		domain := cfg.Domain
-
+	return func(w http.ResponseWriter, req *http.Request) {
 		conf := &oauth2.Config{
 			ClientID:     cfg.ClientID,
 			ClientSecret: cfg.ClientSecret,
@@ -21,55 +20,55 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 			Scopes:       []string{"openid", "profile"},
 
 			Endpoint: oauth2.Endpoint{
-				AuthURL:  "https://" + domain + "/authorize",
-				TokenURL: "https://" + domain + "/oauth/token",
+				AuthURL:  cfg.Domain + "/authorize",
+				TokenURL: cfg.Domain + "/oauth/token",
 			},
 		}
 
-		code := r.URL.Query().Get("code")
+		code := req.URL.Query().Get("code")
 
 		token, err := conf.Exchange(oauth2.NoContext, code)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "error exchanging code for token "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Getting now the userInfo
 		client := conf.Client(oauth2.NoContext, token)
-		resp, err := client.Get("https://" + domain + "/userinfo")
+		resp, err := client.Get(cfg.Domain + "/userinfo")
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "error getting user info "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		raw, err := ioutil.ReadAll(resp.Body)
 		defer resp.Body.Close()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "error reading userinfo response body "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		var profile map[string]interface{}
+		var profile cohesioned.Profile
 		if err = json.Unmarshal(raw, &profile); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "error unmarshalling userinfo response body "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		session, err := cfg.GetCurrentSession(r)
+		session, err := cfg.GetCurrentSession(req)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "unable to initialize Session "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		session.Values["id_token"] = token.Extra("id_token")
 		session.Values["access_token"] = token.AccessToken
 		session.Values[config.CurrentUserSessionKey] = profile
-		err = session.Save(r, w)
+		err = session.Save(req, w)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "failed to save Session "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+		http.Redirect(w, req, "/admin/dashboard", http.StatusSeeOther)
 	}
 }

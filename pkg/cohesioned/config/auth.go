@@ -7,6 +7,7 @@ import (
 	"os"
 
 	cfenv "github.com/cloudfoundry-community/go-cfenv"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/gorilla/sessions"
 )
 
@@ -26,7 +27,7 @@ func newSessionStore(authKey string) sessions.Store {
 	if len(authKey) == 0 {
 		return nil
 	}
-	gob.Register(map[string]interface{}{})
+	gob.Register(&cohesioned.Profile{})
 	sessionStore := sessions.NewCookieStore([]byte(authKey))
 	return sessionStore
 }
@@ -49,9 +50,7 @@ func NewAuthConfig() (*AuthConfig, error) {
 				config.CallbackURL = callbackURL
 			}
 			if sessionStoreAuthKey, ok := auth0Service.CredentialString("session-auth-key"); ok {
-				fmt.Println("found session store auth key in vcap_services; initializing session store using ", sessionStoreAuthKey)
 				config.SessionStore = newSessionStore(sessionStoreAuthKey)
-				fmt.Printf("config.sessionStore=%v", config.SessionStore)
 			}
 		}
 	}

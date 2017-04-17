@@ -6,5 +6,6 @@ tmp/
 wercker.env
 credentials.json
 admin-api
+wercker-setup.md
 mongo-setup.md
 gcp-keyfile.json

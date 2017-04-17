@@ -2,7 +2,7 @@ package config_test
 
 import "fmt"
 
-const Auth0ServicePayload = `{
+const auth0ServicePayload = `{
   "credentials":{
     "clientid":"test-client-id",
     "secret":"test-secret",
@@ -17,7 +17,7 @@ const Auth0ServicePayload = `{
   "tags": []
 }`
 
-const Auth0ServicePartialPayload = `{
+const auth0ServicePartialPayload = `{
   "credentials":{
     "secret":"test-secret",
     "domain":"test-domain",
@@ -31,19 +31,19 @@ const Auth0ServicePartialPayload = `{
   "tags": []
 }`
 
-var VcapApplicationPayload = `{
+var vcapApplicationPayload = `{
   "application_name": "test-app",
   "name": "test-app"
 }`
 
-var VcapServicesPayload = fmt.Sprintf(`{
+var vcapServicesPayload = fmt.Sprintf(`{
   "user-provided": [
     %s
   ]
-}`, Auth0ServicePayload)
+}`, auth0ServicePayload)
 
-var VcapServicesPartialPayload = fmt.Sprintf(`{
+var vcapServicesPartialPayload = fmt.Sprintf(`{
   "user-provided": [
     %s
   ]
-}`, Auth0ServicePartialPayload)
+}`, auth0ServicePartialPayload)

@@ -14,8 +14,8 @@ func TestNewAuthConfigWithoutEnvVarsOrVcapServicesFails(t *testing.T) {
 }
 
 func TestNewAuthConfigViaVcapServices(t *testing.T) {
-	os.Setenv("VCAP_APPLICATION", VcapApplicationPayload)
-	os.Setenv("VCAP_SERVICES", VcapServicesPayload)
+	os.Setenv("VCAP_APPLICATION", vcapApplicationPayload)
+	os.Setenv("VCAP_SERVICES", vcapServicesPayload)
 
 	if _, err := config.NewAuthConfig(); err != nil {
 		t.Errorf("expected no error but got %v", err)
@@ -25,8 +25,8 @@ func TestNewAuthConfigViaVcapServices(t *testing.T) {
 }
 
 func TestNewAuthConfigViaPartialVcapServices(t *testing.T) {
-	os.Setenv("VCAP_APPLICATION", VcapApplicationPayload)
-	os.Setenv("VCAP_SERVICES", VcapServicesPartialPayload)
+	os.Setenv("VCAP_APPLICATION", vcapApplicationPayload)
+	os.Setenv("VCAP_SERVICES", vcapServicesPartialPayload)
 
 	_, err := config.NewAuthConfig()
 

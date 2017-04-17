@@ -2,6 +2,7 @@ package fakes
 
 import (
 	"bytes"
+	"encoding/gob"
 	"net/http"
 
 	"cloud.google.com/go/datastore"
@@ -24,9 +25,13 @@ var (
 	}
 )
 
-func FakeProfile() map[string]interface{} {
-	profile := make(map[string]interface{})
-	profile["picture"] = "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg"
+func init() {
+	gob.Register(&cohesioned.Profile{})
+}
+
+func FakeProfile() *cohesioned.Profile {
+	profile := &cohesioned.Profile{}
+	profile.PictureURL = "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg"
 	return profile
 }
 
