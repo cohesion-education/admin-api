@@ -6,6 +6,7 @@ $(document).ready(function() {
 var addTaxonomyFormTemplate  = '<li><form id="[form-id]">'
   + '<input type="text" name="name" placeholder="Name">'
   + '<input type="hidden" name="parent_id" value="[parent-id]" />'
+  + '<input type="submit" value="Save" />'
   + '</form></li>'
 
 var addTaxonomyLITemplate = '<li class="add"><a class="add-taxonomy" href="/api/taxonomy/add/[id]">Add</a></li>'
