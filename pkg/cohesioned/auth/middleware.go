@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
@@ -23,7 +22,6 @@ func IsAuthenticatedHandler(cfg *config.AuthConfig) negroni.HandlerFunc {
 			return
 		}
 
-		fmt.Printf("profile: %v\n", profile)
 		ctx := context.WithValue(r.Context(), config.CurrentUserKey, profile)
 		next(w, r.WithContext(ctx))
 	}

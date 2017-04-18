@@ -5,8 +5,6 @@ import (
 	"encoding/gob"
 	"net/http"
 
-	"cloud.google.com/go/datastore"
-
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 	"github.com/gorilla/sessions"
@@ -63,9 +61,9 @@ func RenderJSON(data interface{}) []byte {
 }
 
 type FakeTaxonomyRepo struct {
+	t    *cohesioned.Taxonomy
 	list []*cohesioned.Taxonomy
 	err  error
-	key  *datastore.Key
 }
 
 func (r *FakeTaxonomyRepo) ListReturns(list []*cohesioned.Taxonomy, err error) {
@@ -78,8 +76,8 @@ func (r *FakeTaxonomyRepo) ListChildrenReturns(list []*cohesioned.Taxonomy, err 
 	r.err = err
 }
 
-func (r *FakeTaxonomyRepo) AddReturns(key string, err error) {
-	r.key = &datastore.Key{Name: key}
+func (r *FakeTaxonomyRepo) AddReturns(t *cohesioned.Taxonomy, err error) {
+	r.t = t
 	r.err = err
 }
 
@@ -89,6 +87,6 @@ func (r *FakeTaxonomyRepo) List() ([]*cohesioned.Taxonomy, error) {
 func (r *FakeTaxonomyRepo) ListChildren(parentID int64) ([]*cohesioned.Taxonomy, error) {
 	return r.list, r.err
 }
-func (r *FakeTaxonomyRepo) Add(t *cohesioned.Taxonomy) (*datastore.Key, error) {
-	return r.key, r.err
+func (r *FakeTaxonomyRepo) Add(t *cohesioned.Taxonomy) (*cohesioned.Taxonomy, error) {
+	return r.t, r.err
 }

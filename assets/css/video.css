@@ -1,0 +1,16 @@
+form#video input,
+form#video select {
+  display: block;
+  margin-top: 2em;
+  padding: 0.2em;
+  width: 30em;
+}
+
+table.video {
+  width: 90%;
+}
+
+table.video td,
+table.video th{
+  padding: 1em;
+}

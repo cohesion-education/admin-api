@@ -12,6 +12,7 @@ import (
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/gcp"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/taxonomy"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/video"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/unrolled/render"
@@ -42,10 +43,16 @@ func newServer() *negroni.Negroni {
 	gcpProjectID := os.Getenv("DATASTORE_PROJECT_ID")
 	datastoreClient, err := gcp.NewDatastoreClient(ctx, gcpProjectID)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get datastore client %v", err)
+	}
+
+	storageClient, err := gcp.NewStorageClient(ctx)
+	if err != nil {
+		log.Fatalf("Failed to get storage client %v", err)
 	}
 
 	taxonomyRepo := taxonomy.NewGCPDatastoreRepo(datastoreClient)
+	videoRepo := video.NewGCPRepo(datastoreClient, storageClient)
 
 	// This will serve files under /assets/<filename>
 	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
@@ -57,8 +64,14 @@ func newServer() *negroni.Negroni {
 	isAuthenticatedHandler := auth.IsAuthenticatedHandler(authConfig)
 	mx.Handle("/admin/dashboard", secure(isAuthenticatedHandler, admin.DashboardViewHandler(renderer))).Methods("GET")
 	mx.Handle("/admin/taxonomy", secure(isAuthenticatedHandler, taxonomy.ListHandler(renderer, taxonomyRepo))).Methods("GET")
+	mx.Handle("/admin/video", secure(isAuthenticatedHandler, video.ListHandler(renderer, videoRepo))).Methods("GET")
+	mx.Handle("/admin/video/{id:[0-9]+}", secure(isAuthenticatedHandler, video.ShowHandler(renderer, videoRepo))).Methods("GET")
+	mx.Handle("/admin/video/add", secure(isAuthenticatedHandler, video.FormHandler(renderer, videoRepo))).Methods("GET")
 	mx.Handle("/api/taxonomy", secure(isAuthenticatedHandler, taxonomy.AddHandler(renderer, taxonomyRepo))).Methods("POST")
+	mx.Handle("/api/taxonomy", secure(isAuthenticatedHandler, taxonomy.ListJSONHandler(renderer, taxonomyRepo))).Methods("GET")
 	mx.Handle("/api/taxonomy/{id:[0-9]+}/children", secure(isAuthenticatedHandler, taxonomy.ListChildrenHandler(renderer, taxonomyRepo))).Methods("GET")
+	mx.Handle("/api/video", secure(isAuthenticatedHandler, video.SaveHandler(renderer, videoRepo))).Methods("POST")
+	mx.Handle("/api/video/stream/{id:[0-9]+}", secure(isAuthenticatedHandler, video.StreamHandler(renderer, videoRepo))).Methods("GET")
 
 	n.UseHandler(mx)
 

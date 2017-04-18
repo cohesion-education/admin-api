@@ -14,7 +14,7 @@ import (
 type Repo interface {
 	List() ([]*cohesioned.Taxonomy, error)
 	ListChildren(parentID int64) ([]*cohesioned.Taxonomy, error)
-	Add(t *cohesioned.Taxonomy) (*datastore.Key, error)
+	Add(t *cohesioned.Taxonomy) (*cohesioned.Taxonomy, error)
 }
 
 //NewGCPDatastoreRepo implementation of taxonomy.Repo
@@ -50,9 +50,15 @@ func (repo *gcpDatastoreRepo) ListChildren(parentID int64) ([]*cohesioned.Taxono
 	return list, nil
 }
 
-func (repo *gcpDatastoreRepo) Add(t *cohesioned.Taxonomy) (*datastore.Key, error) {
+func (repo *gcpDatastoreRepo) Add(t *cohesioned.Taxonomy) (*cohesioned.Taxonomy, error) {
 	t.Created = time.Now()
 
 	key := datastore.IncompleteKey("Taxonomy", nil)
-	return repo.client.Put(repo.ctx, key, t)
+	key, err := repo.client.Put(repo.ctx, key, t)
+	if err != nil {
+		return t, fmt.Errorf("Failed to save Taxonomy %v", err)
+	}
+
+	t.Key = key
+	return t, nil
 }

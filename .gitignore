@@ -5,6 +5,7 @@ tmp/
 .wercker/
 wercker.env
 credentials.json
+key.pem
 admin-api
 wercker-setup.md
 mongo-setup.md

@@ -30,12 +30,29 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	}
 }
 
+func ListJSONHandler(r *render.Render, repo Repo) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		list, err := repo.List()
+		if err != nil {
+			data := struct {
+				Error error `json:"error"`
+			}{
+				err,
+			}
+			r.JSON(w, http.StatusInternalServerError, data)
+			return
+		}
+
+		r.JSON(w, http.StatusOK, list)
+	}
+}
+
 func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		defer req.Body.Close()
 		decoder := json.NewDecoder(req.Body)
 
-		var t cohesioned.Taxonomy
+		t := &cohesioned.Taxonomy{}
 
 		if err := decoder.Decode(&t); err != nil {
 			r.Text(w, http.StatusInternalServerError, "failed to unmarshall json: "+err.Error())
@@ -62,14 +79,15 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		// return
 
 		fmt.Println("adding taxonomy ", t)
-		key, err := repo.Add(&t)
+		t, err := repo.Add(t)
 		if err != nil {
-			r.Text(w, http.StatusInternalServerError, "Failed to add Taxonomy: "+err.Error())
+			r.Text(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
-		// http.Redirect(w, req, "/taxonomy", http.StatusSeeOther)
-		r.JSON(w, http.StatusOK, key.ID)
+		fmt.Printf("Taxonomy saved. ID %d\n", t.ID())
+
+		r.JSON(w, http.StatusOK, t.ID())
 	}
 }
 

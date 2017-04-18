@@ -1,23 +1,22 @@
 #taxonomy-list ul {
   list-style:circle;
-  padding-left: 1.6em;
   margin-top: 1em;
 }
 
 #taxonomy-list ul li {
-  margin-top: 0.5em;
+  padding: 0.5em 0;
 }
 
 #taxonomy-list ul li a {
-  font-size: 1.8em;
+  font-size: 2.2em;
 }
 
 #taxonomy-list ul li.add {
-  margin-top:0.7em;
+  list-style:none;
 }
 
 #taxonomy-list ul li.add a {
-  font-size: 1em;
+  font-size: 1.5em;
 }
 
 .page-title {
