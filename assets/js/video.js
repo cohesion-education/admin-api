@@ -1,20 +1,26 @@
 $(document).ready(function() {
   $.getJSON("/api/taxonomy", function(result) {
-    var videoCategories = $('#top-level-categories')
     $.each(result, function() {
-      videoCategories.append($("<option />").val(this.id).text(this.name));
+      flattenTaxonomyOptions(this)
     });
   });
-
-  $('#top-level-categories').change(taxonomySelectedChangeHandler)
 });
 
-function taxonomySelectedChangeHandler(){
-  var taxonomyID = $(this).val()
-  alert(taxonomyID)
-  $.getJSON("/api/taxonomy/" + taxonomyID + "/children", function(result) {
-    $.each(result.children, function() {
-      alert(this.id + ' ' + this.name)
-    });
+function flattenTaxonomyOptions(taxonomy){
+  if(taxonomy == null || taxonomy.id == null){
+    return
+  }
+
+  $.ajax({
+    url: "/api/taxonomy/" + taxonomy.id + "/children"
+  }).done(function(result){
+    if(result.children){
+      $.each(result.children, function(index, child) {
+        child.name = taxonomy.name + " > " + child.name
+        flattenTaxonomyOptions(child)
+      })
+    }else{
+      $('#top-level-categories').append($("<option />").val(taxonomy.id).text(taxonomy.name))
+    }
   });
 }

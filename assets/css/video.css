@@ -1,9 +1,19 @@
+h4{
+  padding-top: 2em;
+  padding-bottom: 1em;
+}
+
 form#video input,
 form#video select {
   display: block;
   margin-top: 2em;
   padding: 0.2em;
   width: 30em;
+}
+
+select.sub-category{
+  margin-top:0;
+  margin-left:1em;
 }
 
 table.video {
@@ -13,4 +23,13 @@ table.video {
 table.video td,
 table.video th{
   padding: 1em;
+}
+
+table.video-meta td {
+  padding: 0.3em 0;
+}
+
+table.video-meta tr td:first-child{
+  font-weight: bold;
+  padding-right: 1.5em;
 }

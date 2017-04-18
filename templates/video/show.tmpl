@@ -1,7 +1,6 @@
-
 <div class="row">
     <div class="col-sm-12">
-        <h4 class="page-title">{{ .video.Title }}</h4>
+        <h4 class="page-title">Video Preview</h4>
         <video id="cohesion-video" class="video-js" controls preload="auto" width="640" height="264" data-setup="{}">
           <source src="/api/video/stream/{{ .video.ID }}" type='video/mp4'>
           <p class="vjs-no-js">
@@ -9,5 +8,27 @@
             <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
           </p>
         </video>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+      <h4 class="page-title">Video Metadata</h4>
+      <table class="video-meta">
+        <tr><td>Title</td>
+            <td>{{ .video.Title }}</td></tr>
+        <tr><td>Category</td>
+            <td>{{ .video.TaxonomyID }}</td></tr>
+        <tr><td>File Name</td>
+            <td>{{ .video.FileName }}</td></tr>
+        <tr><td>GCP Storage Bucket</td>
+            <td>{{ .video.StorageBucket }}</td></tr>
+        <tr><td>GCP Storage Object</td>
+            <td>{{ .video.StorageObjectName }}</td></tr>
+        <tr><td>Created By</td>
+            <td>{{ .video.CreatedBy.FullName }}</td></tr>
+        <tr><td>Date Created</td>
+            <td>{{ .video.Created }}</td></tr>
+      </table>
     </div>
 </div>

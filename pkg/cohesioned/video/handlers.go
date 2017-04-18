@@ -65,6 +65,11 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 		title := req.FormValue("title")
 		fileName := fileHeader.Filename
+		taxonomyID, err := strconv.ParseInt(req.FormValue("taxonomy_id"), 10, 64)
+		if err != nil {
+			r.Text(w, http.StatusInternalServerError, fmt.Sprintf("Invalid taxonomy id %s %v", req.FormValue("taxonomy_id"), err))
+			return
+		}
 
 		video := &cohesioned.Video{
 			Title:    title,
@@ -72,6 +77,7 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			//TODO - inject this as config
 			StorageBucket: "cohesion-dev",
 			CreatedBy:     profile,
+			TaxonomyID:    taxonomyID,
 		}
 
 		if _, err := repo.Add(file, video); err != nil {
