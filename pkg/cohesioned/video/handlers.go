@@ -84,7 +84,6 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		//TODO - provide a better response since this is an API call
 		http.Redirect(w, req, fmt.Sprintf("/admin/video/%d", video.ID()), http.StatusSeeOther)
 	}
 }
@@ -113,7 +112,7 @@ func ShowHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	}
 }
 
-func StreamHandler(r *render.Render, repo Repo) http.HandlerFunc {
+func StreamHandler(r *render.Render, repo Repo, cfg *gcp.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 
@@ -139,7 +138,7 @@ func StreamHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		signedURL, err := gcp.CreateSignedURL(video)
+		signedURL, err := gcp.CreateSignedURL(video, cfg)
 		if err != nil {
 			data := struct {
 				Error string `json:"error"`

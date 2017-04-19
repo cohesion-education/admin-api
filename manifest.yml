@@ -9,5 +9,6 @@ applications:
   routes:
    - route: admin.cohesioned.io
   env:
-    DATASTORE_PROJECT_ID: cohesion-education-164614
-    GCP_STORAGE_VIDEO_BUCKET: cohesion-dev
+    DATASTORE_PROJECT_ID: cohesion-education-dev
+    GCP_STORAGE_VIDEO_BUCKET: cohesion-videos-dev
+    GCP_KEYFILE_LOCATION: gcp-keyfile.json

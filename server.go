@@ -39,15 +39,28 @@ func newServer() *negroni.Negroni {
 		log.Fatal(err)
 	}
 
+	gcpKeyfileLocation := os.Getenv("GCP_KEYFILE_LOCATION")
+	if len(gcpKeyfileLocation) == 0 {
+		log.Fatal("Required env var GCP_KEYFILE_LOCATION not set")
+	}
+
+	videoStorageBucketName := os.Getenv("GCP_STORAGE_VIDEO_BUCKET")
+	if len(videoStorageBucketName) == 0 {
+		log.Fatal("Required env var GCP_STORAGE_VIDEO_BUCKET not set")
+	}
+
+	gcpConfig, err := gcp.NewConfig(gcpKeyfileLocation)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	ctx := context.TODO()
-	gcpProjectID := os.Getenv("DATASTORE_PROJECT_ID")
-	datastoreClient, err := gcp.NewDatastoreClient(ctx, gcpProjectID)
+	datastoreClient, err := gcp.NewDatastoreClient(ctx, gcpConfig)
 	if err != nil {
 		log.Fatalf("Failed to get datastore client %v", err)
 	}
 
-	videoStorageBucketName := os.Getenv("GCP_STORAGE_VIDEO_BUCKET")
-	storageClient, err := gcp.NewStorageClient(ctx)
+	storageClient, err := gcp.NewStorageClient(ctx, gcpConfig)
 	if err != nil {
 		log.Fatalf("Failed to get storage client %v", err)
 	}
@@ -72,7 +85,7 @@ func newServer() *negroni.Negroni {
 	mx.Handle("/api/taxonomy", secure(isAuthenticatedHandler, taxonomy.ListJSONHandler(renderer, taxonomyRepo))).Methods("GET")
 	mx.Handle("/api/taxonomy/{id:[0-9]+}/children", secure(isAuthenticatedHandler, taxonomy.ListChildrenHandler(renderer, taxonomyRepo))).Methods("GET")
 	mx.Handle("/api/video", secure(isAuthenticatedHandler, video.SaveHandler(renderer, videoRepo))).Methods("POST")
-	mx.Handle("/api/video/stream/{id:[0-9]+}", secure(isAuthenticatedHandler, video.StreamHandler(renderer, videoRepo))).Methods("GET")
+	mx.Handle("/api/video/stream/{id:[0-9]+}", secure(isAuthenticatedHandler, video.StreamHandler(renderer, videoRepo, gcpConfig))).Methods("GET")
 
 	n.UseHandler(mx)
 
