@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"mime/multipart"
 	"time"
 
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
@@ -16,7 +15,7 @@ import (
 type Repo interface {
 	List() ([]*cohesioned.Video, error)
 	Get(id int64) (*cohesioned.Video, error)
-	Add(file multipart.File, video *cohesioned.Video) (*cohesioned.Video, error)
+	Add(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error)
 }
 
 type gcpRepo struct {
@@ -69,7 +68,7 @@ func (r *gcpRepo) List() ([]*cohesioned.Video, error) {
 	return list, nil
 }
 
-func (r *gcpRepo) Add(file multipart.File, v *cohesioned.Video) (*cohesioned.Video, error) {
+func (r *gcpRepo) Add(fileReader io.Reader, v *cohesioned.Video) (*cohesioned.Video, error) {
 	v.Created = time.Now()
 	v.StorageBucket = r.storageBucketName
 
@@ -89,7 +88,7 @@ func (r *gcpRepo) Add(file multipart.File, v *cohesioned.Video) (*cohesioned.Vid
 	// }
 
 	writer := objectHandle.NewWriter(r.ctx)
-	if _, err := io.Copy(writer, file); err != nil {
+	if _, err := io.Copy(writer, fileReader); err != nil {
 		return v, fmt.Errorf("Failed to write video file %v", err)
 	}
 

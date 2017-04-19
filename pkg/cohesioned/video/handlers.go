@@ -150,6 +150,5 @@ func StreamHandler(r *render.Render, repo Repo, cfg *gcp.Config) http.HandlerFun
 		}
 
 		http.Redirect(w, req, signedURL, http.StatusSeeOther)
-		return
 	}
 }

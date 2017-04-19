@@ -1,7 +1,7 @@
 package fakes
 
 import (
-	"mime/multipart"
+	"io"
 
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 )
@@ -33,6 +33,6 @@ func (r *FakeVideoRepo) List() ([]*cohesioned.Video, error) {
 func (r *FakeVideoRepo) Get(id int64) (*cohesioned.Video, error) {
 	return r.v, r.err
 }
-func (r *FakeVideoRepo) Add(file multipart.File, video *cohesioned.Video) (*cohesioned.Video, error) {
+func (r *FakeVideoRepo) Add(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error) {
 	return r.v, r.err
 }
