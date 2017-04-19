@@ -3,13 +3,13 @@ package auth
 import (
 	"net/http"
 
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/unrolled/render"
 )
 
 func LoginViewHandler(r *render.Render) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		if profile := req.Context().Value(config.CurrentUserKey); profile != nil {
+		if profile := req.Context().Value(cohesioned.CurrentUserKey); profile != nil {
 			http.Redirect(w, req, "/admin/dashboard", http.StatusSeeOther)
 			return
 		}

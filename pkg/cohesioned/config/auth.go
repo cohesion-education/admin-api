@@ -20,7 +20,7 @@ type AuthConfig struct {
 }
 
 func (config *AuthConfig) GetCurrentSession(r *http.Request) (*sessions.Session, error) {
-	return config.SessionStore.Get(r, AuthSessionCookieName)
+	return config.SessionStore.Get(r, cohesioned.AuthSessionCookieName)
 }
 
 func newSessionStore(authKey string) sessions.Store {

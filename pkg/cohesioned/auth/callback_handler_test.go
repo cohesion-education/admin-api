@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/cohesion-education/admin-api/fakes"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 )
 
 func TestCallbackHandler(t *testing.T) {
@@ -60,7 +60,7 @@ func TestCallbackHandler(t *testing.T) {
 		t.Fatalf("Failed to get current session %v", err)
 	}
 
-	profile, ok := session.Values[config.CurrentUserSessionKey]
+	profile, ok := session.Values[cohesioned.CurrentUserSessionKey]
 	if !ok {
 		t.Errorf("Session did not contain current user")
 	}

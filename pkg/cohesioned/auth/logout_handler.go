@@ -3,14 +3,14 @@ package auth
 import (
 	"net/http"
 
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/unrolled/render"
 )
 
 func LogoutHandler(r *render.Render) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cookie := &http.Cookie{
-			Name:   config.AuthSessionCookieName,
+			Name:   cohesioned.AuthSessionCookieName,
 			Value:  "",
 			Path:   "/",
 			MaxAge: -1,

@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/cohesion-education/admin-api/fakes"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 )
 
 func TestLoginViewHandlerWhileNotLoggedInDirectsUserToLoginPage(t *testing.T) {
@@ -44,7 +44,7 @@ func TestLoginViewHandlerWhileLoggedInDirectsUserToDashboard(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler := auth.LoginViewHandler(fakes.FakeRenderer)
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, config.CurrentUserKey, profile)
+	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
 	handler.ServeHTTP(rr, req)

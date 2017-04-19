@@ -10,7 +10,6 @@ import (
 	"github.com/cohesion-education/admin-api/fakes"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 )
 
 func TestIsAuthenticatedHandlerWhenNotAuthenticatedRedirectsToRoot(t *testing.T) {
@@ -57,13 +56,13 @@ func TestIsAuthenticatedHandlerWhenAuthenticatedProceedsToNext(t *testing.T) {
 	}
 
 	profile := fakes.FakeProfile()
-	session.Values[config.CurrentUserSessionKey] = profile
+	session.Values[cohesioned.CurrentUserSessionKey] = profile
 
 	mockNextHandlerCalled := false
 	mockNextHandler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		mockNextHandlerCalled = true
 
-		profile := req.Context().Value(config.CurrentUserKey)
+		profile := req.Context().Value(cohesioned.CurrentUserKey)
 		if profile == nil {
 			t.Errorf("middleware did not set current user in the context as expected")
 		}

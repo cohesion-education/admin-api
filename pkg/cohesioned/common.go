@@ -1,4 +1,4 @@
-package config
+package cohesioned
 
 type key int
 

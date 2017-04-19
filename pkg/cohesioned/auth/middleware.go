@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 	"github.com/urfave/negroni"
 )
@@ -16,13 +17,13 @@ func IsAuthenticatedHandler(cfg *config.AuthConfig) negroni.HandlerFunc {
 			return
 		}
 
-		profile, ok := session.Values[config.CurrentUserSessionKey]
+		profile, ok := session.Values[cohesioned.CurrentUserSessionKey]
 		if !ok {
 			http.Error(w, "Failed to get current user from session", http.StatusInternalServerError)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), config.CurrentUserKey, profile)
+		ctx := context.WithValue(r.Context(), cohesioned.CurrentUserKey, profile)
 		next(w, r.WithContext(ctx))
 	}
 }

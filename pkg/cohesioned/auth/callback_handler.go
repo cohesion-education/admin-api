@@ -62,7 +62,7 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 
 		session.Values["id_token"] = token.Extra("id_token")
 		session.Values["access_token"] = token.AccessToken
-		session.Values[config.CurrentUserSessionKey] = profile
+		session.Values[cohesioned.CurrentUserSessionKey] = profile
 		err = session.Save(req, w)
 		if err != nil {
 			http.Error(w, "failed to save Session "+err.Error(), http.StatusInternalServerError)

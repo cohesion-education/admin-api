@@ -8,9 +8,8 @@ import (
 	"testing"
 
 	"github.com/cohesion-education/admin-api/fakes"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/admin"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/common"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 )
 
 func TestDashboardHandlerWhileLoggedInDirectsUserToDashboard(t *testing.T) {
@@ -24,7 +23,7 @@ func TestDashboardHandlerWhileLoggedInDirectsUserToDashboard(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler := admin.DashboardViewHandler(fakes.FakeRenderer)
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, config.CurrentUserKey, profile)
+	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
 	handler.ServeHTTP(rr, req)
@@ -33,7 +32,7 @@ func TestDashboardHandlerWhileLoggedInDirectsUserToDashboard(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
 
-	dashboard := &common.DashboardView{}
+	dashboard := &cohesioned.DashboardView{}
 	dashboard.Set("profile", profile)
 	expectedBody := fakes.RenderHTML("admin/dashboard", dashboard)
 	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {

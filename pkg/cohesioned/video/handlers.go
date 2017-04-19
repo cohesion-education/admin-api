@@ -7,8 +7,6 @@ import (
 	"strconv"
 
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/common"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/gcp"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
@@ -21,7 +19,7 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			r.Text(w, http.StatusInternalServerError, "Failed to list videos "+err.Error())
 			return
 		}
-		dashboard := common.NewDashboardViewWithProfile(req)
+		dashboard := cohesioned.NewDashboardViewWithProfile(req)
 		dashboard.Set("list", list)
 		r.HTML(w, http.StatusOK, "video/list", dashboard)
 		return
@@ -30,7 +28,7 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 func FormHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		dashboard := common.NewDashboardViewWithProfile(req)
+		dashboard := cohesioned.NewDashboardViewWithProfile(req)
 		r.HTML(w, http.StatusOK, "video/form", dashboard)
 		return
 	}
@@ -38,7 +36,7 @@ func FormHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		profile, ok := req.Context().Value(config.CurrentUserKey).(*cohesioned.Profile)
+		profile, ok := req.Context().Value(cohesioned.CurrentUserKey).(*cohesioned.Profile)
 		if profile == nil {
 			r.Text(w, http.StatusInternalServerError, "middleware did not set profile in the context as expected")
 			return
@@ -104,7 +102,7 @@ func ShowHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		dashboard := common.NewDashboardViewWithProfile(req)
+		dashboard := cohesioned.NewDashboardViewWithProfile(req)
 		dashboard.Set("video", video)
 
 		r.HTML(w, http.StatusOK, "video/show", dashboard)

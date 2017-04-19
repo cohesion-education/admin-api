@@ -8,8 +8,6 @@ import (
 	"strconv"
 
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/common"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
 )
@@ -23,7 +21,7 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		dashboard := common.NewDashboardViewWithProfile(req)
+		dashboard := cohesioned.NewDashboardViewWithProfile(req)
 		dashboard.Set("list", list)
 		r.HTML(w, http.StatusOK, "taxonomy/list", dashboard)
 		return
@@ -59,7 +57,7 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		profile, ok := req.Context().Value(config.CurrentUserKey).(*cohesioned.Profile)
+		profile, ok := req.Context().Value(cohesioned.CurrentUserKey).(*cohesioned.Profile)
 		if profile == nil {
 			r.Text(w, http.StatusInternalServerError, "middleware did not set profile in the context as expected")
 			return

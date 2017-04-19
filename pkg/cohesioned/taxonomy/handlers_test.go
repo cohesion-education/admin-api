@@ -12,8 +12,6 @@ import (
 
 	"github.com/cohesion-education/admin-api/fakes"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/common"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/taxonomy"
 	"github.com/gorilla/mux"
 )
@@ -33,7 +31,7 @@ func TestListHandler(t *testing.T) {
 	profile := fakes.FakeProfile()
 
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, config.CurrentUserKey, profile)
+	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
 	handler.ServeHTTP(rr, req)
@@ -42,7 +40,7 @@ func TestListHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
 
-	dashboard := &common.DashboardView{}
+	dashboard := &cohesioned.DashboardView{}
 	dashboard.Set("profile", profile)
 	dashboard.Set("list", []*cohesioned.Taxonomy{})
 
@@ -75,7 +73,7 @@ func TestAddHandler(t *testing.T) {
 
 	profile := fakes.FakeProfile()
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, config.CurrentUserKey, profile)
+	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
 	repo := new(fakes.FakeTaxonomyRepo)

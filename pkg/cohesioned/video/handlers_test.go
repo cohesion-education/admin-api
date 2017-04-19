@@ -12,8 +12,6 @@ import (
 
 	"github.com/cohesion-education/admin-api/fakes"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/common"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/gcp"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/video"
 	"github.com/gorilla/mux"
@@ -30,7 +28,7 @@ func TestListHandler(t *testing.T) {
 
 	profile := fakes.FakeProfile()
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, config.CurrentUserKey, profile)
+	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
 	handler := video.ListHandler(fakes.FakeRenderer, repo)
@@ -41,7 +39,7 @@ func TestListHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
 
-	dashboard := &common.DashboardView{}
+	dashboard := &cohesioned.DashboardView{}
 	dashboard.Set("profile", profile)
 	dashboard.Set("list", []*cohesioned.Video{})
 
@@ -61,7 +59,7 @@ func TestFormHandler(t *testing.T) {
 
 	profile := fakes.FakeProfile()
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, config.CurrentUserKey, profile)
+	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
 	handler := video.FormHandler(fakes.FakeRenderer, repo)
@@ -72,7 +70,7 @@ func TestFormHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
 
-	dashboard := &common.DashboardView{}
+	dashboard := &cohesioned.DashboardView{}
 	dashboard.Set("profile", profile)
 
 	expectedBody := fakes.RenderHTML("video/form", dashboard)
@@ -105,7 +103,7 @@ func TestShowHandler(t *testing.T) {
 
 	profile := fakes.FakeProfile()
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, config.CurrentUserKey, profile)
+	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
 	handler := video.ShowHandler(fakes.FakeRenderer, repo)
@@ -119,7 +117,7 @@ func TestShowHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
 
-	dashboard := &common.DashboardView{}
+	dashboard := &cohesioned.DashboardView{}
 	dashboard.Set("profile", profile)
 	dashboard.Set("video", expectedVideo)
 
