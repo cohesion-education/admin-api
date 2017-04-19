@@ -24,7 +24,7 @@ func TestCreateSignedURL(t *testing.T) {
 		TaxonomyID:        1,
 	}
 
-	gcpConfig, err := gcp.NewConfig("../../../gcp-keyfile.json")
+	gcpConfig, err := gcp.NewConfig("../../../testdata/test-gcp-keyfile.json")
 	if err != nil {
 		t.Fatalf("Failed to get gcp config %v", err)
 	}

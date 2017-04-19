@@ -151,7 +151,7 @@ func TestStreamHandler(t *testing.T) {
 	repo := new(fakes.FakeVideoRepo)
 	repo.GetReturns(expectedVideo, nil)
 
-	gcpConfig, err := gcp.NewConfig("../../../gcp-keyfile.json")
+	gcpConfig, err := gcp.NewConfig("../../../testdata/test-gcp-keyfile.json")
 	if err != nil {
 		t.Fatalf("Failed to get gcp config %v", err)
 	}
