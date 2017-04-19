@@ -2,12 +2,9 @@ package cohesioned
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"time"
 
 	"cloud.google.com/go/datastore"
-	"cloud.google.com/go/storage"
 )
 
 type Video struct {
@@ -48,32 +45,4 @@ func (v *Video) ID() int64 {
 
 func (v *Video) SetID(id int64) {
 	v.id = id
-}
-
-func (v *Video) SignedURL() (string, error) {
-	bucket := v.StorageBucket
-	filename := v.StorageObjectName
-	method := "GET"
-	//TODO - make this configurable
-	expires := time.Now().Add(time.Hour * 1)
-
-	//TODO - load key from env var
-	privateKey, err := ioutil.ReadFile("key.pem")
-	if err != nil {
-		return "", fmt.Errorf("Failed to read key.pem %v", err)
-	}
-
-	url, err := storage.SignedURL(bucket, filename, &storage.SignedURLOptions{
-		//TODO - load service account id from env var
-		GoogleAccessID: "cohesion-storage-admin@cohesion-education-164614.iam.gserviceaccount.com",
-		PrivateKey:     privateKey,
-		Method:         method,
-		Expires:        expires,
-	})
-
-	if err != nil {
-		return "", fmt.Errorf("Failed to sign url %v", err)
-	}
-
-	return url, nil
 }

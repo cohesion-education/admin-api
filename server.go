@@ -46,13 +46,14 @@ func newServer() *negroni.Negroni {
 		log.Fatalf("Failed to get datastore client %v", err)
 	}
 
+	videoStorageBucketName := os.Getenv("GCP_STORAGE_VIDEO_BUCKET")
 	storageClient, err := gcp.NewStorageClient(ctx)
 	if err != nil {
 		log.Fatalf("Failed to get storage client %v", err)
 	}
 
 	taxonomyRepo := taxonomy.NewGCPDatastoreRepo(datastoreClient)
-	videoRepo := video.NewGCPRepo(datastoreClient, storageClient)
+	videoRepo := video.NewGCPRepo(datastoreClient, storageClient, videoStorageBucketName)
 
 	// This will serve files under /assets/<filename>
 	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))

@@ -9,6 +9,7 @@ import (
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/common"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/gcp"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
 )
@@ -72,12 +73,10 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		}
 
 		video := &cohesioned.Video{
-			Title:    title,
-			FileName: fileName,
-			//TODO - inject this as config
-			StorageBucket: "cohesion-dev",
-			CreatedBy:     profile,
-			TaxonomyID:    taxonomyID,
+			Title:      title,
+			FileName:   fileName,
+			CreatedBy:  profile,
+			TaxonomyID: taxonomyID,
 		}
 
 		if _, err := repo.Add(file, video); err != nil {
@@ -140,7 +139,7 @@ func StreamHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		signedURL, err := video.SignedURL()
+		signedURL, err := gcp.CreateSignedURL(video)
 		if err != nil {
 			data := struct {
 				Error string `json:"error"`

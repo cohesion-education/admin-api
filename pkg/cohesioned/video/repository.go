@@ -20,17 +20,19 @@ type Repo interface {
 }
 
 type gcpRepo struct {
-	datastoreClient *datastore.Client
-	storageClient   *storage.Client
-	ctx             context.Context
+	storageBucketName string
+	datastoreClient   *datastore.Client
+	storageClient     *storage.Client
+	ctx               context.Context
 }
 
 //NewGCPRepo implementation of video.Repo
-func NewGCPRepo(datastoreClient *datastore.Client, storageClient *storage.Client) Repo {
+func NewGCPRepo(datastoreClient *datastore.Client, storageClient *storage.Client, storageBucketName string) Repo {
 	return &gcpRepo{
-		datastoreClient: datastoreClient,
-		storageClient:   storageClient,
-		ctx:             context.TODO(),
+		datastoreClient:   datastoreClient,
+		storageClient:     storageClient,
+		storageBucketName: storageBucketName,
+		ctx:               context.TODO(),
 	}
 }
 
@@ -69,6 +71,7 @@ func (r *gcpRepo) List() ([]*cohesioned.Video, error) {
 
 func (r *gcpRepo) Add(file multipart.File, v *cohesioned.Video) (*cohesioned.Video, error) {
 	v.Created = time.Now()
+	v.StorageBucket = r.storageBucketName
 
 	key := datastore.IncompleteKey("Video", nil)
 	key, err := r.datastoreClient.Put(r.ctx, key, v)

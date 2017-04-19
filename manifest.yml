@@ -10,3 +10,4 @@ applications:
    - route: admin.cohesioned.io
   env:
     DATASTORE_PROJECT_ID: cohesion-education-164614
+    GCP_STORAGE_VIDEO_BUCKET: cohesion-dev
