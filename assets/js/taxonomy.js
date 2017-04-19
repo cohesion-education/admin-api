@@ -103,7 +103,7 @@ function addTaxonomyFormSubmitHandler(){
      url: "/api/taxonomy",
      data: data
    }).done(function(result){
-     taxonomyID = result
+     taxonomyID = result.id
 
      var li = newChildTaxonomyLITemplate
                 .replace("[id]", taxonomyID)

@@ -38,13 +38,8 @@ func (repo *gcpDatastoreRepo) ListChildren(parentID int64) ([]*cohesioned.Taxono
 	var list []*cohesioned.Taxonomy
 
 	q := datastore.NewQuery("Taxonomy").Filter("parent_id=", parentID)
-	keys, err := repo.client.GetAll(context.Background(), q, &list)
-	if err != nil {
+	if _, err := repo.client.GetAll(context.Background(), q, &list); err != nil {
 		return nil, fmt.Errorf("Failed to get taxonomy list from Cloud Datastore %v", err)
-	}
-
-	for i, key := range keys {
-		list[i].SetID(key.ID)
 	}
 
 	return list, nil

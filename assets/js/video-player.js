@@ -15,7 +15,7 @@ $(document).ready(function() {
   })
 
   videoPlayer.ready(function() {
-     //videoPlayer.currentTime(145);
+    //  videoPlayer.currentTime(35);
   });
 });
 

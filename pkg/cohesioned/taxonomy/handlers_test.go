@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"cloud.google.com/go/datastore"
+
 	"github.com/cohesion-education/admin-api/fakes"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/common"
@@ -51,32 +53,53 @@ func TestListHandler(t *testing.T) {
 }
 
 func TestAddHandler(t *testing.T) {
-	// req, err := http.NewRequest("GET", "/dashboard", nil)
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
-	//
-	// profile := make(map[string]interface{})
-	// profile["picture"] = "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg"
-	//
-	// rr := httptest.NewRecorder()
-	// handler := dashboardHandler(hc)
-	// ctx := req.Context()
-	// ctx = context.WithValue(ctx, currentUserKey, profile)
-	// req = req.WithContext(ctx)
-	//
-	// handler.ServeHTTP(rr, req)
-	//
-	// if status := rr.Code; status != http.StatusOK {
-	// 	t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	// }
-	//
-	// dashboard := &dashboard{}
-	// dashboard.Set("profile", profile)
-	// expectedBody := renderHTML("admin/dashboard", dashboard)
-	// if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
-	// 	t.Errorf("The expected HTML was not generated in the call to dashboardHandler: Expected:\n\n%sActual:\n\n%s", string(expectedBody), rr.Body.String())
-	// }
+	created := time.Now()
+	name := "Test"
+	key := datastore.IDKey("Taxonomy", 1, nil)
+
+	expectedTaxonomy := &cohesioned.Taxonomy{
+		Name:    name,
+		Created: created,
+		Key:     key,
+	}
+
+	testJSON, err := expectedTaxonomy.MarshalJSON()
+	if err != nil {
+		t.Fatalf("failed to marshall taxonomy to json %v", err)
+	}
+
+	req, err := http.NewRequest("POST", "/api/taxonomy", bytes.NewReader(testJSON))
+	if err != nil {
+		t.Fatalf("Failed to initialize create taxonomy request %v", err)
+	}
+
+	profile := fakes.FakeProfile()
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, config.CurrentUserKey, profile)
+	req = req.WithContext(ctx)
+
+	repo := new(fakes.FakeTaxonomyRepo)
+	repo.AddReturns(expectedTaxonomy, err)
+
+	handler := taxonomy.AddHandler(fakes.FakeRenderer, repo)
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	}
+
+	data := struct {
+		ID int64 `json:"id"`
+	}{
+		expectedTaxonomy.ID(),
+	}
+
+	expectedBody := fakes.RenderJSON(data)
+
+	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
+		t.Errorf("The expected json was not generated.\n\nExpected:\n%s\n\nActual:\n%s", string(expectedBody), rr.Body.String())
+	}
 }
 
 func TestListChildrenHandler(t *testing.T) {
@@ -90,11 +113,13 @@ func TestListChildrenHandler(t *testing.T) {
 			Name:     "test-child-1",
 			Created:  time.Now(),
 			ParentID: 1234,
+			Key:      datastore.IDKey("Taxonomy", 1, nil),
 		},
 		&cohesioned.Taxonomy{
 			Name:     "test-child-2",
 			Created:  time.Now(),
 			ParentID: 1234,
+			Key:      datastore.IDKey("Taxonomy", 2, nil),
 		},
 	}
 

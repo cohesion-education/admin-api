@@ -78,16 +78,19 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		// config.renderer.HTML(w, http.StatusOK, "taxonomy/add", dashboard)
 		// return
 
-		fmt.Println("adding taxonomy ", t)
 		t, err := repo.Add(t)
 		if err != nil {
 			r.Text(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
-		fmt.Printf("Taxonomy saved. ID %d\n", t.ID())
+		data := struct {
+			ID int64 `json:"id"`
+		}{
+			t.ID(),
+		}
 
-		r.JSON(w, http.StatusOK, t.ID())
+		r.JSON(w, http.StatusOK, data)
 	}
 }
 
