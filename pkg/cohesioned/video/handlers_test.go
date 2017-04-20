@@ -209,7 +209,7 @@ func TestSaveHandler(t *testing.T) {
 		"title":       v.Title,
 		"taxonomy_id": fmt.Sprintf("%d", v.TaxonomyID),
 	}
-	req, err := fakes.NewfileUploadRequest("/api/video", params, "video_file", "../../../testdata/small.mp4")
+	req, err := fakes.NewfileUploadRequest("/api/video", params, "video_file", "../../../testdata/file-upload.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
