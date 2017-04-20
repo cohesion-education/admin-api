@@ -8,6 +8,7 @@ const auth0ServicePayload = `{
     "secret":"test-secret",
     "domain":"test-domain",
     "callback-url":"test-callback-url",
+    "logout-url":"test-logout-url",
     "session-auth-key":"abc123"
   },
   "syslog_drain_url": "",
@@ -22,6 +23,7 @@ const auth0ServicePartialPayload = `{
     "secret":"test-secret",
     "domain":"test-domain",
     "callback-url":"test-callback-url",
+    "logout-url":"test-logout-url",
     "session-auth-key":"abc12345"
   },
   "syslog_drain_url": "",

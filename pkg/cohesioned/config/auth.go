@@ -17,6 +17,7 @@ type AuthConfig struct {
 	ClientSecret string
 	Domain       string
 	CallbackURL  string
+	LogoutURL    string
 }
 
 func (config *AuthConfig) GetCurrentSession(r *http.Request) (*sessions.Session, error) {
@@ -49,6 +50,9 @@ func NewAuthConfig() (*AuthConfig, error) {
 			if callbackURL, ok := auth0Service.CredentialString("callback-url"); ok {
 				config.CallbackURL = callbackURL
 			}
+			if logoutURL, ok := auth0Service.CredentialString("logout-url"); ok {
+				config.LogoutURL = logoutURL
+			}
 			if sessionStoreAuthKey, ok := auth0Service.CredentialString("session-auth-key"); ok {
 				config.SessionStore = newSessionStore(sessionStoreAuthKey)
 			}
@@ -68,7 +72,11 @@ func NewAuthConfig() (*AuthConfig, error) {
 	}
 
 	if len(config.CallbackURL) == 0 {
-		config.CallbackURL = os.Getenv("AUTH0_CALLBACK_URL")
+		config.CallbackURL = os.Getenv("CALLBACK_URL")
+	}
+
+	if len(config.LogoutURL) == 0 {
+		config.LogoutURL = os.Getenv("LOGOUT_URL")
 	}
 
 	if config.SessionStore == nil {
@@ -90,6 +98,10 @@ func NewAuthConfig() (*AuthConfig, error) {
 
 	if len(config.CallbackURL) == 0 {
 		missingConfig = append(missingConfig, "CallbackURL")
+	}
+
+	if len(config.LogoutURL) == 0 {
+		missingConfig = append(missingConfig, "LogoutURL")
 	}
 
 	if config.SessionStore == nil {

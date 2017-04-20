@@ -74,6 +74,7 @@ func newServer() *negroni.Negroni {
 	mx.HandleFunc("/", auth.LoginViewHandler(renderer)).Methods("GET")
 	mx.HandleFunc("/logout", auth.LogoutHandler(renderer)).Methods("GET")
 	mx.Handle("/callback", auth.CallbackHandler(authConfig)).Methods("GET")
+	mx.Handle("/auth/config", auth.ConfigHandler(authConfig)).Methods("GET")
 
 	isAuthenticatedHandler := auth.IsAuthenticatedHandler(authConfig)
 	mx.Handle("/admin/dashboard", secure(isAuthenticatedHandler, admin.DashboardViewHandler(renderer))).Methods("GET")
