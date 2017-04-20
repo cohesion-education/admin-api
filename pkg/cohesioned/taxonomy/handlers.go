@@ -3,6 +3,7 @@ package taxonomy
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -21,7 +22,13 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		dashboard := cohesioned.NewDashboardViewWithProfile(req)
+		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
+		if err != nil {
+			//TODO - direct users to an official Error page
+			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
+			r.Text(w, http.StatusInternalServerError, fmt.Sprintf("Unexpected error %v", err))
+			return
+		}
 		dashboard.Set("list", list)
 		r.HTML(w, http.StatusOK, "taxonomy/list", dashboard)
 		return

@@ -2,8 +2,8 @@ package video
 
 import (
 	"fmt"
+	"log"
 	"net/http"
-	"reflect"
 	"strconv"
 
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
@@ -16,10 +16,19 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		list, err := repo.List()
 		if err != nil {
+			//TODO - direct users to an official Error page
 			r.Text(w, http.StatusInternalServerError, "Failed to list videos "+err.Error())
 			return
 		}
-		dashboard := cohesioned.NewDashboardViewWithProfile(req)
+
+		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
+		if err != nil {
+			//TODO - direct users to an official Error page
+			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
+			r.Text(w, http.StatusInternalServerError, fmt.Sprintf("Unexpected error %v", err))
+			return
+		}
+
 		dashboard.Set("list", list)
 		r.HTML(w, http.StatusOK, "video/list", dashboard)
 		return
@@ -28,7 +37,14 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 func FormHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		dashboard := cohesioned.NewDashboardViewWithProfile(req)
+		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
+		if err != nil {
+			//TODO - direct users to an official Error page
+			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
+			r.Text(w, http.StatusInternalServerError, fmt.Sprintf("Unexpected error %v", err))
+			return
+		}
+
 		r.HTML(w, http.StatusOK, "video/form", dashboard)
 		return
 	}
@@ -36,15 +52,11 @@ func FormHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		profile, ok := req.Context().Value(cohesioned.CurrentUserKey).(*cohesioned.Profile)
-		if profile == nil {
-			r.Text(w, http.StatusInternalServerError, "middleware did not set profile in the context as expected")
-			return
-		}
-
-		if !ok {
-			errMsg := fmt.Sprintf("profile not of the proper type: %s", reflect.TypeOf(profile).String())
-			r.Text(w, http.StatusInternalServerError, errMsg)
+		profile, err := cohesioned.GetProfile(req)
+		if err != nil {
+			//TODO - direct users to an official Error page
+			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
+			r.Text(w, http.StatusInternalServerError, fmt.Sprintf("Unexpected error %v", err))
 			return
 		}
 
@@ -100,9 +112,15 @@ func ShowHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		dashboard := cohesioned.NewDashboardViewWithProfile(req)
-		dashboard.Set("video", video)
+		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
+		if err != nil {
+			//TODO - direct users to an official Error page
+			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
+			r.Text(w, http.StatusInternalServerError, fmt.Sprintf("Unexpected error %v", err))
+			return
+		}
 
+		dashboard.Set("video", video)
 		r.HTML(w, http.StatusOK, "video/show", dashboard)
 		return
 	}

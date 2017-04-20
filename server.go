@@ -31,9 +31,6 @@ func newServer() *negroni.Negroni {
 		fmt.Println("Failed to load .env file. Components will fallback to loading from VCAP_SERVICES or env vars")
 	}
 
-	n := negroni.Classic()
-	mx := mux.NewRouter()
-
 	authConfig, err := config.NewAuthConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -68,34 +65,50 @@ func newServer() *negroni.Negroni {
 	taxonomyRepo := taxonomy.NewGCPDatastoreRepo(datastoreClient)
 	videoRepo := video.NewGCPRepo(datastoreClient, storageClient, videoStorageBucketName)
 
-	// This will serve files under /assets/<filename>
+	n := negroni.Classic()
+	mx := mux.NewRouter()
+
+	// Static Assets
 	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
 
-	mx.HandleFunc("/", auth.LoginViewHandler(renderer)).Methods("GET")
-	mx.HandleFunc("/logout", auth.LogoutHandler(renderer)).Methods("GET")
-	mx.Handle("/callback", auth.CallbackHandler(authConfig)).Methods("GET")
-	mx.Handle("/auth/config", auth.ConfigHandler(authConfig)).Methods("GET")
+	//Public Routes
+	mx.Methods("GET").Path("/").Handler(auth.LoginViewHandler(renderer))
+	mx.Methods("GET").Path("/admin/login").Handler(auth.LoginViewHandler(renderer))
+	mx.Methods("GET").Path("/logout").Handler(auth.LogoutHandler(renderer))
+	mx.Methods("GET").Path("/callback").Handler(auth.CallbackHandler(authConfig))
+	mx.Methods("GET").Path("/auth/config").Handler(auth.ConfigHandler(authConfig))
 
 	isAuthenticatedHandler := auth.IsAuthenticatedHandler(authConfig)
-	mx.Handle("/admin/dashboard", secure(isAuthenticatedHandler, admin.DashboardViewHandler(renderer))).Methods("GET")
-	mx.Handle("/admin/taxonomy", secure(isAuthenticatedHandler, taxonomy.ListHandler(renderer, taxonomyRepo))).Methods("GET")
-	mx.Handle("/admin/video", secure(isAuthenticatedHandler, video.ListHandler(renderer, videoRepo))).Methods("GET")
-	mx.Handle("/admin/video/{id:[0-9]+}", secure(isAuthenticatedHandler, video.ShowHandler(renderer, videoRepo))).Methods("GET")
-	mx.Handle("/admin/video/add", secure(isAuthenticatedHandler, video.FormHandler(renderer, videoRepo))).Methods("GET")
-	mx.Handle("/api/taxonomy", secure(isAuthenticatedHandler, taxonomy.AddHandler(renderer, taxonomyRepo))).Methods("POST")
-	mx.Handle("/api/taxonomy", secure(isAuthenticatedHandler, taxonomy.ListJSONHandler(renderer, taxonomyRepo))).Methods("GET")
-	mx.Handle("/api/taxonomy/{id:[0-9]+}/children", secure(isAuthenticatedHandler, taxonomy.ListChildrenHandler(renderer, taxonomyRepo))).Methods("GET")
-	mx.Handle("/api/video", secure(isAuthenticatedHandler, video.SaveHandler(renderer, videoRepo))).Methods("POST")
-	mx.Handle("/api/video/stream/{id:[0-9]+}", secure(isAuthenticatedHandler, video.StreamHandler(renderer, videoRepo, gcpConfig))).Methods("GET")
+	commonMiddleware := negroni.New(
+		negroni.HandlerFunc(isAuthenticatedHandler),
+	)
+
+	//Admin Routes
+	adminSubRouter := mux.NewRouter()
+	adminSubRouter.Methods("GET").Path("/admin/dashboard").Handler(admin.DashboardViewHandler(renderer))
+	adminSubRouter.Methods("GET").Path("/admin/taxonomy").Handler(taxonomy.ListHandler(renderer, taxonomyRepo))
+	adminSubRouter.Methods("GET").Path("/admin/video").Handler(video.ListHandler(renderer, videoRepo))
+	adminSubRouter.Methods("GET").Path("/admin/video/{id:[0-9]+}").Handler(video.ShowHandler(renderer, videoRepo))
+	adminSubRouter.Methods("GET").Path("/admin/video/add").Handler(video.FormHandler(renderer, videoRepo))
+	mx.PathPrefix("/admin").Handler(commonMiddleware.With(
+		negroni.HandlerFunc(auth.IsAdmin),
+		negroni.Wrap(adminSubRouter),
+	))
+
+	//APIs that require Admin priveleges
+	requireAdmin("POST", "/api/taxonomy", taxonomy.AddHandler(renderer, taxonomyRepo), mx, commonMiddleware)
+	requireAdmin("GET", "/api/taxonomy", taxonomy.ListJSONHandler(renderer, taxonomyRepo), mx, commonMiddleware)
+	requireAdmin("GET", "/api/taxonomy/{id:[0-9]+}/children", taxonomy.ListChildrenHandler(renderer, taxonomyRepo), mx, commonMiddleware)
+	requireAdmin("POST", "/api/video", video.SaveHandler(renderer, videoRepo), mx, commonMiddleware)
+	requireAdmin("GET", "/api/video/stream/{id:[0-9]+}", video.StreamHandler(renderer, videoRepo, gcpConfig), mx, commonMiddleware)
 
 	n.UseHandler(mx)
-
 	return n
 }
 
-func secure(handlerWithNext negroni.HandlerFunc, handlerFunc http.HandlerFunc) *negroni.Negroni {
-	return negroni.New(
-		negroni.HandlerFunc(handlerWithNext),
-		negroni.Wrap(handlerFunc),
-	)
+func requireAdmin(method string, uri string, handler http.Handler, mx *mux.Router, commonMiddleware *negroni.Negroni) {
+	mx.Methods(method).Path(uri).Handler(commonMiddleware.With(
+		negroni.HandlerFunc(auth.IsAdmin),
+		negroni.Wrap(handler),
+	))
 }
