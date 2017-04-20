@@ -6,7 +6,7 @@
 ## Build locally
 To run tests:
 
-    go test $(glide novendor)
+    go test $(glide novendor) --cover
 
 To run with auto-reloading from terminal:
 
