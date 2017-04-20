@@ -3,6 +3,7 @@ package video_test
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -187,5 +188,57 @@ func TestStreamHandler(t *testing.T) {
 
 	if len(q.Get("Signature")) == 0 {
 		t.Errorf("Signed url did not have Signature param")
+	}
+}
+
+func TestSaveHandler(t *testing.T) {
+	v := &cohesioned.Video{
+		Key:     datastore.IDKey("Video", 1234, nil),
+		Created: time.Now(),
+		CreatedBy: &cohesioned.Profile{
+			FullName: "Test User",
+		},
+		Title:             "Test Video",
+		FileName:          "test.mp4",
+		StorageBucket:     "test-bucket",
+		StorageObjectName: "1234-test.mp4",
+		TaxonomyID:        1,
+	}
+
+	params := map[string]string{
+		"title":       v.Title,
+		"taxonomy_id": fmt.Sprintf("%d", v.TaxonomyID),
+	}
+	req, err := fakes.NewfileUploadRequest("/api/video", params, "video_file", "../../../testdata/small.mp4")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	repo := new(fakes.FakeVideoRepo)
+	repo.AddReturns(v, nil)
+
+	profile := fakes.FakeProfile()
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
+	req = req.WithContext(ctx)
+
+	handler := video.SaveHandler(fakes.FakeRenderer, repo)
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	expectedStatus := http.StatusSeeOther
+	if status := rr.Code; status != expectedStatus {
+		fmt.Printf("response %s\n", rr.Body.String())
+		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
+	}
+
+	location, err := rr.Result().Location()
+	if err != nil {
+		t.Fatalf("Unable to get result location from request recorder %v", err)
+	}
+
+	expectedRedirectURL := fmt.Sprintf("/admin/video/%d", v.ID())
+	if location.String() != expectedRedirectURL {
+		t.Errorf("Handler redirected to an unexpected location: expected %s actual %s", expectedRedirectURL, location.String())
 	}
 }

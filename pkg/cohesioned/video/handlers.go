@@ -59,9 +59,6 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		contentType := fileHeader.Header.Get("Content-Type")
-		fmt.Println("content type ", contentType)
-
 		title := req.FormValue("title")
 		fileName := fileHeader.Filename
 		taxonomyID, err := strconv.ParseInt(req.FormValue("taxonomy_id"), 10, 64)
@@ -77,7 +74,8 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			TaxonomyID: taxonomyID,
 		}
 
-		if _, err := repo.Add(file, video); err != nil {
+		video, err = repo.Add(file, video)
+		if err != nil {
 			r.Text(w, http.StatusInternalServerError, "Failed to save video "+err.Error())
 			return
 		}

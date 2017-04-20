@@ -3,7 +3,11 @@ package fakes
 import (
 	"bytes"
 	"encoding/gob"
+	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
@@ -58,4 +62,33 @@ func RenderJSON(data interface{}) []byte {
 	}
 
 	return buffer.Bytes()
+}
+
+//NewfileUploadRequest Creates a new file upload http request with optional extra params
+func NewfileUploadRequest(uri string, params map[string]string, paramName, filePath string) (*http.Request, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile(paramName, filepath.Base(filePath))
+	if err != nil {
+		return nil, err
+	}
+	_, err = io.Copy(part, file)
+
+	for key, val := range params {
+		_ = writer.WriteField(key, val)
+	}
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", uri, body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	return req, err
 }
