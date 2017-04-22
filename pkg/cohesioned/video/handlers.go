@@ -132,7 +132,7 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		}
 
 		resp.RedirectURL = fmt.Sprintf("/admin/video/%d", video.ID())
-		r.JSON(w, http.StatusSeeOther, resp)
+		r.JSON(w, http.StatusOK, resp)
 	}
 }
 
@@ -198,7 +198,7 @@ func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		}
 
 		resp.RedirectURL = fmt.Sprintf("/admin/video/%d", video.ID())
-		r.JSON(w, http.StatusSeeOther, resp)
+		r.JSON(w, http.StatusOK, resp)
 	}
 }
 

@@ -10,6 +10,7 @@ $(document).ready(function() {
 
   $('form#video').submit(function(){
     $('#errors').hide()
+    $('#progressbar').hide()
 
     var data = new FormData()
     $.each($(this).find("input[type='file']"), function(i, tag) {
@@ -18,6 +19,7 @@ $(document).ready(function() {
       });
     });
     var params = $(this).serializeArray();
+    console.log("serialized form inputs: " + JSON.stringify(params))
     $.each(params, function (i, val) {
       data.append(val.name, val.value);
     })
@@ -30,11 +32,32 @@ $(document).ready(function() {
       data: data,
       cache: false,
       contentType: false,
-      processData: false
+      processData: false,
+      xhr: function(){
+        var xhr = new window.XMLHttpRequest()
+        xhr.upload.addEventListener("progress", function(event) {
+          if(event.lengthComputable){
+            var percentComplete = event.loaded / event.total
+            percentComplete = parseInt(percentComplete * 100)
+            if(percentComplete === 100){
+              $('#progressbar').html("Upload Complete, but video is still processing. You will be redirected when ready")
+              console.log("upload complete")
+            }else{
+              $('#progressbar').html(percentComplete + "%")
+              $('#progressbar').width((percentComplete - 10) + "%")
+            }
+
+            $('#progressbar').show()
+          }
+        }, false);
+        return xhr
+      }
     }).done(function(result){
       console.log("Success! " + JSON.stringify(result))
       window.location.replace(result.redirect_url)
     }).fail(function( jqXHR, textStatus, errorThrown ){
+      $('#progressbar').hide()
+      
       console.log("Failed :( " + textStatus + " " + errorThrown)
       console.log("jqXHR.responseText: " + jqXHR.responseText)
       var response = $.parseJSON(jqXHR.responseText)

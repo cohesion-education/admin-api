@@ -227,7 +227,7 @@ func TestSaveHandler(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler.ServeHTTP(rr, req)
 
-	expectedStatus := http.StatusSeeOther
+	expectedStatus := http.StatusOK
 	if status := rr.Code; status != expectedStatus {
 		fmt.Printf("response %s\n", rr.Body.String())
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
@@ -278,7 +278,7 @@ func TestUpdateHandler(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler.ServeHTTP(rr, req)
 
-	expectedStatus := http.StatusSeeOther
+	expectedStatus := http.StatusOK
 	if status := rr.Code; status != expectedStatus {
 		fmt.Printf("response %s\n", rr.Body.String())
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)

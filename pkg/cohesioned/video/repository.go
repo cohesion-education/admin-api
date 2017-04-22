@@ -73,9 +73,8 @@ func (r *gcpRepo) Add(fileReader io.Reader, v *cohesioned.Video) (*cohesioned.Vi
 	v.Created = time.Now()
 	v.StorageBucket = r.storageBucketName
 
-	v.Key = datastore.IncompleteKey("Video", nil)
-	fmt.Printf("incomplete key: %v", v.Key)
-	key, err := r.datastoreClient.Put(r.ctx, v.Key, v)
+	key, err := r.datastoreClient.Put(r.ctx, datastore.IncompleteKey("Video", nil), v)
+	v.Key = key
 	fmt.Printf("key returned from Put: %v", key)
 	if err != nil {
 		return v, fmt.Errorf("Failed to save video %v", err)
