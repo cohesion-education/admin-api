@@ -1,17 +1,30 @@
 
 <div class="row">
-    <div class="col-sm-12">
-        <h4 class="page-title">
-          {{if .video.ID }} Edit {{ else }} Add New {{ end }} Video
-        </h4>
-        <form id="video" method="{{if .video.ID }}put{{ else }}post{{ end }}" action="/api/video{{if .video.ID }}/{{ .video.ID }}{{ end }}" enctype="multipart/form-data">
-          <input type="text" name="title" placeholder="Title" value="{{ .video.Title }}">
-          <select id="top-level-categories" name="taxonomy_id">
-            <option value="">- Category -</option>
-          </select>
-          <input type="hidden" id="selected_taxonomy_id" value="{{ .video.TaxonomyID }}">
-          <input type="file" name="video_file">
-          <input type="submit" value="Save">
-        </form>
-    </div>
+  <div class="col-sm-12">
+    <h4 class="page-title">
+      {{if .video.ID}} Edit {{ else }} Add New {{ end }} Video
+    </h4>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-12">
+    <div id="errors"><div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-12">
+    <form id="video" method="{{if .video.ID}}put{{ else }}post{{ end }}" action="/api/video" enctype="multipart/form-data">
+      <input type="text" name="title" placeholder="Title" value="{{.video.Title}}">
+      <select id="top-level-categories" name="taxonomy_id">
+        <option value="">- Category -</option>
+      </select>
+      <input type="file" name="video_file">
+
+      <input type="hidden" id="id" value="{{.video.ID}}">
+      <input type="hidden" id="selected_taxonomy_id" value="{{.video.TaxonomyID}}">
+      <input type="submit" value="Save">
+    </form>
+  </div>
 </div>

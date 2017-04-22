@@ -209,7 +209,8 @@ func TestSaveHandler(t *testing.T) {
 		"title":       v.Title,
 		"taxonomy_id": fmt.Sprintf("%d", v.TaxonomyID),
 	}
-	req, err := fakes.NewfileUploadRequest("/api/video", params, "video_file", "../../../testdata/file-upload.txt")
+
+	req, err := fakes.NewfileUploadRequest("POST", "/api/video", params, "video_file", "../../../testdata/file-upload.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -232,13 +233,62 @@ func TestSaveHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 	}
 
-	location, err := rr.Result().Location()
-	if err != nil {
-		t.Fatalf("Unable to get result location from request recorder %v", err)
+	fakeResp := &video.VideoAPIResponse{}
+	fakeResp.RedirectURL = fmt.Sprintf("/admin/video/%d", v.ID())
+
+	expectedBody := fakes.RenderJSON(fakeResp)
+	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
+		t.Errorf("JSON response not as expected. Expected:\n\n%s\n\nActual:\n\n%s", string(expectedBody), rr.Body.String())
+	}
+}
+
+func TestUpdateHandler(t *testing.T) {
+	v := &cohesioned.Video{
+		Key:     datastore.IDKey("Video", 1234, nil),
+		Created: time.Now(),
+		CreatedBy: &cohesioned.Profile{
+			FullName: "Test User",
+		},
+		Title:             "Test Video",
+		FileName:          "test.mp4",
+		StorageBucket:     "test-bucket",
+		StorageObjectName: "1234-test.mp4",
+		TaxonomyID:        1,
 	}
 
-	expectedRedirectURL := fmt.Sprintf("/admin/video/%d", v.ID())
-	if location.String() != expectedRedirectURL {
-		t.Errorf("Handler redirected to an unexpected location: expected %s actual %s", expectedRedirectURL, location.String())
+	params := map[string]string{
+		"title":       v.Title,
+		"id":          fmt.Sprintf("%d", v.ID()),
+		"taxonomy_id": fmt.Sprintf("%d", v.TaxonomyID),
+	}
+	req, err := fakes.NewfileUploadRequest("PUT", "/api/video", params, "video_file", "../../../testdata/file-upload.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	repo := new(fakes.FakeVideoRepo)
+	repo.AddReturns(v, nil)
+
+	profile := fakes.FakeProfile()
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
+	req = req.WithContext(ctx)
+
+	handler := video.UpdateHandler(fakes.FakeRenderer, repo)
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	expectedStatus := http.StatusSeeOther
+	if status := rr.Code; status != expectedStatus {
+		fmt.Printf("response %s\n", rr.Body.String())
+		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
+	}
+
+	fakeResp := &video.VideoAPIResponse{}
+	fakeResp.RedirectURL = fmt.Sprintf("/admin/video/%d", v.ID())
+
+	expectedBody := fakes.RenderJSON(fakeResp)
+	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
+		t.Errorf("JSON response not as expected. Expected:\n\n%s\n\nActual:\n\n%s", string(expectedBody), rr.Body.String())
 	}
 }

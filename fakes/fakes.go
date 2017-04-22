@@ -65,7 +65,7 @@ func RenderJSON(data interface{}) []byte {
 }
 
 //NewfileUploadRequest Creates a new file upload http request with optional extra params
-func NewfileUploadRequest(uri string, params map[string]string, paramName, filePath string) (*http.Request, error) {
+func NewfileUploadRequest(method string, uri string, params map[string]string, paramName, filePath string) (*http.Request, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -78,7 +78,10 @@ func NewfileUploadRequest(uri string, params map[string]string, paramName, fileP
 	if err != nil {
 		return nil, err
 	}
-	_, err = io.Copy(part, file)
+
+	if _, err = io.Copy(part, file); err != nil {
+		return nil, err
+	}
 
 	for key, val := range params {
 		_ = writer.WriteField(key, val)
@@ -88,7 +91,7 @@ func NewfileUploadRequest(uri string, params map[string]string, paramName, fileP
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", uri, body)
+	req, err := http.NewRequest(method, uri, body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	return req, err
 }

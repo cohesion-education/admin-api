@@ -99,7 +99,7 @@ func newServer() *negroni.Negroni {
 	//APIs that require Admin priveleges
 	requiresAdmin(http.MethodPost, "/api/taxonomy", taxonomy.AddHandler(renderer, taxonomyRepo), mx, authMiddleware)
 	requiresAdmin(http.MethodPost, "/api/video", video.SaveHandler(renderer, videoRepo), mx, authMiddleware)
-	requiresAdmin(http.MethodPut, "/api/video/{id:[0-9]+}", video.UpdateHandler(renderer, videoRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodPut, "/api/video", video.UpdateHandler(renderer, videoRepo), mx, authMiddleware)
 
 	//APIs that only require Authentication
 	requiresAuth(http.MethodGet, "/api/taxonomy", taxonomy.ListHandler(renderer, taxonomyRepo), mx, authMiddleware)

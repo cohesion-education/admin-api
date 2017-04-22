@@ -18,6 +18,15 @@ table.video {
   border-top: 1px solid black;
 }
 
+#errors {
+  margin: 0.3em;
+  border:1px solid red;
+  font-weight:bold;
+  color:red;
+  padding: 0.3em;
+  display:none;
+}
+
 form#video input,
 form#video select {
   display: block;

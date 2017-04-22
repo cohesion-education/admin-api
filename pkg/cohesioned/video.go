@@ -2,6 +2,7 @@ package cohesioned
 
 import (
 	"encoding/json"
+	"io"
 	"time"
 
 	"cloud.google.com/go/datastore"
@@ -16,6 +17,7 @@ type Video struct {
 	UpdatedBy         *Profile       `datastore:"updated_by" json:"updated_by"`
 	Title             string         `datastore:"title" json:"title"`
 	FileName          string         `datastore:"file_name" json:"file_name"`
+	FileReader        io.Reader      `datastore:"-" json:"-"`
 	StorageBucket     string         `datastore:"bucket" json:"bucket"`
 	StorageObjectName string         `datastore:"object_name" json:"object_name"`
 	TaxonomyID        int64          `datastore:"taxonomy_id" json:"taxonomy_id"`

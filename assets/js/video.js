@@ -9,6 +9,8 @@ $(document).ready(function() {
   });
 
   $('form#video').submit(function(){
+    $('#errors').hide()
+
     var data = new FormData()
     $.each($(this).find("input[type='file']"), function(i, tag) {
       $.each($(tag)[0].files, function(i, file) {
@@ -33,8 +35,19 @@ $(document).ready(function() {
       console.log("Success! " + JSON.stringify(result))
       window.location.replace(result.redirect_url)
     }).fail(function( jqXHR, textStatus, errorThrown ){
-      //TODO - display failure message in DOM 
       console.log("Failed :( " + textStatus + " " + errorThrown)
+      console.log("jqXHR.responseText: " + jqXHR.responseText)
+      var response = $.parseJSON(jqXHR.responseText)
+      if(response != null){
+        var errors = response.error + '<ul>'
+        for(i = 0; i < response.validation_errors.length; i++){
+          errors += '<li>' + response.validation_errors[i].error + '</li>'
+        }
+        errors += '</ul>'
+
+        $('#errors').html(errors)
+        $('#errors').show()
+      }
     });
 
     return false
