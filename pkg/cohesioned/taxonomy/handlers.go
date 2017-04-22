@@ -13,7 +13,7 @@ import (
 	"github.com/unrolled/render"
 )
 
-func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
+func ListViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 
 		list, err := repo.List()
@@ -35,7 +35,7 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	}
 }
 
-func ListJSONHandler(r *render.Render, repo Repo) http.HandlerFunc {
+func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		list, err := repo.List()
 		if err != nil {

@@ -18,7 +18,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func TestListHandler(t *testing.T) {
+func TestListViewHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", "/admin/video", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -32,7 +32,7 @@ func TestListHandler(t *testing.T) {
 	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
-	handler := video.ListHandler(fakes.FakeRenderer, repo)
+	handler := video.ListViewHandler(fakes.FakeRenderer, repo)
 	rr := httptest.NewRecorder()
 	handler.ServeHTTP(rr, req)
 
@@ -50,7 +50,7 @@ func TestListHandler(t *testing.T) {
 	}
 }
 
-func TestFormHandler(t *testing.T) {
+func TestFormViewHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", "/admin/video/add", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -63,7 +63,7 @@ func TestFormHandler(t *testing.T) {
 	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
-	handler := video.FormHandler(fakes.FakeRenderer, repo)
+	handler := video.FormViewHandler(fakes.FakeRenderer, repo)
 	rr := httptest.NewRecorder()
 	handler.ServeHTTP(rr, req)
 
@@ -80,7 +80,7 @@ func TestFormHandler(t *testing.T) {
 	}
 }
 
-func TestShowHandler(t *testing.T) {
+func TestShowViewHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", "/admin/video/1234", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -107,7 +107,7 @@ func TestShowHandler(t *testing.T) {
 	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
-	handler := video.ShowHandler(fakes.FakeRenderer, repo)
+	handler := video.ShowViewHandler(fakes.FakeRenderer, repo)
 	rr := httptest.NewRecorder()
 
 	router := mux.NewRouter()

@@ -11,7 +11,9 @@ type Video struct {
 	id                int64
 	Key               *datastore.Key `datastore:"__key__"`
 	Created           time.Time      `datastore:"created" json:"created"`
+	Updated           time.Time      `datastore:"updated" json:"updated"`
 	CreatedBy         *Profile       `datastore:"created_by" json:"created_by"`
+	UpdatedBy         *Profile       `datastore:"updated_by" json:"updated_by"`
 	Title             string         `datastore:"title" json:"title"`
 	FileName          string         `datastore:"file_name" json:"file_name"`
 	StorageBucket     string         `datastore:"bucket" json:"bucket"`

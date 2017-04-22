@@ -16,6 +16,7 @@ type Repo interface {
 	List() ([]*cohesioned.Video, error)
 	Get(id int64) (*cohesioned.Video, error)
 	Add(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error)
+	Update(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error)
 }
 
 type gcpRepo struct {
@@ -72,22 +73,47 @@ func (r *gcpRepo) Add(fileReader io.Reader, v *cohesioned.Video) (*cohesioned.Vi
 	v.Created = time.Now()
 	v.StorageBucket = r.storageBucketName
 
-	key := datastore.IncompleteKey("Video", nil)
-	key, err := r.datastoreClient.Put(r.ctx, key, v)
+	v.Key = datastore.IncompleteKey("Video", nil)
+	fmt.Printf("incomplete key: %v", v.Key)
+	key, err := r.datastoreClient.Put(r.ctx, v.Key, v)
+	fmt.Printf("key returned from Put: %v", key)
 	if err != nil {
 		return v, fmt.Errorf("Failed to save video %v", err)
 	}
-	v.Key = key
-	v.StorageObjectName = fmt.Sprintf("%d-%s", key.ID, v.FileName)
 
+	v, err = r.writeFileToStorage(fileReader, v)
+	if err != nil {
+		return v, err
+	}
+
+	return v, nil
+}
+
+func (r *gcpRepo) Update(fileReader io.Reader, v *cohesioned.Video) (*cohesioned.Video, error) {
+	v.Updated = time.Now()
+
+	_, err := r.datastoreClient.Put(r.ctx, v.Key, v)
+	if err != nil {
+		return v, fmt.Errorf("Failed to save video %v", err)
+	}
+
+	v, err = r.writeFileToStorage(fileReader, v)
+	if err != nil {
+		return v, err
+	}
+
+	return v, nil
+}
+
+func (r *gcpRepo) writeFileToStorage(fileReader io.Reader, v *cohesioned.Video) (*cohesioned.Video, error) {
+	if fileReader == nil {
+		return v, nil
+	}
+
+	v.StorageObjectName = fmt.Sprintf("%d-%s", v.ID(), v.FileName)
 	objectHandle := r.storageClient.Bucket(v.StorageBucket).Object(v.StorageObjectName)
-	//TODO - do we need to set any other attrs?
-	// attrs, err := objectHandle.Attrs(r.ctx)
-	// if err != nil {
-	// 	return v, fmt.Errorf("Failed to get storage object handle attrs %v", err)
-	// }
-
 	writer := objectHandle.NewWriter(r.ctx)
+
 	if _, err := io.Copy(writer, fileReader); err != nil {
 		return v, fmt.Errorf("Failed to write video file %v", err)
 	}
@@ -96,7 +122,7 @@ func (r *gcpRepo) Add(fileReader io.Reader, v *cohesioned.Video) (*cohesioned.Vi
 		return v, fmt.Errorf("Failed to write video file %v", err)
 	}
 
-	if _, err := r.datastoreClient.Put(r.ctx, key, v); err != nil {
+	if _, err := r.datastoreClient.Put(r.ctx, v.Key, v); err != nil {
 		return v, fmt.Errorf("Failed to update video %v", err)
 	}
 

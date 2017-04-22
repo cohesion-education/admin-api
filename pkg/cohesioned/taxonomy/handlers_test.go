@@ -16,7 +16,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func TestListHandler(t *testing.T) {
+func TestListViewHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", "/taxonomy", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -27,7 +27,7 @@ func TestListHandler(t *testing.T) {
 	repo := new(fakes.FakeTaxonomyRepo)
 	repo.ListReturns([]*cohesioned.Taxonomy{}, nil)
 
-	handler := taxonomy.ListHandler(fakes.FakeRenderer, repo)
+	handler := taxonomy.ListViewHandler(fakes.FakeRenderer, repo)
 	profile := fakes.FakeProfile()
 
 	ctx := req.Context()

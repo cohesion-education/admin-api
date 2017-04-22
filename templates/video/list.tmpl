@@ -1,19 +1,24 @@
 <div class="row">
     <div class="col-sm-12">
-        <h4 class="page-title">Video Management</h4>
-        <a href="/admin/video/add">Add new Video</a>
+        <section>
+          <a class="management-action" href="/admin/video/add">Add new Video</a>
+          <h4 class="page-title">Video Management</h4>
+        </section>
+
         <table class="video">
           <tr>
             <th></th>
-            <th>Date Created</th>
+            <th>Title</th>
             <th>Category</th>
+            <th>Date Created</th>
             <th>Created By</th>
           </tr>
           {{range .list}}
           <tr>
+            <td><a href="/admin/video/edit/{{.ID}}">Edit</a></td>
             <td><a href="/admin/video/{{.ID}}" >{{.Title}}</a></td>
-            <td>{{.Created}}</td>
             <td>{{.TaxonomyID}}</td>
+            <td>{{.Created}}</td>
             <td>{{.CreatedBy.FullName}}</td>
           </tr>
           {{end}}

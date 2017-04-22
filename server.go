@@ -72,42 +72,52 @@ func newServer() *negroni.Negroni {
 	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
 
 	//Public Routes
-	mx.Methods("GET").Path("/").Handler(auth.LoginViewHandler(renderer))
-	mx.Methods("GET").Path("/admin/login").Handler(auth.LoginViewHandler(renderer))
-	mx.Methods("GET").Path("/logout").Handler(auth.LogoutHandler(renderer))
-	mx.Methods("GET").Path("/callback").Handler(auth.CallbackHandler(authConfig))
-	mx.Methods("GET").Path("/auth/config").Handler(auth.ConfigHandler(authConfig))
+	mx.Methods(http.MethodGet).Path("/").Handler(auth.LoginViewHandler(renderer))
+	mx.Methods(http.MethodGet).Path("/admin/login").Handler(auth.LoginViewHandler(renderer))
+	mx.Methods(http.MethodGet).Path("/logout").Handler(auth.LogoutHandler(renderer))
+	mx.Methods(http.MethodGet).Path("/callback").Handler(auth.CallbackHandler(authConfig))
+	mx.Methods(http.MethodGet).Path("/auth/config").Handler(auth.ConfigHandler(authConfig))
 
 	isAuthenticatedHandler := auth.IsAuthenticatedHandler(authConfig)
-	commonMiddleware := negroni.New(
+	authMiddleware := negroni.New(
 		negroni.HandlerFunc(isAuthenticatedHandler),
 	)
 
 	//Admin Routes
-	adminSubRouter := mux.NewRouter()
-	adminSubRouter.Methods("GET").Path("/admin/dashboard").Handler(admin.DashboardViewHandler(renderer))
-	adminSubRouter.Methods("GET").Path("/admin/taxonomy").Handler(taxonomy.ListHandler(renderer, taxonomyRepo))
-	adminSubRouter.Methods("GET").Path("/admin/video").Handler(video.ListHandler(renderer, videoRepo))
-	adminSubRouter.Methods("GET").Path("/admin/video/{id:[0-9]+}").Handler(video.ShowHandler(renderer, videoRepo))
-	adminSubRouter.Methods("GET").Path("/admin/video/add").Handler(video.FormHandler(renderer, videoRepo))
-	mx.PathPrefix("/admin").Handler(commonMiddleware.With(
+	adminRouter := mux.NewRouter()
+	adminRouter.Methods(http.MethodGet).Path("/admin/dashboard").Handler(admin.DashboardViewHandler(renderer))
+	adminRouter.Methods(http.MethodGet).Path("/admin/taxonomy").Handler(taxonomy.ListViewHandler(renderer, taxonomyRepo))
+	adminRouter.Methods(http.MethodGet).Path("/admin/video").Handler(video.ListViewHandler(renderer, videoRepo))
+	adminRouter.Methods(http.MethodGet).Path("/admin/video/{id:[0-9]+}").Handler(video.ShowViewHandler(renderer, videoRepo))
+	adminRouter.Methods(http.MethodGet).Path("/admin/video/add").Handler(video.FormViewHandler(renderer, videoRepo))
+	adminRouter.Methods(http.MethodGet).Path("/admin/video/edit/{id:[0-9]+}").Handler(video.FormViewHandler(renderer, videoRepo))
+	mx.PathPrefix("/admin").Handler(authMiddleware.With(
 		negroni.HandlerFunc(auth.IsAdmin),
-		negroni.Wrap(adminSubRouter),
+		negroni.Wrap(adminRouter),
 	))
 
 	//APIs that require Admin priveleges
-	requireAdmin("POST", "/api/taxonomy", taxonomy.AddHandler(renderer, taxonomyRepo), mx, commonMiddleware)
-	requireAdmin("GET", "/api/taxonomy", taxonomy.ListJSONHandler(renderer, taxonomyRepo), mx, commonMiddleware)
-	requireAdmin("GET", "/api/taxonomy/{id:[0-9]+}/children", taxonomy.ListChildrenHandler(renderer, taxonomyRepo), mx, commonMiddleware)
-	requireAdmin("POST", "/api/video", video.SaveHandler(renderer, videoRepo), mx, commonMiddleware)
-	requireAdmin("GET", "/api/video/stream/{id:[0-9]+}", video.StreamHandler(renderer, videoRepo, gcpConfig), mx, commonMiddleware)
+	requiresAdmin(http.MethodPost, "/api/taxonomy", taxonomy.AddHandler(renderer, taxonomyRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodPost, "/api/video", video.SaveHandler(renderer, videoRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodPut, "/api/video/{id:[0-9]+}", video.UpdateHandler(renderer, videoRepo), mx, authMiddleware)
+
+	//APIs that only require Authentication
+	requiresAuth(http.MethodGet, "/api/taxonomy", taxonomy.ListHandler(renderer, taxonomyRepo), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/api/taxonomy/{id:[0-9]+}/children", taxonomy.ListChildrenHandler(renderer, taxonomyRepo), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/api/video/stream/{id:[0-9]+}", video.StreamHandler(renderer, videoRepo, gcpConfig), mx, authMiddleware)
 
 	n.UseHandler(mx)
 	return n
 }
 
-func requireAdmin(method string, uri string, handler http.Handler, mx *mux.Router, commonMiddleware *negroni.Negroni) {
-	mx.Methods(method).Path(uri).Handler(commonMiddleware.With(
+func requiresAuth(method string, uri string, handler http.Handler, mx *mux.Router, authMiddleware *negroni.Negroni) {
+	mx.Methods(method).Path(uri).Handler(authMiddleware.With(
+		negroni.Wrap(handler),
+	))
+}
+
+func requiresAdmin(method string, uri string, handler http.Handler, mx *mux.Router, authMiddleware *negroni.Negroni) {
+	mx.Methods(method).Path(uri).Handler(authMiddleware.With(
 		negroni.HandlerFunc(auth.IsAdmin),
 		negroni.Wrap(handler),
 	))
