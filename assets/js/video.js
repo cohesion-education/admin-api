@@ -57,18 +57,24 @@ $(document).ready(function() {
       window.location.replace(result.redirect_url)
     }).fail(function( jqXHR, textStatus, errorThrown ){
       $('#progressbar').hide()
-      
+
       console.log("Failed :( " + textStatus + " " + errorThrown)
       console.log("jqXHR.responseText: " + jqXHR.responseText)
-      var response = $.parseJSON(jqXHR.responseText)
-      if(response != null){
-        var errors = response.error + '<ul>'
-        for(i = 0; i < response.validation_errors.length; i++){
-          errors += '<li>' + response.validation_errors[i].error + '</li>'
-        }
-        errors += '</ul>'
 
-        $('#errors').html(errors)
+      try {
+        var response = JSON.parse(jqXHR.responseText)
+        if(response != null){
+          var errors = response.error + '<ul>'
+          for(i = 0; i < response.validation_errors.length; i++){
+            errors += '<li>' + response.validation_errors[i].error + '</li>'
+          }
+          errors += '</ul>'
+
+          $('#errors').html(errors)
+          $('#errors').show()
+        }
+      } catch(e) {
+        $('#errors').html(jqXHR.responseText)
         $('#errors').show()
       }
     });
