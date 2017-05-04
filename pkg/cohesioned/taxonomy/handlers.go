@@ -136,3 +136,30 @@ func ListChildrenHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		r.JSON(w, http.StatusOK, data)
 	}
 }
+
+func FlatListHandler(r *render.Render, repo Repo) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		list, err := repo.List()
+		if err != nil {
+			data := struct {
+				Error error `json:"error"`
+			}{
+				err,
+			}
+			r.JSON(w, http.StatusInternalServerError, data)
+			return
+		}
+
+		flattened := []*cohesioned.Taxonomy{}
+		for _, t := range list {
+			tFlattened, err := repo.Flatten(t)
+			if err != nil {
+				fmt.Println(err.Error())
+				continue
+			}
+			flattened = append(flattened, tFlattened...)
+		}
+
+		r.JSON(w, http.StatusOK, flattened)
+	}
+}

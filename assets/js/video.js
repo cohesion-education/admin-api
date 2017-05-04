@@ -1,11 +1,17 @@
 $(document).ready(function() {
   $('#top-level-categories').prop('disabled', 'disabled')
 
-  $.getJSON("/api/taxonomy", function(result) {
-    $.each(result, function() {
-      flattenTaxonomyOptions(this)
-      $('#top-level-categories').prop('disabled', false)
+  $.getJSON("/api/taxonomy/flatten", function(results) {
+    $.each(results, function(i, taxonomy) {
+      var option = $("<option />").val(taxonomy.id).text(taxonomy.name)
+      if($('#selected_taxonomy_id').val() == taxonomy.id){
+        option.attr("selected", true)
+      }
+
+      $('#top-level-categories').append(option)
     });
+
+    $('#top-level-categories').prop('disabled', false)
   });
 
   $('form#video').submit(function(){
@@ -82,27 +88,3 @@ $(document).ready(function() {
     return false
   });
 });
-
-function flattenTaxonomyOptions(taxonomy){
-  if(taxonomy == null || taxonomy.id == null){
-    return
-  }
-
-  $.ajax({
-    url: "/api/taxonomy/" + taxonomy.id + "/children"
-  }).done(function(result){
-    if(result.children){
-      $.each(result.children, function(index, child) {
-        child.name = taxonomy.name + " > " + child.name
-        flattenTaxonomyOptions(child)
-      })
-    }else{
-      var option = $("<option />").val(taxonomy.id).text(taxonomy.name)
-      if($('#selected_taxonomy_id').val() == taxonomy.id){
-        option.attr("selected", true)
-      }
-
-      $('#top-level-categories').append(option)
-    }
-  });
-}

@@ -15,6 +15,7 @@ type Repo interface {
 	List() ([]*cohesioned.Taxonomy, error)
 	ListChildren(parentID int64) ([]*cohesioned.Taxonomy, error)
 	Add(t *cohesioned.Taxonomy) (*cohesioned.Taxonomy, error)
+	Flatten(t *cohesioned.Taxonomy) ([]*cohesioned.Taxonomy, error)
 }
 
 //NewGCPDatastoreRepo implementation of taxonomy.Repo
@@ -56,4 +57,33 @@ func (repo *gcpDatastoreRepo) Add(t *cohesioned.Taxonomy) (*cohesioned.Taxonomy,
 
 	t.Key = key
 	return t, nil
+}
+
+func (repo *gcpDatastoreRepo) Flatten(t *cohesioned.Taxonomy) ([]*cohesioned.Taxonomy, error) {
+	flattened := []*cohesioned.Taxonomy{}
+	if t == nil {
+		return flattened, nil
+	}
+
+	children, err := repo.ListChildren(t.ID())
+	if err != nil {
+		return flattened, fmt.Errorf("Failed to get children for %s %v\n", t.Name, err)
+	}
+
+	if len(children) == 0 {
+		fmt.Printf("Flattened: %s\n", t.Name)
+		flattened = append(flattened, t)
+		return flattened, nil
+	}
+
+	for _, child := range children {
+		child.Name = fmt.Sprintf("%s > %s", t.Name, child.Name)
+		flattenedChildren, err := repo.Flatten(child)
+		if err != nil {
+			return flattened, fmt.Errorf("Failed to flatten children of %s %v", child.Name, err)
+		}
+		flattened = append(flattened, flattenedChildren...)
+	}
+
+	return flattened, nil
 }

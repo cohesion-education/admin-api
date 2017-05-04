@@ -1,6 +1,8 @@
 $(document).ready(function() {
-  $('a.taxonomy').click(getTaxonomyChildren);
-  $('.add-taxonomy').click(addTaxonomyHandler);
+  $('a#toggle-tree-view').click(treeViewHandler)
+  $('a#toggle-flat-view').click(flatViewHandler)
+  $('a.taxonomy').click(getTaxonomyChildren)
+  $('.add-taxonomy').click(addTaxonomyHandler)
 });
 
 var addTaxonomyFormTemplate  = '<li><form id="[form-id]">'
@@ -115,6 +117,46 @@ function addTaxonomyFormSubmitHandler(){
    }).fail(function( jqXHR, textStatus, errorThrown ){
      alert("Failed to Add Taxonomy. " + errorThrown + ": " + jqXHR.responseText)
    });
+
+  return false
+}
+
+function treeViewHandler(){
+  if($('#toggle-tree-view').hasClass('disabled') != true){
+    $('#toggle-tree-view').addClass('disabled')
+    $('#toggle-flat-view').removeClass('disabled')
+
+    $('#taxonomy-view').empty()
+
+    $.getJSON('/api/taxonomy', function(results) {
+      $.each(results, function(i, taxonomy) {
+        $('#taxonomy-view').append(taxonomyLITemplate
+           .replace('[id]', taxonomy.id)
+           .replace('[name]', taxonomy.name))
+      })
+
+      $('#taxonomy-view').append(addTaxonomyLITemplate.replace('[id]', ''))
+      reinitOnclickBindings()
+    })
+
+  }
+
+  return false
+}
+
+function flatViewHandler(){
+  if($('#toggle-flat-view').hasClass('disabled') != true){
+    $('#toggle-flat-view').addClass('disabled')
+    $('#toggle-tree-view').removeClass('disabled')
+
+    $('#taxonomy-view').empty()
+
+    $.getJSON('/api/taxonomy/flatten', function(results) {
+      $.each(results, function(i, taxonomy) {
+        $('#taxonomy-view').append('<li>' + taxonomy.name + '</li>')
+      });
+    });
+  }
 
   return false
 }

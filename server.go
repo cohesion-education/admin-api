@@ -78,6 +78,9 @@ func newServer() *negroni.Negroni {
 	mx.Methods(http.MethodGet).Path("/callback").Handler(auth.CallbackHandler(authConfig))
 	mx.Methods(http.MethodGet).Path("/auth/config").Handler(auth.ConfigHandler(authConfig))
 
+	//Public APIs
+	mx.Methods(http.MethodGet).Path("/api/taxonomy/flatten").Handler(taxonomy.FlatListHandler(renderer, taxonomyRepo))
+
 	isAuthenticatedHandler := auth.IsAuthenticatedHandler(authConfig)
 	authMiddleware := negroni.New(
 		negroni.HandlerFunc(isAuthenticatedHandler),
