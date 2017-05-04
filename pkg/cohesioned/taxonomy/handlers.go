@@ -154,7 +154,7 @@ func FlatListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		for _, t := range list {
 			tFlattened, err := repo.Flatten(t)
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Printf("An unexpected error occured when trying to flatten %d %v", t.ID(), err.Error())
 				continue
 			}
 			flattened = append(flattened, tFlattened...)

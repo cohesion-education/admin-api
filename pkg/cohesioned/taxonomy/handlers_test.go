@@ -148,3 +148,54 @@ func TestListChildrenHandler(t *testing.T) {
 		t.Errorf("The expected json was not generated.\n\nExpected:\n%s\n\nActual:\n%s", string(expectedBody), rr.Body.String())
 	}
 }
+
+func TestFlattenHandler(t *testing.T) {
+	req, err := http.NewRequest("GET", "/api/taxonomy/flatten", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fakeList := []*cohesioned.Taxonomy{
+		&cohesioned.Taxonomy{
+			Name:     "Parent 1",
+			Created:  time.Now(),
+			ParentID: 1234,
+			Key:      datastore.IDKey("Taxonomy", 1, nil),
+		},
+	}
+
+	fakeFlattened := []*cohesioned.Taxonomy{
+		&cohesioned.Taxonomy{
+			Name:     "Parent 1 > Child 1",
+			Created:  time.Now(),
+			ParentID: 1234,
+			Key:      datastore.IDKey("Taxonomy", 1, nil),
+		},
+		&cohesioned.Taxonomy{
+			Name:     "Parent 1 > Child 2",
+			Created:  time.Now(),
+			ParentID: 1234,
+			Key:      datastore.IDKey("Taxonomy", 2, nil),
+		},
+	}
+
+	repo := new(fakes.FakeTaxonomyRepo)
+	repo.ListReturns(fakeList, nil)
+	repo.FlattenReturns(fakeFlattened, nil)
+
+	rr := httptest.NewRecorder()
+	handler := taxonomy.FlatListHandler(fakes.FakeRenderer, repo)
+
+	router := mux.NewRouter()
+	router.HandleFunc("/api/taxonomy/flatten", handler)
+	router.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	}
+
+	expectedBody := fakes.RenderJSON(fakeFlattened)
+	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
+		t.Errorf("The expected json was not generated.\n\nExpected:\n%s\n\nActual:\n%s", string(expectedBody), rr.Body.String())
+	}
+}
