@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/admin"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
@@ -72,7 +73,11 @@ func newServer() *negroni.Negroni {
 	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
 
 	//Public Routes
-	mx.Methods(http.MethodGet).Path("/").Handler(auth.LoginViewHandler(renderer))
+	mx.Methods(http.MethodGet).Path("/").Handler(cohesioned.HomepageViewHandler(renderer))
+	mx.Methods(http.MethodGet).Path("/login").Handler(auth.LoginViewHandler(renderer))
+	//TODO - create register page
+	mx.Methods(http.MethodGet).Path("/register").Handler(nil)
+	//TODO - separate admin login page?
 	mx.Methods(http.MethodGet).Path("/admin/login").Handler(auth.LoginViewHandler(renderer))
 	mx.Methods(http.MethodGet).Path("/logout").Handler(auth.LogoutHandler(renderer))
 	mx.Methods(http.MethodGet).Path("/callback").Handler(auth.CallbackHandler(authConfig))

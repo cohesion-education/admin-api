@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Cohesion Education. Let us help you help your kids">
+        <link rel="shortcut icon" href="images/favicon.ico">
+
+        <title>Cohesion Education</title>
+        {{ partial "stylesheets" }}
+        {{ partial "head-scripts" }}
+    </head>
+    <body data-spy="scroll" data-target="#navbar-menu">
+        {{ partial "navbar" }}
+
+        {{ yield }}
+
+        {{ partial "features" }}
+        {{ partial "testimonials" }}
+        {{ partial "pricing" }}
+
+        {{ partial "footer" }}
+        {{ partial "footer-scripts" }}
+    </body>
+</html>
