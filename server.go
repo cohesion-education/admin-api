@@ -77,11 +77,6 @@ func newServer() *negroni.Negroni {
 
 	//Public Routes
 	mx.Methods(http.MethodGet).Path("/").Handler(cohesioned.HomepageViewHandler(renderer))
-	mx.Methods(http.MethodGet).Path("/login").Handler(auth.LoginViewHandler(renderer))
-	//TODO - create register page
-	mx.Methods(http.MethodGet).Path("/register").Handler(nil)
-	//TODO - separate admin login page?
-	mx.Methods(http.MethodGet).Path("/admin/login").Handler(auth.LoginViewHandler(renderer))
 	mx.Methods(http.MethodGet).Path("/logout").Handler(auth.LogoutHandler(renderer, authConfig))
 	mx.Methods(http.MethodGet).Path("/callback").Handler(auth.CallbackHandler(authConfig))
 	mx.Methods(http.MethodGet).Path("/auth/config").Handler(auth.ConfigHandler(authConfig))
