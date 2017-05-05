@@ -12,12 +12,12 @@ import (
 )
 
 type AuthConfig struct {
-	SessionStore sessions.Store
-	ClientID     string
-	ClientSecret string
-	Domain       string
-	CallbackURL  string
-	LogoutURL    string
+	SessionStore     sessions.Store
+	ClientID         string
+	ClientSecret     string
+	Domain           string
+	CallbackURL      string
+	LogoutRedirectTo string
 }
 
 func (config *AuthConfig) GetCurrentSession(r *http.Request) (*sessions.Session, error) {
@@ -50,8 +50,8 @@ func NewAuthConfig() (*AuthConfig, error) {
 			if callbackURL, ok := auth0Service.CredentialString("callback-url"); ok {
 				config.CallbackURL = callbackURL
 			}
-			if logoutURL, ok := auth0Service.CredentialString("logout-url"); ok {
-				config.LogoutURL = logoutURL
+			if LogoutRedirectTo, ok := auth0Service.CredentialString("logout-redirect-to"); ok {
+				config.LogoutRedirectTo = LogoutRedirectTo
 			}
 			if sessionStoreAuthKey, ok := auth0Service.CredentialString("session-auth-key"); ok {
 				config.SessionStore = newSessionStore(sessionStoreAuthKey)
@@ -75,8 +75,8 @@ func NewAuthConfig() (*AuthConfig, error) {
 		config.CallbackURL = os.Getenv("CALLBACK_URL")
 	}
 
-	if len(config.LogoutURL) == 0 {
-		config.LogoutURL = os.Getenv("LOGOUT_URL")
+	if len(config.LogoutRedirectTo) == 0 {
+		config.LogoutRedirectTo = os.Getenv("LOGOUT_REDIRECT_TO")
 	}
 
 	if config.SessionStore == nil {
@@ -100,8 +100,8 @@ func NewAuthConfig() (*AuthConfig, error) {
 		missingConfig = append(missingConfig, "CallbackURL")
 	}
 
-	if len(config.LogoutURL) == 0 {
-		missingConfig = append(missingConfig, "LogoutURL")
+	if len(config.LogoutRedirectTo) == 0 {
+		missingConfig = append(missingConfig, "LogoutRedirectTo")
 	}
 
 	if config.SessionStore == nil {

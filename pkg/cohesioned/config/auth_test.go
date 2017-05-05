@@ -48,7 +48,7 @@ func TestNewAuthConfigViaEnvVars(t *testing.T) {
 	os.Setenv("AUTH0_CLIENT_SECRET", "test-secret")
 	os.Setenv("AUTH0_DOMAIN", "test-domain")
 	os.Setenv("CALLBACK_URL", "test-callback-url")
-	os.Setenv("LOGOUT_URL", "test-logout-url")
+	os.Setenv("LOGOUT_REDIRECT_TO", "test-logout-url")
 	os.Setenv("SESSION_AUTH_KEY", "test-key")
 
 	if _, err := config.NewAuthConfig(); err != nil {
@@ -62,7 +62,7 @@ func TestNewAuthConfigViaPartialEnvVars(t *testing.T) {
 	os.Setenv("AUTH0_CLIENT_SECRET", "test-secret")
 	os.Setenv("AUTH0_DOMAIN", "test-domain")
 	os.Setenv("CALLBACK_URL", "test-callback-url")
-	os.Setenv("LOGOUT_URL", "test-logout-url")
+	os.Setenv("LOGOUT_REDIRECT_TO", "test-logout-url")
 	os.Setenv("SESSION_AUTH_KEY", "test-key")
 
 	_, err := config.NewAuthConfig()

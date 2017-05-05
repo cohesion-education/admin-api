@@ -69,6 +69,9 @@ func newServer() *negroni.Negroni {
 	n := negroni.Classic()
 	mx := mux.NewRouter()
 
+	//TODO - map to 404 page
+	//mx.NotFoundHandler = nil
+
 	// Static Assets
 	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
 
@@ -79,7 +82,7 @@ func newServer() *negroni.Negroni {
 	mx.Methods(http.MethodGet).Path("/register").Handler(nil)
 	//TODO - separate admin login page?
 	mx.Methods(http.MethodGet).Path("/admin/login").Handler(auth.LoginViewHandler(renderer))
-	mx.Methods(http.MethodGet).Path("/logout").Handler(auth.LogoutHandler(renderer))
+	mx.Methods(http.MethodGet).Path("/logout").Handler(auth.LogoutHandler(renderer, authConfig))
 	mx.Methods(http.MethodGet).Path("/callback").Handler(auth.CallbackHandler(authConfig))
 	mx.Methods(http.MethodGet).Path("/auth/config").Handler(auth.ConfigHandler(authConfig))
 

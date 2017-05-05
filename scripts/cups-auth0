@@ -7,7 +7,7 @@ echo $(cat <<-EOF
   "domain":"$AUTH0_DOMAIN",
   "callback-url":"$CALLBACK_URL",
   "session-auth-key":"$SESSION_AUTH_KEY",
-  "logout-url":"$LOGOUT_URL"
+  "logout-redirect-to":"$LOGOUT_REDIRECT_TO"
 }
 EOF
 ) > credentials.json
