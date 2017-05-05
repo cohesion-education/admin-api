@@ -68,15 +68,19 @@ function($) {
 
 $(document).ready(function() {
   var lock = new Auth0Lock(AUTH0_CLIENT_ID, AUTH0_DOMAIN, {
-    auth: {
-      params: { scope: 'openid email' }, //Details: https://auth0.com/docs/scopes
+  auth: {
+    //Details: https://auth0.com/docs/scopes
+    params: { scope: 'openid email' },
       redirectUrl: AUTH0_CALLBACK_URL
     },
     allowedConnections: ['Username-Password-Authentication', 'google-oauth2', 'facebook'],
     theme: {
       logo: '/assets/images/cohesion-c.png',
       primaryColor: '#6e929e'
-    }
+    },
+    languageDictionary: {
+      title: "Cohesion Education"
+    },
   });
 
   $('.btn-login').click(function(e) {
