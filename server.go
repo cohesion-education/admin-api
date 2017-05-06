@@ -8,9 +8,9 @@ import (
 	"os"
 
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/admin"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/dashboard"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/gcp"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/taxonomy"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/video"
@@ -21,8 +21,20 @@ import (
 )
 
 var (
-	renderer = render.New(render.Options{
-		Layout: "layout",
+	apiRenderer = render.New()
+
+	homePageRenderer = render.New(render.Options{
+		Layout: "homepage/layout",
+		RenderPartialsWithoutPrefix: true,
+	})
+
+	adminDashboardRenderer = render.New(render.Options{
+		Layout: "dashboard/admin-layout",
+		RenderPartialsWithoutPrefix: true,
+	})
+
+	userDashboardRenderer = render.New(render.Options{
+		Layout: "dashboard/user-layout",
 		RenderPartialsWithoutPrefix: true,
 	})
 )
@@ -68,6 +80,7 @@ func newServer() *negroni.Negroni {
 
 	n := negroni.Classic()
 	mx := mux.NewRouter()
+	mx.StrictSlash(true)
 
 	//TODO - map to 404 page
 	//mx.NotFoundHandler = nil
@@ -76,41 +89,44 @@ func newServer() *negroni.Negroni {
 	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
 
 	//Public Routes
-	mx.Methods(http.MethodGet).Path("/").Handler(cohesioned.HomepageViewHandler(renderer))
-	mx.Methods(http.MethodGet).Path("/logout").Handler(auth.LogoutHandler(renderer, authConfig))
+	mx.Methods(http.MethodGet).Path("/").Handler(cohesioned.HomepageViewHandler(homePageRenderer))
+	mx.Methods(http.MethodGet).Path("/logout").Handler(auth.LogoutHandler(authConfig))
 	mx.Methods(http.MethodGet).Path("/callback").Handler(auth.CallbackHandler(authConfig))
 	mx.Methods(http.MethodGet).Path("/auth/config").Handler(auth.ConfigHandler(authConfig))
 
 	//Public APIs
-	mx.Methods(http.MethodGet).Path("/api/taxonomy/flatten").Handler(taxonomy.FlatListHandler(renderer, taxonomyRepo))
+	mx.Methods(http.MethodGet).Path("/api/taxonomy/flatten").Handler(taxonomy.FlatListHandler(apiRenderer, taxonomyRepo))
 
 	isAuthenticatedHandler := auth.IsAuthenticatedHandler(authConfig)
 	authMiddleware := negroni.New(
 		negroni.HandlerFunc(isAuthenticatedHandler),
 	)
 
+	//User Routes
+	requiresAuth(http.MethodGet, "/dashboard", dashboard.UserViewHandler(userDashboardRenderer), mx, authMiddleware)
+
 	//Admin Routes
 	adminRouter := mux.NewRouter()
-	adminRouter.Methods(http.MethodGet).Path("/admin/dashboard").Handler(admin.DashboardViewHandler(renderer))
-	adminRouter.Methods(http.MethodGet).Path("/admin/taxonomy").Handler(taxonomy.ListViewHandler(renderer, taxonomyRepo))
-	adminRouter.Methods(http.MethodGet).Path("/admin/video").Handler(video.ListViewHandler(renderer, videoRepo))
-	adminRouter.Methods(http.MethodGet).Path("/admin/video/{id:[0-9]+}").Handler(video.ShowViewHandler(renderer, videoRepo))
-	adminRouter.Methods(http.MethodGet).Path("/admin/video/add").Handler(video.FormViewHandler(renderer, videoRepo))
-	adminRouter.Methods(http.MethodGet).Path("/admin/video/edit/{id:[0-9]+}").Handler(video.FormViewHandler(renderer, videoRepo))
+	adminRouter.Methods(http.MethodGet).Path("/admin/dashboard").Handler(dashboard.AdminViewHandler(adminDashboardRenderer))
+	adminRouter.Methods(http.MethodGet).Path("/admin/taxonomy").Handler(taxonomy.ListViewHandler(adminDashboardRenderer, taxonomyRepo))
+	adminRouter.Methods(http.MethodGet).Path("/admin/video").Handler(video.ListViewHandler(adminDashboardRenderer, videoRepo))
+	adminRouter.Methods(http.MethodGet).Path("/admin/video/{id:[0-9]+}").Handler(video.ShowViewHandler(adminDashboardRenderer, videoRepo))
+	adminRouter.Methods(http.MethodGet).Path("/admin/video/add").Handler(video.FormViewHandler(adminDashboardRenderer, videoRepo))
+	adminRouter.Methods(http.MethodGet).Path("/admin/video/edit/{id:[0-9]+}").Handler(video.FormViewHandler(adminDashboardRenderer, videoRepo))
 	mx.PathPrefix("/admin").Handler(authMiddleware.With(
 		negroni.HandlerFunc(auth.IsAdmin),
 		negroni.Wrap(adminRouter),
 	))
 
 	//APIs that require Admin priveleges
-	requiresAdmin(http.MethodPost, "/api/taxonomy", taxonomy.AddHandler(renderer, taxonomyRepo), mx, authMiddleware)
-	requiresAdmin(http.MethodPost, "/api/video", video.SaveHandler(renderer, videoRepo), mx, authMiddleware)
-	requiresAdmin(http.MethodPut, "/api/video", video.UpdateHandler(renderer, videoRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodPost, "/api/taxonomy", taxonomy.AddHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodPost, "/api/video", video.SaveHandler(apiRenderer, videoRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodPut, "/api/video", video.UpdateHandler(apiRenderer, videoRepo), mx, authMiddleware)
 
 	//APIs that only require Authentication
-	requiresAuth(http.MethodGet, "/api/taxonomy", taxonomy.ListHandler(renderer, taxonomyRepo), mx, authMiddleware)
-	requiresAuth(http.MethodGet, "/api/taxonomy/{id:[0-9]+}/children", taxonomy.ListChildrenHandler(renderer, taxonomyRepo), mx, authMiddleware)
-	requiresAuth(http.MethodGet, "/api/video/stream/{id:[0-9]+}", video.StreamHandler(renderer, videoRepo, gcpConfig), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/api/taxonomy", taxonomy.ListHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/api/taxonomy/{id:[0-9]+}/children", taxonomy.ListChildrenHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/api/video/stream/{id:[0-9]+}", video.StreamHandler(apiRenderer, videoRepo, gcpConfig), mx, authMiddleware)
 
 	n.UseHandler(mx)
 	return n

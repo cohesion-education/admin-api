@@ -26,7 +26,6 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 		}
 
 		code := req.URL.Query().Get("code")
-
 		token, err := conf.Exchange(oauth2.NoContext, code)
 		if err != nil {
 			http.Error(w, "error exchanging code for token "+err.Error(), http.StatusInternalServerError)
@@ -69,6 +68,11 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 			return
 		}
 
-		http.Redirect(w, req, "/admin/dashboard", http.StatusSeeOther)
+		if profile.HasRole("admin") {
+			http.Redirect(w, req, "/admin/dashboard", http.StatusSeeOther)
+			return
+		}
+
+		http.Redirect(w, req, "/dashboard", http.StatusSeeOther)
 	}
 }

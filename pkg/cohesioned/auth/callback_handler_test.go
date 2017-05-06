@@ -11,7 +11,7 @@ import (
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
 )
 
-func TestCallbackHandler(t *testing.T) {
+func TestCallbackHandlerAsNonAdminUser(t *testing.T) {
 	req, err := http.NewRequest("GET", "/callback?code=abc123", nil)
 	if err != nil {
 		t.Fatalf("Failed to initialize new request %v", err)
@@ -51,8 +51,9 @@ func TestCallbackHandler(t *testing.T) {
 		t.Fatalf("unable to retreive rr.Result().Location() %v", err)
 	}
 
-	if "/admin/dashboard" != location.Path {
-		t.Errorf("Expected request redirect url to be %s but was %s", "/admin/dashboard", req.URL.Path)
+	expectedRedirectTo := "/dashboard"
+	if expectedRedirectTo != location.Path {
+		t.Errorf("Expected request redirect url to be %s but was %s", expectedRedirectTo, location.Path)
 	}
 
 	session, err := fakes.FakeAuthConfig.GetCurrentSession(req)

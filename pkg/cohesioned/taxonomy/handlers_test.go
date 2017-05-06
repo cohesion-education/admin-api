@@ -27,7 +27,8 @@ func TestListViewHandler(t *testing.T) {
 	repo := new(fakes.FakeTaxonomyRepo)
 	repo.ListReturns([]*cohesioned.Taxonomy{}, nil)
 
-	handler := taxonomy.ListViewHandler(fakes.FakeRenderer, repo)
+	renderer := fakes.FakeAdminDashboardRenderer
+	handler := taxonomy.ListViewHandler(renderer, repo)
 	profile := fakes.FakeProfile()
 
 	ctx := req.Context()
@@ -44,7 +45,7 @@ func TestListViewHandler(t *testing.T) {
 	dashboard.Set("profile", profile)
 	dashboard.Set("list", []*cohesioned.Taxonomy{})
 
-	expectedBody := fakes.RenderHTML("taxonomy/list", dashboard)
+	expectedBody := fakes.RenderHTML(renderer, "taxonomy/list", dashboard)
 	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
 		t.Errorf("HTML response was not generated as expected. Expected:\n\n%s\n\nActual:\n\n%s", string(expectedBody), rr.Body.String())
 	}

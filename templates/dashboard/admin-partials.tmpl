@@ -1,11 +1,20 @@
-{{ define "left-sidebar" }}
+{{ define "admin-head-scripts" }}
+  {{ partial "common-head-scripts" }}
+{{ end }}
+
+{{ define "admin-stylesheets" }}
+  {{ partial "common-stylesheets" }}
+{{ end }}
+
+
+{{ define "admin-left-sidebar" }}
 <!-- ========== Left Sidebar Start ========== -->
 <div class="left side-menu">
   <div class="sidebar-inner slimscrollleft">
     <!--- Divider -->
     <div id="sidebar-menu">
       <ul>
-        <li class="text-muted menu-title">Navigation</li>
+        <li class="text-muted menu-title">Admin Functions</li>
         <li><a href="/admin/taxonomy">Taxonomy</a></li>
         <li><a href="/admin/video">Videos</a></li>
       </ul>
@@ -15,4 +24,8 @@
   </div>
 </div>
 <!-- Left Sidebar End -->
+{{ end }}
+
+{{ define "admin-footer-scripts" }}
+    {{ partial "common-footer-scripts" }}
 {{ end }}

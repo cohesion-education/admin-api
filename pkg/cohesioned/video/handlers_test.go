@@ -32,7 +32,8 @@ func TestListViewHandler(t *testing.T) {
 	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
-	handler := video.ListViewHandler(fakes.FakeRenderer, repo)
+	renderer := fakes.FakeAdminDashboardRenderer
+	handler := video.ListViewHandler(renderer, repo)
 	rr := httptest.NewRecorder()
 	handler.ServeHTTP(rr, req)
 
@@ -44,7 +45,7 @@ func TestListViewHandler(t *testing.T) {
 	dashboard.Set("profile", profile)
 	dashboard.Set("list", []*cohesioned.Video{})
 
-	expectedBody := fakes.RenderHTML("video/list", dashboard)
+	expectedBody := fakes.RenderHTML(renderer, "video/list", dashboard)
 	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
 		t.Errorf("HTML response was not generated as expected. Expected:\n\n%s\n\nActual:\n\n%s", string(expectedBody), rr.Body.String())
 	}
@@ -63,7 +64,8 @@ func TestFormViewHandler(t *testing.T) {
 	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
-	handler := video.FormViewHandler(fakes.FakeRenderer, repo)
+	renderer := fakes.FakeAdminDashboardRenderer
+	handler := video.FormViewHandler(renderer, repo)
 	rr := httptest.NewRecorder()
 	handler.ServeHTTP(rr, req)
 
@@ -74,7 +76,7 @@ func TestFormViewHandler(t *testing.T) {
 	dashboard := &cohesioned.DashboardView{}
 	dashboard.Set("profile", profile)
 
-	expectedBody := fakes.RenderHTML("video/form", dashboard)
+	expectedBody := fakes.RenderHTML(renderer, "video/form", dashboard)
 	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
 		t.Errorf("HTML response was not generated as expected. Expected:\n\n%s\n\nActual:\n\n%s", string(expectedBody), rr.Body.String())
 	}
@@ -107,7 +109,8 @@ func TestShowViewHandler(t *testing.T) {
 	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
-	handler := video.ShowViewHandler(fakes.FakeRenderer, repo)
+	renderer := fakes.FakeAdminDashboardRenderer
+	handler := video.ShowViewHandler(renderer, repo)
 	rr := httptest.NewRecorder()
 
 	router := mux.NewRouter()
@@ -122,7 +125,7 @@ func TestShowViewHandler(t *testing.T) {
 	dashboard.Set("profile", profile)
 	dashboard.Set("video", expectedVideo)
 
-	expectedBody := fakes.RenderHTML("video/show", dashboard)
+	expectedBody := fakes.RenderHTML(renderer, "video/show", dashboard)
 	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
 		t.Errorf("HTML response was not generated as expected. Expected:\n\n%s\n\nActual:\n\n%s", string(expectedBody), rr.Body.String())
 	}
@@ -155,7 +158,8 @@ func TestStreamHandler(t *testing.T) {
 		t.Fatalf("Failed to get gcp config %v", err)
 	}
 
-	handler := video.StreamHandler(fakes.FakeRenderer, repo, gcpConfig)
+	renderer := fakes.FakeRenderer
+	handler := video.StreamHandler(renderer, repo, gcpConfig)
 	rr := httptest.NewRecorder()
 
 	router := mux.NewRouter()
@@ -223,7 +227,8 @@ func TestSaveHandler(t *testing.T) {
 	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
-	handler := video.SaveHandler(fakes.FakeRenderer, repo)
+	renderer := fakes.FakeRenderer
+	handler := video.SaveHandler(renderer, repo)
 	rr := httptest.NewRecorder()
 	handler.ServeHTTP(rr, req)
 
@@ -274,7 +279,8 @@ func TestUpdateHandler(t *testing.T) {
 	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
 
-	handler := video.UpdateHandler(fakes.FakeRenderer, repo)
+	renderer := fakes.FakeRenderer
+	handler := video.UpdateHandler(renderer, repo)
 	rr := httptest.NewRecorder()
 	handler.ServeHTTP(rr, req)
 

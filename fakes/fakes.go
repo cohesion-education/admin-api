@@ -16,8 +16,16 @@ import (
 )
 
 var (
-	FakeRenderer = render.New(render.Options{
-		Layout: "layout",
+	FakeRenderer = render.New()
+
+	FakeAdminDashboardRenderer = render.New(render.Options{
+		Layout: "dashboard/admin-layout",
+		RenderPartialsWithoutPrefix: true,
+		Directory:                   "../../../templates",
+	})
+
+	FakeUserDashboardRenderer = render.New(render.Options{
+		Layout: "dashboard/user-layout",
 		RenderPartialsWithoutPrefix: true,
 		Directory:                   "../../../templates",
 	})
@@ -41,12 +49,12 @@ func FakeProfile() *cohesioned.Profile {
 }
 
 func RenderHTMLWithNoLayout(templateFileName string, data interface{}) []byte {
-	return RenderHTML(templateFileName, data, render.HTMLOptions{Layout: ""})
+	return RenderHTML(FakeRenderer, templateFileName, data, render.HTMLOptions{Layout: ""})
 }
 
-func RenderHTML(templateFileName string, data interface{}, htmlOpt ...render.HTMLOptions) []byte {
+func RenderHTML(renderer *render.Render, templateFileName string, data interface{}, htmlOpt ...render.HTMLOptions) []byte {
 	buffer := bytes.NewBuffer(make([]byte, 0))
-	err := FakeRenderer.HTML(buffer, http.StatusOK, templateFileName, data, htmlOpt...)
+	err := renderer.HTML(buffer, http.StatusOK, templateFileName, data, htmlOpt...)
 	if err != nil {
 		panic("Failed to render template " + templateFileName + "; error: " + err.Error())
 	}

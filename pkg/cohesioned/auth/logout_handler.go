@@ -7,11 +7,10 @@ import (
 
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
-	"github.com/unrolled/render"
 )
 
-func LogoutHandler(r *render.Render, cfg *config.AuthConfig) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func LogoutHandler(cfg *config.AuthConfig) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
 		cookie := &http.Cookie{
 			Name:   cohesioned.AuthSessionCookieName,
 			Value:  "",
@@ -32,6 +31,6 @@ func LogoutHandler(r *render.Render, cfg *config.AuthConfig) http.HandlerFunc {
 		logoutURL.RawQuery = params.Encode()
 
 		fmt.Printf("Logout redirect %s\n", logoutURL.String())
-		http.Redirect(w, r, logoutURL.String(), http.StatusSeeOther)
+		http.Redirect(w, req, logoutURL.String(), http.StatusSeeOther)
 	}
 }
