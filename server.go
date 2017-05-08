@@ -29,12 +29,12 @@ var (
 	})
 
 	adminDashboardRenderer = render.New(render.Options{
-		Layout: "dashboard/admin-layout",
+		Layout: "admin-layout",
 		RenderPartialsWithoutPrefix: true,
 	})
 
 	userDashboardRenderer = render.New(render.Options{
-		Layout: "dashboard/user-layout",
+		Layout: "user-layout",
 		RenderPartialsWithoutPrefix: true,
 	})
 )

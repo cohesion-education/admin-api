@@ -19,13 +19,13 @@ var (
 	FakeRenderer = render.New()
 
 	FakeAdminDashboardRenderer = render.New(render.Options{
-		Layout: "dashboard/admin-layout",
+		Layout: "admin-layout",
 		RenderPartialsWithoutPrefix: true,
 		Directory:                   "../../../templates",
 	})
 
 	FakeUserDashboardRenderer = render.New(render.Options{
-		Layout: "dashboard/user-layout",
+		Layout: "user-layout",
 		RenderPartialsWithoutPrefix: true,
 		Directory:                   "../../../templates",
 	})

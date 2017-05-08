@@ -3,16 +3,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {{ partial "common-favicons" }}
+    {{ partial "favicons" }}
     <title>Cohesion Education Admin System</title>
-    {{ partial "admin-stylesheets" }}
-    {{ partial "admin-head-scripts" }}
+    {{ partial "dashboard-stylesheets" }}
+    {{ partial "view-stylesheets"}}
+    {{ partial "dashboard-head-scripts" }}
+    {{ partial "view-head-scripts"}}
 </head>
 <body class="fixed-left">
   <!-- Begin page -->
   <div id="wrapper">
-    {{ partial "common-dashboard-topbar" }}
-    {{ partial "admin-left-sidebar" }}
+    {{ partial "dashboard-topbar" }}
+    {{ partial "user-left-sidebar" }}
     <!-- ============================================================== -->
     <!-- Start right Content here -->
     <!-- ============================================================== -->
@@ -23,7 +25,7 @@
               {{ yield }}
             </div> <!-- container -->
         </div> <!-- content -->
-        {{ partial "common-dashboard-footer" }}
+        {{ partial "dashboard-footer" }}
     </div>
     <!-- ============================================================== -->
     <!-- End Right content here -->
@@ -31,6 +33,7 @@
   </div>
   <!-- END wrapper -->
 
-  {{ partial "admin-footer-scripts"}}
+  {{ partial "dashboard-footer-scripts"}}
+  {{ partial "view-footer-scripts"}}
 </body>
 </html>
