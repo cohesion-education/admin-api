@@ -6,14 +6,15 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
-
-	"cloud.google.com/go/datastore"
 
 	"github.com/cohesion-education/admin-api/fakes"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/taxonomy"
 	"github.com/gorilla/mux"
+)
+
+var (
+	testUser = &cohesioned.Profile{FullName: "Test User"}
 )
 
 func TestListViewHandler(t *testing.T) {
@@ -52,15 +53,7 @@ func TestListViewHandler(t *testing.T) {
 }
 
 func TestAddHandler(t *testing.T) {
-	created := time.Now()
-	name := "Test"
-	key := datastore.IDKey("Taxonomy", 1, nil)
-
-	expectedTaxonomy := &cohesioned.Taxonomy{
-		Name:    name,
-		Created: created,
-		Key:     key,
-	}
+	expectedTaxonomy := cohesioned.NewTaxonomy("Test", 1, testUser)
 
 	testJSON, err := expectedTaxonomy.MarshalJSON()
 	if err != nil {
@@ -108,18 +101,8 @@ func TestListChildrenHandler(t *testing.T) {
 	}
 
 	fakeList := []*cohesioned.Taxonomy{
-		&cohesioned.Taxonomy{
-			Name:     "test-child-1",
-			Created:  time.Now(),
-			ParentID: 1234,
-			Key:      datastore.IDKey("Taxonomy", 1, nil),
-		},
-		&cohesioned.Taxonomy{
-			Name:     "test-child-2",
-			Created:  time.Now(),
-			ParentID: 1234,
-			Key:      datastore.IDKey("Taxonomy", 2, nil),
-		},
+		cohesioned.NewTaxonomyWithParent("test-child-1", 1, 1234, testUser),
+		cohesioned.NewTaxonomyWithParent("test-child-2", 2, 1234, testUser),
 	}
 
 	repo := new(fakes.FakeTaxonomyRepo)
@@ -157,27 +140,12 @@ func TestFlattenHandler(t *testing.T) {
 	}
 
 	fakeList := []*cohesioned.Taxonomy{
-		&cohesioned.Taxonomy{
-			Name:     "Parent 1",
-			Created:  time.Now(),
-			ParentID: 1234,
-			Key:      datastore.IDKey("Taxonomy", 1, nil),
-		},
+		cohesioned.NewTaxonomy("Parent 1", 1234, testUser),
 	}
 
 	fakeFlattened := []*cohesioned.Taxonomy{
-		&cohesioned.Taxonomy{
-			Name:     "Parent 1 > Child 1",
-			Created:  time.Now(),
-			ParentID: 1234,
-			Key:      datastore.IDKey("Taxonomy", 1, nil),
-		},
-		&cohesioned.Taxonomy{
-			Name:     "Parent 1 > Child 2",
-			Created:  time.Now(),
-			ParentID: 1234,
-			Key:      datastore.IDKey("Taxonomy", 2, nil),
-		},
+		cohesioned.NewTaxonomyWithParent("Parent 1 > Child 1", 5678, 1234, testUser),
+		cohesioned.NewTaxonomyWithParent("Parent 1 > Child 2", 9101, 1234, testUser),
 	}
 
 	repo := new(fakes.FakeTaxonomyRepo)

@@ -7,9 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
-
-	"cloud.google.com/go/datastore"
 
 	"github.com/cohesion-education/admin-api/fakes"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
@@ -88,18 +85,7 @@ func TestShowViewHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expectedVideo := &cohesioned.Video{
-		Key:     datastore.IDKey("Video", 1234, nil),
-		Created: time.Now(),
-		CreatedBy: &cohesioned.Profile{
-			FullName: "Test User",
-		},
-		Title:             "Test Video",
-		FileName:          "test.mp4",
-		StorageBucket:     "test-bucket",
-		StorageObjectName: "1234-test.mp4",
-		TaxonomyID:        1,
-	}
+	expectedVideo := cohesioned.NewVideo("Test Video", "test.mp4", "test-bucket", "1234-test.mp4", 1234, 1, &cohesioned.Profile{FullName: "Test User"})
 
 	repo := new(fakes.FakeVideoRepo)
 	repo.GetReturns(expectedVideo, nil)
@@ -137,18 +123,7 @@ func TestStreamHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expectedVideo := &cohesioned.Video{
-		Key:     datastore.IDKey("Video", 1234, nil),
-		Created: time.Now(),
-		CreatedBy: &cohesioned.Profile{
-			FullName: "Test User",
-		},
-		Title:             "Test Video",
-		FileName:          "test.mp4",
-		StorageBucket:     "test-bucket",
-		StorageObjectName: "1234-test.mp4",
-		TaxonomyID:        1,
-	}
+	expectedVideo := cohesioned.NewVideo("Test Video", "test.mp4", "test-bucket", "1234-test.mp4", 1234, 1, &cohesioned.Profile{FullName: "Test User"})
 
 	repo := new(fakes.FakeVideoRepo)
 	repo.GetReturns(expectedVideo, nil)
@@ -196,18 +171,7 @@ func TestStreamHandler(t *testing.T) {
 }
 
 func TestSaveHandler(t *testing.T) {
-	v := &cohesioned.Video{
-		Key:     datastore.IDKey("Video", 1234, nil),
-		Created: time.Now(),
-		CreatedBy: &cohesioned.Profile{
-			FullName: "Test User",
-		},
-		Title:             "Test Video",
-		FileName:          "test.mp4",
-		StorageBucket:     "test-bucket",
-		StorageObjectName: "1234-test.mp4",
-		TaxonomyID:        1,
-	}
+	v := cohesioned.NewVideo("Test Video", "test.mp4", "test-bucket", "1234-test.mp4", 1234, 1, &cohesioned.Profile{FullName: "Test User"})
 
 	params := map[string]string{
 		"title":       v.Title,
@@ -248,18 +212,7 @@ func TestSaveHandler(t *testing.T) {
 }
 
 func TestUpdateHandler(t *testing.T) {
-	v := &cohesioned.Video{
-		Key:     datastore.IDKey("Video", 1234, nil),
-		Created: time.Now(),
-		CreatedBy: &cohesioned.Profile{
-			FullName: "Test User",
-		},
-		Title:             "Test Video",
-		FileName:          "test.mp4",
-		StorageBucket:     "test-bucket",
-		StorageObjectName: "1234-test.mp4",
-		TaxonomyID:        1,
-	}
+	v := cohesioned.NewVideo("Test Video", "test.mp4", "test-bucket", "1234-test.mp4", 1234, 1, &cohesioned.Profile{FullName: "Test User"})
 
 	params := map[string]string{
 		"title":       v.Title,

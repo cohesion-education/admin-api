@@ -5,24 +5,24 @@ import (
 	"testing"
 	"time"
 
-	"cloud.google.com/go/datastore"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/gcp"
 )
 
 func TestCreateSignedURL(t *testing.T) {
 	video := &cohesioned.Video{
-		Key:     datastore.IDKey("Video", 1234, nil),
-		Created: time.Now(),
-		CreatedBy: &cohesioned.Profile{
-			FullName: "Test User",
-		},
 		Title:             "Test Video",
 		FileName:          "test.mp4",
 		StorageBucket:     "test-bucket",
 		StorageObjectName: "1234-test.mp4",
 		TaxonomyID:        1,
 	}
+
+	video.SetID(1234)
+	video.SetCreatedBy(&cohesioned.Profile{
+		FullName: "Test User",
+	})
+	video.SetCreated(time.Now())
 
 	gcpConfig, err := gcp.NewConfig("../../../testdata/test-gcp-keyfile.json")
 	if err != nil {

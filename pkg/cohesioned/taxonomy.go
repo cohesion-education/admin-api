@@ -3,17 +3,31 @@ package cohesioned
 import (
 	"encoding/json"
 	"time"
-
-	"cloud.google.com/go/datastore"
 )
 
 type Taxonomy struct {
-	id        int64
-	Key       *datastore.Key `datastore:"__key__"`
-	Created   time.Time      `datastore:"created" json:"created"`
-	CreatedBy *Profile       `datastore:"created_by" json:"created_by"`
-	Name      string         `datastore:"name" json:"name"`
-	ParentID  int64          `datastore:"parent_id" schema:"parent_id" json:"parent_id"`
+	Auditable
+	Name     string `datastore:"name" json:"name"`
+	ParentID int64  `datastore:"parent_id" schema:"parent_id" json:"parent_id"`
+}
+
+//NewTaxonomy creates a Taxonomy with the Auditable fields initialized
+func NewTaxonomy(name string, id int64, createdBy *Profile) *Taxonomy {
+	return NewTaxonomyWithParent(name, id, 0, createdBy)
+}
+
+//NewTaxonomyWithParent creates a Taxonomy with the Auditable fields initialized and the parent ID set
+func NewTaxonomyWithParent(name string, id int64, parentID int64, createdBy *Profile) *Taxonomy {
+	t := &Taxonomy{
+		Name:     name,
+		ParentID: parentID,
+	}
+
+	t.GCPPersisted.id = id
+	t.Auditable.Created = time.Now()
+	t.Auditable.CreatedBy = createdBy
+
+	return t
 }
 
 func (t *Taxonomy) MarshalJSON() ([]byte, error) {
@@ -25,20 +39,4 @@ func (t *Taxonomy) MarshalJSON() ([]byte, error) {
 		ID:    t.ID(),
 		Alias: (*Alias)(t),
 	})
-}
-
-func (t *Taxonomy) ID() int64 {
-	if t.Key.ID != 0 {
-		return t.Key.ID
-	}
-
-	if t.id != 0 {
-		return t.id
-	}
-
-	panic("Unable to load Taxonomy ID")
-}
-
-func (t *Taxonomy) SetID(id int64) {
-	t.id = id
 }

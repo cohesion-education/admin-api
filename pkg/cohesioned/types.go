@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"time"
+
+	"cloud.google.com/go/datastore"
 )
 
 const profileKey = "profile"
@@ -68,4 +71,50 @@ func (r *APIResponse) SetErr(err error) {
 
 func (r *APIResponse) SetErrMsg(format string, a ...interface{}) {
 	r.ErrMsg = fmt.Sprintf(format, a...)
+}
+
+type GCPPersisted struct {
+	id  int64
+	Key *datastore.Key `datastore:"__key__"`
+}
+
+func (p *GCPPersisted) ID() int64 {
+	if p.Key != nil && p.Key.ID != 0 {
+		return p.Key.ID
+	}
+
+	if p.id != 0 {
+		return p.id
+	}
+
+	panic("Unable to load ID")
+}
+
+func (p *GCPPersisted) SetID(id int64) {
+	fmt.Printf("p nil? %v\n", p)
+	p.id = id
+}
+
+type Auditable struct {
+	GCPPersisted
+	Created   time.Time `datastore:"created" json:"created"`
+	Updated   time.Time `datastore:"updated" json:"updated"`
+	CreatedBy *Profile  `datastore:"created_by" json:"created_by"`
+	UpdatedBy *Profile  `datastore:"updated_by" json:"updated_by"`
+}
+
+func (a *Auditable) SetCreated(t time.Time) {
+	a.Created = t
+}
+
+func (a *Auditable) SetUpdated(t time.Time) {
+	a.Updated = t
+}
+
+func (a *Auditable) SetCreatedBy(p *Profile) {
+	a.CreatedBy = p
+}
+
+func (a *Auditable) SetUpdatedBy(p *Profile) {
+	a.UpdatedBy = p
 }
