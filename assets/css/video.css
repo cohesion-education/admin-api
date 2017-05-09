@@ -1,6 +1,5 @@
 section {
   position: relative;
-  width: 88%;
   margin-top: 1em;
   margin-bottom: 2em;
 }
@@ -13,11 +12,6 @@ a.management-action {
   float:right;
 }
 
-table.video {
-  clear:both;
-  border-top: 1px solid black;
-}
-
 #errors {
   margin: 0.3em;
   border:1px solid red;
@@ -27,48 +21,16 @@ table.video {
   display: none;
 }
 
-#progressbar {
-  margin: 0.3em;
-  background-color: green;
-  color: white;
-  font-weight:bold;
-  font-size: 1.5em;
-  padding: 0.3em;
-  display: none;
+.progress{
+  width: 38em;
 }
 
-form#video input,
-form#video select {
-  display: block;
-  margin-top: 2em;
-  padding: 0.2em;
+form#video {
   width: 30em;
 }
+
 
 select.sub-category{
   margin-top:0;
   margin-left:1em;
-}
-
-table.video {
-  width: 90%;
-}
-
-table.video th{
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
-}
-
-table.video td,
-table.video th{
-  padding: 1em;
-}
-
-table.video-meta td {
-  padding: 0.3em 0;
-}
-
-table.video-meta tr td:first-child{
-  font-weight: bold;
-  padding-right: 1.5em;
 }

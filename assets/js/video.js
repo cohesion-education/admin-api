@@ -15,8 +15,8 @@ $(document).ready(function() {
   });
 
   $('form#video').submit(function(){
+    $('.progress-bar').width('0%')
     $('#errors').hide()
-    $('#progressbar').hide()
 
     var data = new FormData()
     $.each($(this).find("input[type='file']"), function(i, tag) {
@@ -46,14 +46,12 @@ $(document).ready(function() {
             var percentComplete = event.loaded / event.total
             percentComplete = parseInt(percentComplete * 100)
             if(percentComplete === 100){
-              $('#progressbar').html("Upload Complete, but video is still processing. You will be redirected when ready")
+              $('.progress-bar').html("Upload Complete, but video is still processing. You will be redirected when ready")
               console.log("upload complete")
             }else{
-              $('#progressbar').html(percentComplete + "%")
-              $('#progressbar').width((percentComplete - 10) + "%")
+              $('.progress-bar').html(percentComplete + "%")
+              $('.progress-bar').width((percentComplete - 10) + "%")
             }
-
-            $('#progressbar').show()
           }
         }, false);
         return xhr
@@ -62,8 +60,6 @@ $(document).ready(function() {
       console.log("Success! " + JSON.stringify(result))
       window.location.replace(result.redirect_url)
     }).fail(function( jqXHR, textStatus, errorThrown ){
-      $('#progressbar').hide()
-
       console.log("Failed :( " + textStatus + " " + errorThrown)
       console.log("jqXHR.responseText: " + jqXHR.responseText)
 

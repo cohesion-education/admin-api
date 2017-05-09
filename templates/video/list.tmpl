@@ -1,27 +1,31 @@
 <div class="row">
-    <div class="col-sm-12">
-        <section>
-          <a class="management-action" href="/admin/video/add">Add new Video</a>
-          <h4 class="page-title">Video Management</h4>
-        </section>
+  <div class="col-sm-12">
+    <section>
+      <a class="management-action btn btn-default btn-rounded" href="/admin/video/add">Add new Video</a>
+      <h4 class="page-title">Video Management</h4>
+    </section>
 
-        <table class="video">
-          <tr>
-            <th></th>
-            <th>Title</th>
-            <th>Category</th>
-            <th>Date Created</th>
-            <th>Created By</th>
-          </tr>
-          {{range .list}}
-          <tr>
-            <td><a href="/admin/video/edit/{{.ID}}">Edit</a></td>
-            <td><a href="/admin/video/{{.ID}}" >{{.Title}}</a></td>
-            <td>{{.TaxonomyID}}</td>
-            <td>{{.Created}}</td>
-            <td>{{.CreatedBy.FullName}}</td>
-          </tr>
-          {{end}}
-        </table>
-    </div>
+    <table class="table table-striped table-responsive table-condensed">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Date Created</th>
+          <th>Created By</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .list}}
+        <tr>
+          <td><a href="/admin/video/edit/{{.ID}}">Edit</a></td>
+          <td><a href="/admin/video/{{.ID}}">{{.Title}}</a></td>
+          <td>{{.TaxonomyID}}</td>
+          <td>{{.Created}}</td>
+          <td>{{.CreatedBy.FullName}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
 </div>
