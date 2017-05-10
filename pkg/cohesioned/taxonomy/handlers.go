@@ -18,13 +18,14 @@ func ListViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 		list, err := repo.List()
 		if err != nil {
+			//TODO - 500
 			r.Text(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
 		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
 		if err != nil {
-			//TODO - direct users to an official Error page
+			//TODO - 500
 			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
 			r.Text(w, http.StatusInternalServerError, fmt.Sprintf("Unexpected error %v", err))
 			return
@@ -60,17 +61,20 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		t := &cohesioned.Taxonomy{}
 
 		if err := decoder.Decode(&t); err != nil {
+			//TODO - 500
 			r.Text(w, http.StatusInternalServerError, "failed to unmarshall json: "+err.Error())
 			return
 		}
 
 		profile, ok := req.Context().Value(cohesioned.CurrentUserKey).(*cohesioned.Profile)
 		if profile == nil {
+			//TODO - 401
 			r.Text(w, http.StatusInternalServerError, "middleware did not set profile in the context as expected")
 			return
 		}
 
 		if !ok {
+			//TODO - 500
 			errMsg := fmt.Sprintf("profile not of the proper type: %s", reflect.TypeOf(profile).String())
 			r.Text(w, http.StatusInternalServerError, errMsg)
 			return
@@ -85,6 +89,7 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 		t, err := repo.Add(t)
 		if err != nil {
+			//TODO - 500
 			r.Text(w, http.StatusInternalServerError, err.Error())
 			return
 		}

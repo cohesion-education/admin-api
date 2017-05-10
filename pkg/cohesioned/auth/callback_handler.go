@@ -28,6 +28,7 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 		code := req.URL.Query().Get("code")
 		token, err := conf.Exchange(oauth2.NoContext, code)
 		if err != nil {
+			//TODO 500
 			http.Error(w, "error exchanging code for token "+err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -36,6 +37,7 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 		client := conf.Client(oauth2.NoContext, token)
 		resp, err := client.Get(cfg.Domain + "/userinfo")
 		if err != nil {
+			//TODO 500
 			http.Error(w, "error getting user info "+err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -43,18 +45,21 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 		raw, err := ioutil.ReadAll(resp.Body)
 		defer resp.Body.Close()
 		if err != nil {
+			//TODO 500
 			http.Error(w, "error reading userinfo response body "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		var profile cohesioned.Profile
 		if err = json.Unmarshal(raw, &profile); err != nil {
+			//TODO 500
 			http.Error(w, "error unmarshalling userinfo response body "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		session, err := cfg.GetCurrentSession(req)
 		if err != nil {
+			//TODO 500
 			http.Error(w, "unable to initialize Session "+err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -64,6 +69,7 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 		session.Values[cohesioned.CurrentUserSessionKey] = profile
 		err = session.Save(req, w)
 		if err != nil {
+			//TODO 500
 			http.Error(w, "failed to save Session "+err.Error(), http.StatusInternalServerError)
 			return
 		}
