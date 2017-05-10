@@ -23,7 +23,7 @@ func LogoutHandler(cfg *config.AuthConfig) http.HandlerFunc {
 		logoutURL, err := url.Parse(fmt.Sprintf("%s/v2/logout", cfg.Domain))
 		if err != nil {
 			fmt.Printf("Failed to parse logout url %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 		params := logoutURL.Query()

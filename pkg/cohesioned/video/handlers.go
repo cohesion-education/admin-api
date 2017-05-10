@@ -23,14 +23,14 @@ func ListViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		list, err := repo.List()
 		if err != nil {
 			fmt.Printf("Failed to list videos %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 
 		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
 		if err != nil {
 			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 
@@ -45,7 +45,7 @@ func FormViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
 		if err != nil {
 			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 
@@ -55,14 +55,14 @@ func FormViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			videoID, err := strconv.ParseInt(vars["id"], 10, 64)
 			if err != nil {
 				// r.Text(w, http.StatusInternalServerError, fmt.Sprintf("%s is not a valid id %v", vars["id"], err))
-				http.Redirect(w, req, "/404", http.StatusNotFound)
+				http.Redirect(w, req, "/404", http.StatusSeeOther)
 				return
 			}
 
 			video, err := repo.Get(videoID)
 			if err != nil {
 				fmt.Printf("Failed to get video by id %d %v\n", videoID, err)
-				http.Redirect(w, req, "/404", http.StatusNotFound)
+				http.Redirect(w, req, "/404", http.StatusSeeOther)
 				return
 			}
 
@@ -209,21 +209,21 @@ func ShowViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		videoID, err := strconv.ParseInt(vars["id"], 10, 64)
 		if err != nil {
 			fmt.Printf("%s is not a valid video id %v\n", vars["id"], err)
-			http.Redirect(w, req, "/404", http.StatusNotFound)
+			http.Redirect(w, req, "/404", http.StatusSeeOther)
 			return
 		}
 
 		video, err := repo.Get(videoID)
 		if err != nil {
 			fmt.Printf("Failed to get video by id %d %v\n", videoID, err)
-			http.Redirect(w, req, "/404", http.StatusNotFound)
+			http.Redirect(w, req, "/404", http.StatusSeeOther)
 			return
 		}
 
 		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
 		if err != nil {
 			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
-			http.Redirect(w, req, "/401", http.StatusUnauthorized)
+			http.Redirect(w, req, "/401", http.StatusSeeOther)
 			return
 		}
 

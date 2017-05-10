@@ -31,7 +31,7 @@ func TestIsAuthenticatedHandlerWhenNotAuthenticatedRedirectsTo401(t *testing.T) 
 		t.Errorf("next handler was called but it should not have been")
 	}
 
-	expectedStatus := http.StatusUnauthorized
+	expectedStatus := http.StatusSeeOther
 	if status := rr.Code; status != expectedStatus {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 	}

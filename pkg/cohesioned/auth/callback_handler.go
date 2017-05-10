@@ -30,7 +30,7 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 		token, err := conf.Exchange(oauth2.NoContext, code)
 		if err != nil {
 			fmt.Printf("error exchanging code for token %s %v\n", code, err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 
@@ -39,7 +39,7 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 		resp, err := client.Get(cfg.Domain + "/userinfo")
 		if err != nil {
 			fmt.Printf("error getting ''%s/userinfo' %v\n", cfg.Domain, err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 
@@ -47,21 +47,21 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 		defer resp.Body.Close()
 		if err != nil {
 			fmt.Printf("error reading userinfo response body %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 
 		var profile cohesioned.Profile
 		if err = json.Unmarshal(raw, &profile); err != nil {
 			fmt.Printf("error unmarshalling userinfo response body %v\n%s\n", err, string(raw))
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 
 		session, err := cfg.GetCurrentSession(req)
 		if err != nil {
 			fmt.Printf("unable to initialize Session %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 
@@ -71,7 +71,7 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 		err = session.Save(req, w)
 		if err != nil {
 			fmt.Printf("failed to save Session %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 

@@ -19,14 +19,14 @@ func ListViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		list, err := repo.List()
 		if err != nil {
 			fmt.Printf("Failed to list taxonomy items %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 
 		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
 		if err != nil {
 			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 		dashboard.Set("list", list)
@@ -61,7 +61,7 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 		if err := decoder.Decode(&t); err != nil {
 			fmt.Printf("failed to unmarshall json %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 
@@ -73,7 +73,7 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 		if !ok {
 			fmt.Printf("profile not of the proper type: %s\n", reflect.TypeOf(profile).String())
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 
@@ -87,7 +87,7 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		t, err := repo.Add(t)
 		if err != nil {
 			fmt.Printf("Failed to save taxonomy %v %v\n", t, err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 

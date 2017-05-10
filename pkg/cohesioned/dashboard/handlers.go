@@ -15,7 +15,7 @@ func AdminViewHandler(r *render.Render) http.HandlerFunc {
 		d, err := cohesioned.NewDashboardViewWithProfile(req)
 		if err != nil {
 			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 
@@ -29,7 +29,7 @@ func UserViewHandler(r *render.Render) http.HandlerFunc {
 		d, err := cohesioned.NewDashboardViewWithProfile(req)
 		if err != nil {
 			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusInternalServerError)
+			http.Redirect(w, req, "/500", http.StatusSeeOther)
 			return
 		}
 
