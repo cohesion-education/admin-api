@@ -1,0 +1,25 @@
+<div class="row">
+  <div class="col-sm-12">
+    <h4 class="page-title">
+      Splash Page Editor
+    </h4>
+
+    <div id="errors"></div>
+    <form id="video" class="form-horizontal" method="post" action="/admin/homepage">
+      <div class="form-group">
+        <input type="text" name="header_tagline" class="form-control" placeholder="Header Tagline" value="{{.homepage.HeaderTagline}}">
+      </div>
+      <div class="form-group">
+        <textarea name="header_subtext" class="form-control" placeholder="Header Subtext">{{.homepage.HeaderSubtext}}</textarea>
+      </div>
+      <div class="form-group">
+        <input type="text" name="features_tagline" class="form-control" placeholder="Features Tagline" value="{{.homepage.FeaturesHeaderTagline}}">
+      </div>
+      <div class="form-group">
+        <textarea name="features_subtext" class="form-control" placeholder="Features Subtext">{{.homepage.FeaturesHeaderSubtext}}</textarea>
+      </div>
+
+      <input type="submit" class="form-control" value="Save">
+    </form>
+  </div>
+</div>

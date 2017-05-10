@@ -12,6 +12,7 @@ import (
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/dashboard"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/gcp"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/homepage"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/taxonomy"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/video"
 	"github.com/gorilla/mux"
@@ -23,7 +24,7 @@ import (
 var (
 	apiRenderer = render.New()
 
-	homePageRenderer = render.New(render.Options{
+	homepageRenderer = render.New(render.Options{
 		Layout: "homepage/layout",
 		RenderPartialsWithoutPrefix: true,
 	})
@@ -75,6 +76,7 @@ func newServer() *negroni.Negroni {
 		log.Fatalf("Failed to get storage client %v", err)
 	}
 
+	homepageRepo := homepage.NewGCPDatastoreRepo(datastoreClient)
 	taxonomyRepo := taxonomy.NewGCPDatastoreRepo(datastoreClient)
 	videoRepo := video.NewGCPRepo(datastoreClient, storageClient, videoStorageBucketName)
 
@@ -85,13 +87,13 @@ func newServer() *negroni.Negroni {
 	// Static Assets
 	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
 
-	mx.NotFoundHandler = cohesioned.NotFoundViewHandler(homePageRenderer)
-	mx.Methods(http.MethodGet).Path("/401").Handler(cohesioned.UnauthorizedViewHandler(homePageRenderer))
-	mx.Methods(http.MethodGet).Path("/403").Handler(cohesioned.ForbiddenViewHandler(homePageRenderer))
-	mx.Methods(http.MethodGet).Path("/500").Handler(cohesioned.InternalServerErrorViewHandler(homePageRenderer))
+	mx.NotFoundHandler = cohesioned.NotFoundViewHandler(homepageRenderer)
+	mx.Methods(http.MethodGet).Path("/401").Handler(cohesioned.UnauthorizedViewHandler(homepageRenderer))
+	mx.Methods(http.MethodGet).Path("/403").Handler(cohesioned.ForbiddenViewHandler(homepageRenderer))
+	mx.Methods(http.MethodGet).Path("/500").Handler(cohesioned.InternalServerErrorViewHandler(homepageRenderer))
 
 	//Public Routes
-	mx.Methods(http.MethodGet).Path("/").Handler(cohesioned.HomepageViewHandler(homePageRenderer))
+	mx.Methods(http.MethodGet).Path("/").Handler(homepage.HomepageViewHandler(homepageRenderer, homepageRepo))
 	mx.Methods(http.MethodGet).Path("/logout").Handler(auth.LogoutHandler(authConfig))
 	mx.Methods(http.MethodGet).Path("/callback").Handler(auth.CallbackHandler(authConfig))
 	mx.Methods(http.MethodGet).Path("/auth/config").Handler(auth.ConfigHandler(authConfig))
@@ -110,6 +112,8 @@ func newServer() *negroni.Negroni {
 	//Admin Routes
 	adminRouter := mux.NewRouter()
 	adminRouter.Methods(http.MethodGet).Path("/admin/dashboard").Handler(dashboard.AdminViewHandler(adminDashboardRenderer))
+	adminRouter.Methods(http.MethodGet).Path("/admin/homepage").Handler(homepage.FormViewHandler(adminDashboardRenderer, homepageRepo))
+	adminRouter.Methods(http.MethodPost).Path("/admin/homepage").Handler(homepage.SaveHandler(adminDashboardRenderer, homepageRepo))
 	adminRouter.Methods(http.MethodGet).Path("/admin/taxonomy").Handler(taxonomy.ListViewHandler(adminDashboardRenderer, taxonomyRepo))
 	adminRouter.Methods(http.MethodGet).Path("/admin/video").Handler(video.ListViewHandler(adminDashboardRenderer, videoRepo))
 	adminRouter.Methods(http.MethodGet).Path("/admin/video/{id:[0-9]+}").Handler(video.ShowViewHandler(adminDashboardRenderer, videoRepo))

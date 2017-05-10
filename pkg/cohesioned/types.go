@@ -87,7 +87,7 @@ func (p *GCPPersisted) ID() int64 {
 		return p.id
 	}
 
-	panic("Unable to load ID")
+	return -1
 }
 
 func (p *GCPPersisted) SetID(id int64) {

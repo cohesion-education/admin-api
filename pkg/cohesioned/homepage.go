@@ -1,7 +1,9 @@
 package cohesioned
 
+import "time"
+
 type Homepage struct {
-	*Auditable
+	Auditable
 	HeaderTagline         string            `datastore:"page_header_tagline" json:"page_header_tagline"`
 	HeaderSubtext         string            `datastore:"page_header_subtext" json:"page_header_subtext"`
 	FeaturesHeaderTagline string            `datastore:"features_header_tagline" json:"features_header_tagline"`
@@ -13,28 +15,37 @@ type Homepage struct {
 	SocialMediaLinks      []SocialMediaLink `datastore:"social_media_links" json:"social_media_links"`
 }
 
+func NewHomepage(id int64) *Homepage {
+	h := &Homepage{}
+
+	h.GCPPersisted.id = id
+	h.Auditable.Created = time.Now()
+
+	return h
+}
+
 type Highlight struct {
-	*Auditable
+	Auditable
 	Description string `datastore:"description" json:"description"`
 	Subtext     string `datastore:"subtext" json:"subtext"`
 }
 
 type Feature struct {
-	*Auditable
+	Auditable
 	Description string `datastore:"description" json:"description"`
 	Subtext     string `datastore:"subtext" json:"subtext"`
 	//TODO - Image       []byte
 }
 
 type Review struct {
-	*Auditable
+	Auditable
 	Blurb     string `datastore:"blurb" json:"blurb"`
 	FullName  string `datastore:"fullname" json:"fullname"`
 	AvatarURL string `datastore:"avatar" json:"avatar"`
 }
 
 type PricingDetails struct {
-	*Auditable
+	Auditable
 	Description string   `datastore:"description" json:"description"`
 	Cost        string   `datastore:"cost" json:"cost"`
 	Frequency   string   `datastore:"frequency" json:"frequency"`
@@ -42,7 +53,7 @@ type PricingDetails struct {
 }
 
 type SocialMediaLink struct {
-	*Auditable
+	Auditable
 	//TODO - is there an enum type?
 	Type    string `datastore:"type" json:"type"`
 	LinkURL string `datastore:"url" json:"url"`
