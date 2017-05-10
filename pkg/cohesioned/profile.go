@@ -2,7 +2,8 @@ package cohesioned
 
 import "time"
 
-type appMetadata struct {
+//AppMetadata mapping of metadata provided by auth0
+type AppMetadata struct {
 	Roles []string `json:"roles"`
 }
 
@@ -20,7 +21,7 @@ type Profile struct {
 	ClientID      string      `json:"client_id"`
 	DateCreated   time.Time   `json:"created_at"`
 	LastUpdated   time.Time   `json:"updated_at"`
-	Metadata      appMetadata `json:"app_metadata"`
+	Metadata      AppMetadata `json:"app_metadata"`
 }
 
 func (p *Profile) HasRole(roleName string) bool {
