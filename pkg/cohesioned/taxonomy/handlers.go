@@ -18,16 +18,15 @@ func ListViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 		list, err := repo.List()
 		if err != nil {
-			//TODO - 500
-			r.Text(w, http.StatusInternalServerError, err.Error())
+			fmt.Printf("Failed to list taxonomy items %v\n", err)
+			http.Redirect(w, req, "/500", http.StatusInternalServerError)
 			return
 		}
 
 		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
 		if err != nil {
-			//TODO - 500
 			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
-			r.Text(w, http.StatusInternalServerError, fmt.Sprintf("Unexpected error %v", err))
+			http.Redirect(w, req, "/500", http.StatusInternalServerError)
 			return
 		}
 		dashboard.Set("list", list)
@@ -61,22 +60,20 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		t := &cohesioned.Taxonomy{}
 
 		if err := decoder.Decode(&t); err != nil {
-			//TODO - 500
-			r.Text(w, http.StatusInternalServerError, "failed to unmarshall json: "+err.Error())
+			fmt.Printf("failed to unmarshall json %v\n", err)
+			http.Redirect(w, req, "/500", http.StatusInternalServerError)
 			return
 		}
 
 		profile, ok := req.Context().Value(cohesioned.CurrentUserKey).(*cohesioned.Profile)
 		if profile == nil {
-			//TODO - 401
-			r.Text(w, http.StatusInternalServerError, "middleware did not set profile in the context as expected")
+			http.Redirect(w, req, "/401", http.StatusInternalServerError)
 			return
 		}
 
 		if !ok {
-			//TODO - 500
-			errMsg := fmt.Sprintf("profile not of the proper type: %s", reflect.TypeOf(profile).String())
-			r.Text(w, http.StatusInternalServerError, errMsg)
+			fmt.Printf("profile not of the proper type: %s\n", reflect.TypeOf(profile).String())
+			http.Redirect(w, req, "/500", http.StatusInternalServerError)
 			return
 		}
 
@@ -89,8 +86,8 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 		t, err := repo.Add(t)
 		if err != nil {
-			//TODO - 500
-			r.Text(w, http.StatusInternalServerError, err.Error())
+			fmt.Printf("Failed to save taxonomy %v %v\n", t, err)
+			http.Redirect(w, req, "/500", http.StatusInternalServerError)
 			return
 		}
 

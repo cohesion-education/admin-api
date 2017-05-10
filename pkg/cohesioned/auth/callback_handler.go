@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -28,8 +29,8 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 		code := req.URL.Query().Get("code")
 		token, err := conf.Exchange(oauth2.NoContext, code)
 		if err != nil {
-			//TODO 500
-			http.Error(w, "error exchanging code for token "+err.Error(), http.StatusInternalServerError)
+			fmt.Printf("error exchanging code for token %s %v\n", code, err)
+			http.Redirect(w, req, "/500", http.StatusInternalServerError)
 			return
 		}
 
@@ -37,30 +38,30 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 		client := conf.Client(oauth2.NoContext, token)
 		resp, err := client.Get(cfg.Domain + "/userinfo")
 		if err != nil {
-			//TODO 500
-			http.Error(w, "error getting user info "+err.Error(), http.StatusInternalServerError)
+			fmt.Printf("error getting ''%s/userinfo' %v\n", cfg.Domain, err)
+			http.Redirect(w, req, "/500", http.StatusInternalServerError)
 			return
 		}
 
 		raw, err := ioutil.ReadAll(resp.Body)
 		defer resp.Body.Close()
 		if err != nil {
-			//TODO 500
-			http.Error(w, "error reading userinfo response body "+err.Error(), http.StatusInternalServerError)
+			fmt.Printf("error reading userinfo response body %v\n", err)
+			http.Redirect(w, req, "/500", http.StatusInternalServerError)
 			return
 		}
 
 		var profile cohesioned.Profile
 		if err = json.Unmarshal(raw, &profile); err != nil {
-			//TODO 500
-			http.Error(w, "error unmarshalling userinfo response body "+err.Error(), http.StatusInternalServerError)
+			fmt.Printf("error unmarshalling userinfo response body %v\n%s\n", err, string(raw))
+			http.Redirect(w, req, "/500", http.StatusInternalServerError)
 			return
 		}
 
 		session, err := cfg.GetCurrentSession(req)
 		if err != nil {
-			//TODO 500
-			http.Error(w, "unable to initialize Session "+err.Error(), http.StatusInternalServerError)
+			fmt.Printf("unable to initialize Session %v\n", err)
+			http.Redirect(w, req, "/500", http.StatusInternalServerError)
 			return
 		}
 
@@ -69,8 +70,8 @@ func CallbackHandler(cfg *config.AuthConfig) http.HandlerFunc {
 		session.Values[cohesioned.CurrentUserSessionKey] = profile
 		err = session.Save(req, w)
 		if err != nil {
-			//TODO 500
-			http.Error(w, "failed to save Session "+err.Error(), http.StatusInternalServerError)
+			fmt.Printf("failed to save Session %v\n", err)
+			http.Redirect(w, req, "/500", http.StatusInternalServerError)
 			return
 		}
 

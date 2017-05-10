@@ -11,31 +11,30 @@ import (
 )
 
 func IsAuthenticatedHandler(cfg *config.AuthConfig) negroni.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		session, err := cfg.GetCurrentSession(r)
+	return func(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+		session, err := cfg.GetCurrentSession(req)
 		if err != nil {
-			//TODO - 401
-			http.Error(w, "Failed to get current session "+err.Error(), http.StatusInternalServerError)
+			fmt.Printf("error getting current user from session %v\n", err)
+			http.Redirect(w, req, "/401", http.StatusUnauthorized)
 			return
 		}
 
 		profile, ok := session.Values[cohesioned.CurrentUserSessionKey]
 		if !ok {
-			//TODO - 401
-			http.Error(w, "Failed to get current user from session", http.StatusInternalServerError)
+			http.Redirect(w, req, "/401", http.StatusUnauthorized)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), cohesioned.CurrentUserKey, profile)
-		next(w, r.WithContext(ctx))
+		ctx := context.WithValue(req.Context(), cohesioned.CurrentUserKey, profile)
+		next(w, req.WithContext(ctx))
 	}
 }
 
 func IsAdmin(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	profile, err := cohesioned.GetProfile(req)
 	if err != nil {
-		//TODO - 401
-		http.Error(w, fmt.Sprintf("Failed to get current user %v", err), http.StatusInternalServerError)
+		fmt.Printf("error getting current user from request context %v\n", err)
+		http.Redirect(w, req, "/401", http.StatusUnauthorized)
 		return
 	}
 
@@ -44,6 +43,5 @@ func IsAdmin(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 		return
 	}
 
-	//TODO - 403
-	http.Error(w, "You are not authorized to view this content", http.StatusUnauthorized)
+	http.Redirect(w, req, "/403", http.StatusForbidden)
 }

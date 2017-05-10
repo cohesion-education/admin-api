@@ -82,11 +82,13 @@ func newServer() *negroni.Negroni {
 	mx := mux.NewRouter()
 	mx.StrictSlash(true)
 
-	//TODO - map to 404 page
-	//mx.NotFoundHandler = nil
-
 	// Static Assets
 	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/"))))
+
+	mx.NotFoundHandler = cohesioned.NotFoundViewHandler(homePageRenderer)
+	mx.Methods(http.MethodGet).Path("/401").Handler(cohesioned.UnauthorizedViewHandler(homePageRenderer))
+	mx.Methods(http.MethodGet).Path("/403").Handler(cohesioned.ForbiddenViewHandler(homePageRenderer))
+	mx.Methods(http.MethodGet).Path("/500").Handler(cohesioned.InternalServerErrorViewHandler(homePageRenderer))
 
 	//Public Routes
 	mx.Methods(http.MethodGet).Path("/").Handler(cohesioned.HomepageViewHandler(homePageRenderer))

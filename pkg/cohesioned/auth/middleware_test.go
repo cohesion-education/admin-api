@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/cohesion-education/admin-api/fakes"
@@ -12,7 +11,7 @@ import (
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
 )
 
-func TestIsAuthenticatedHandlerWhenNotAuthenticatedRedirectsToRoot(t *testing.T) {
+func TestIsAuthenticatedHandlerWhenNotAuthenticatedRedirectsTo401(t *testing.T) {
 	req, err := http.NewRequest("GET", "/dashboard", nil)
 	if err != nil {
 		t.Fatalf("Failed to initialize new request %v", err)
@@ -32,13 +31,19 @@ func TestIsAuthenticatedHandlerWhenNotAuthenticatedRedirectsToRoot(t *testing.T)
 		t.Errorf("next handler was called but it should not have been")
 	}
 
-	if status := rr.Code; status != http.StatusInternalServerError {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusInternalServerError)
+	expectedStatus := http.StatusUnauthorized
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 	}
 
-	expectedBody := "Failed to get current user from session"
-	if strings.Compare(strings.Trim(rr.Body.String(), "\n"), expectedBody) != 0 {
-		t.Errorf("handler returned wrong response body: got %s want %s", rr.Body.String(), expectedBody)
+	location, err := rr.Result().Location()
+	if err != nil {
+		t.Errorf("Failed to get result location from recorder %v", err)
+	}
+
+	expectedLocation := "/401"
+	if location.String() != expectedLocation {
+		t.Errorf("handler returned wrong redirect url: got %s want %s", location.String(), expectedLocation)
 	}
 }
 
