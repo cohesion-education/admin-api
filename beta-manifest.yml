@@ -1,0 +1,14 @@
+---
+applications:
+- name: admin
+  buildpack: go_buildpack
+  memory: 64M
+  instances: 2
+  services:
+   - auth0-admin
+  routes:
+   - route: beta.cohesioned.io
+  env:
+    DATASTORE_PROJECT_ID: cohesion-education-beta
+    GCP_STORAGE_VIDEO_BUCKET: cohesion-videos-beta
+    GCP_KEYFILE_LOCATION: gcp-keyfile.json
