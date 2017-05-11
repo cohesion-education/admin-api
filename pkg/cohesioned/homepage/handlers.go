@@ -17,6 +17,10 @@ func HomepageViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			http.Redirect(w, req, "/500", http.StatusSeeOther)
 		}
 
+		if h == nil {
+			h = cohesioned.NewHomepage(-1)
+		}
+
 		r.HTML(w, http.StatusOK, "homepage/index", h)
 	}
 }

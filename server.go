@@ -13,6 +13,7 @@ import (
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/dashboard"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/gcp"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/homepage"
+	"github.com/cohesion-education/admin-api/pkg/cohesioned/profile"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/taxonomy"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/video"
 	"github.com/gorilla/mux"
@@ -77,6 +78,7 @@ func newServer() *negroni.Negroni {
 	}
 
 	homepageRepo := homepage.NewGCPDatastoreRepo(datastoreClient)
+	profileRepo := profile.NewGCPDatastoreRepo(datastoreClient)
 	taxonomyRepo := taxonomy.NewGCPDatastoreRepo(datastoreClient)
 	videoRepo := video.NewGCPRepo(datastoreClient, storageClient, videoStorageBucketName)
 
@@ -130,6 +132,7 @@ func newServer() *negroni.Negroni {
 	requiresAdmin(http.MethodPut, "/api/video", video.UpdateHandler(apiRenderer, videoRepo), mx, authMiddleware)
 
 	//APIs that only require Authentication
+	requiresAuth(http.MethodPost, "/api/profile/preferences", profile.SavePreferencesHandler(apiRenderer, authConfig, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/taxonomy", taxonomy.ListHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/taxonomy/{id:[0-9]+}/children", taxonomy.ListChildrenHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/video/stream/{id:[0-9]+}", video.StreamHandler(apiRenderer, videoRepo, gcpConfig), mx, authMiddleware)

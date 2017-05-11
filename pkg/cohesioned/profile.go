@@ -7,8 +7,15 @@ type AppMetadata struct {
 	Roles []string `json:"roles"`
 }
 
+type Preferences struct {
+	Newsletter  bool `json:"newsletter"`
+	BetaProgram bool `json:"beta_program"`
+}
+
 //Profile represents a User of this system
 type Profile struct {
+	Auditable
+	Enabled       bool        `json:"enabled"`
 	Email         string      `json:"email"`
 	FullName      string      `json:"name"`
 	FirstName     string      `json:"given_name"`
@@ -22,6 +29,7 @@ type Profile struct {
 	DateCreated   time.Time   `json:"created_at"`
 	LastUpdated   time.Time   `json:"updated_at"`
 	Metadata      AppMetadata `json:"app_metadata"`
+	Preferences   Preferences `json:"preferences"`
 }
 
 func (p *Profile) HasRole(roleName string) bool {

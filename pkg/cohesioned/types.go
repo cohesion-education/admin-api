@@ -56,6 +56,12 @@ type APIResponse struct {
 	ValidationErrors []*ValidationError `json:"validation_errors,omitempty"`
 }
 
+func NewAPIErrorResponse(messageFormat string, err error) *APIResponse {
+	return &APIResponse{
+		ErrMsg: fmt.Sprintf(messageFormat, err),
+	}
+}
+
 func (r *APIResponse) AddValidationError(field, err string) *APIResponse {
 	r.ValidationErrors = append(r.ValidationErrors, &ValidationError{
 		Field: field,

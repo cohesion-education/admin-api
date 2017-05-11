@@ -1,0 +1,12 @@
+h4 {
+  padding-bottom: 1em;
+}
+
+p{
+  padding: 1em 0;
+}
+
+form#preferences{
+  width:35%; 
+  margin-left:2em;
+}
