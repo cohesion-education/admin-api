@@ -40,7 +40,6 @@ func UserViewHandler(r *render.Render) http.HandlerFunc {
 		}
 
 		if profile.HasRole("beta-tester") {
-			//TODO - need newer, more limited menu options
 			r.HTML(w, http.StatusOK, "dashboard/beta-tester", d)
 		}
 
