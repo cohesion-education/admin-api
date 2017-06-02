@@ -10,3 +10,22 @@ admin-api
 wercker-setup.md
 mongo-setup.md
 gcp-keyfile.json
+
+
+# dependencies
+web/node_modules
+
+# testing
+web/coverage
+
+# production
+web/build
+
+# misc
+web/.DS_Store
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+
+web/.env
+web/.env*.local

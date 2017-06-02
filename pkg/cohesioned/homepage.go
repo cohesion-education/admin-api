@@ -2,21 +2,22 @@ package cohesioned
 
 import "time"
 
+//Homepage the model for my homepage
 type Homepage struct {
 	Auditable
-	HeaderTagline         string            `datastore:"page_header_tagline" json:"page_header_tagline"`
-	HeaderSubtext         string            `datastore:"page_header_subtext" json:"page_header_subtext"`
-	FeaturesHeaderTagline string            `datastore:"features_header_tagline" json:"features_header_tagline"`
-	FeaturesHeaderSubtext string            `datastore:"features_header_subtext" json:"features_header_subtext"`
-	Highlights            []Highlight       `datastore:"higlights" json:"highlights"`
-	Features              []Feature         `datastore:"features" json:"features"`
-	Reviews               []Review          `datastore:"reviews" json:"reviews"`
-	Pricing               []PricingDetails  `datastore:"pricing" json:"pricing"`
-	SocialMediaLinks      []SocialMediaLink `datastore:"social_media_links" json:"social_media_links"`
+	Header       *Header       `json:"header" datastore:"header"`
+	Features     *Features     `json:"features" datastore:"features"`
+	Testimonials *Testimonials `json:"testimonials" datastore:"testimonials"`
+	Pricing      *Pricing      `json:"pricing" datastore:"pricing"`
+	// SocialMediaLinks      []SocialMediaLink `datastore:"social_media_links" json:"social_media_links"`
 }
 
 func NewHomepage(id int64) *Homepage {
 	h := &Homepage{}
+	h.Header = &Header{}
+	h.Features = &Features{}
+	h.Testimonials = &Testimonials{}
+	h.Pricing = &Pricing{}
 
 	h.GCPPersisted.id = id
 	h.Auditable.Created = time.Now()
@@ -24,32 +25,46 @@ func NewHomepage(id int64) *Homepage {
 	return h
 }
 
+type Header struct {
+	Title    string `datastore:"title" json:"title"`
+	Subtitle string `datastore:"subtitle" json:"subtitle"`
+}
+
+type Features struct {
+	Title      string      `datastore:"title" json:"title"`
+	Subtitle   string      `datastore:"subtitle" json:"subtitle"`
+	Highlights []Highlight `datastore:"higlights" json:"highlights"`
+}
+
 type Highlight struct {
 	Auditable
-	Description string `datastore:"description" json:"description"`
-	Subtext     string `datastore:"subtext" json:"subtext"`
+	Title           string `datastore:"title" json:"title"`
+	Description     string `datastore:"description" json:"description"`
+	FaIconClassName string `datastore:"fa_icon_classname" json:"iconClassName"`
 }
 
-type Feature struct {
-	Auditable
-	Description string `datastore:"description" json:"description"`
-	Subtext     string `datastore:"subtext" json:"subtext"`
-	//TODO - Image       []byte
+type Testimonials struct {
+	List []*Testimonial `json:"list" datastore:"list"`
 }
 
-type Review struct {
+type Testimonial struct {
 	Auditable
-	Blurb     string `datastore:"blurb" json:"blurb"`
-	FullName  string `datastore:"fullname" json:"fullname"`
+	Blurb     string `datastore:"blurb" json:"text"`
+	FullName  string `datastore:"fullname" json:"name"`
 	AvatarURL string `datastore:"avatar" json:"avatar"`
 }
 
-type PricingDetails struct {
+type Pricing struct {
+	Title    string          `datastore:"title" json:"title"`
+	Subtitle string          `datastore:"subtitle" json:"subtitle"`
+	List     []PricingDetail `json:"list" datastore:"list"`
+}
+
+type PricingDetail struct {
 	Auditable
-	Description string   `datastore:"description" json:"description"`
-	Cost        string   `datastore:"cost" json:"cost"`
-	Frequency   string   `datastore:"frequency" json:"frequency"`
-	Details     []string `datastore:"details" json:"details"`
+	Title    string `json:"title"`
+	Price    string `datastore:"price" json:"price"`
+	Duration string `datastore:"duration" json:"duration"`
 }
 
 type SocialMediaLink struct {
