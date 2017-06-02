@@ -1,31 +1,35 @@
-import { combineReducers } from 'redux'
 import { RECEIVE_HOMEPAGE } from '../actions'
 
-const headerReducer = (state = {title:"", subtitle:""}, action) => ({ state })
-const featuresReducer = (state = {title:"", subtitle:"", highlights:[]}, action) => ({ state })
-const testimonialsReducer = (state = {list:[]}, action) => ({ state })
-const pricingReducer = (state = {title:"", subtitle:"", list:[]}, action) => ({ state })
-
-const homepageReducer = (state = {
-  features: {title:"", subtitle:"", highlights:[]},
-  header: {title:"", subtitle:""},
-  testimonials: {list:[]},
-  pricing: {title:"", subtitle:"", list:[]}
-}, action) => {
+export const headerReducer = (state = {title:"", subtitle:""}, action) => {
   switch(action.type){
     case RECEIVE_HOMEPAGE:
-      return Object.assign({}, state, { ...action })
+      return Object.assign({}, state, { ...action.header })
     default:
       return state
   }
 }
 
-const rootReducer = combineReducers({
-  homepage:homepageReducer,
-  header:headerReducer,
-  features:featuresReducer,
-  testimonials:testimonialsReducer,
-  pricing:pricingReducer
-})
-
-export default rootReducer
+export const featuresReducer = (state = {title:"", subtitle:"", highlights:[]}, action) => {
+  switch(action.type){
+    case RECEIVE_HOMEPAGE:
+      return Object.assign({}, state, { ...action.features })
+    default:
+      return state
+  }
+}
+export const testimonialsReducer = (state = {list:[]}, action) => {
+  switch(action.type){
+    case RECEIVE_HOMEPAGE:
+      return Object.assign({}, state, { ...action.testimonials })
+    default:
+      return state
+  }
+}
+export const pricingReducer = (state = {title:"", subtitle:"", list:[]}, action) => {
+  switch(action.type){
+    case RECEIVE_HOMEPAGE:
+      return Object.assign({}, state, { ...action.pricing })
+    default:
+      return state
+  }
+}

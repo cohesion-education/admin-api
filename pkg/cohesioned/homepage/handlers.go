@@ -28,22 +28,6 @@ func HomepageHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	}
 }
 
-func HomepageViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		h, err := repo.Get()
-		if err != nil {
-			fmt.Printf("Failed to retrieve homepage %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusSeeOther)
-		}
-
-		if h == nil {
-			h = cohesioned.NewHomepage(-1)
-		}
-
-		r.HTML(w, http.StatusOK, "homepage/index", h)
-	}
-}
-
 func FormViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)

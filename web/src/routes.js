@@ -8,7 +8,7 @@ import { Route } from 'react-router'
 import { ConnectedRouter, routerReducer, routerMiddleware } from 'react-router-redux'
 import Homepage from './views/Homepage'
 import { fetchHomepage } from './actions'
-import { rootReducer } from './store/homepageReducers'
+import { headerReducer, featuresReducer, testimonialsReducer, pricingReducer } from './store/homepageReducers'
 
 // Create a history of your choosing (we're using a browser history in this case)
 const history = createHistory()
@@ -19,8 +19,11 @@ const loggerMiddleware = createLogger()
 // Also apply our middleware for navigating
 const store = createStore(
   combineReducers({
-    ...rootReducer,
-    router: routerReducer
+    router: routerReducer,
+    header:headerReducer,
+    features:featuresReducer,
+    testimonials:testimonialsReducer,
+    pricing:pricingReducer
   }),
   applyMiddleware(
     thunkMiddleware, // lets us dispatch() functions

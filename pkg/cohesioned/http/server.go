@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
 	"github.com/cohesion-education/admin-api/pkg/cohesioned/dashboard"
@@ -24,11 +23,6 @@ import (
 
 var (
 	apiRenderer = render.New()
-
-	homepageRenderer = render.New(render.Options{
-		Layout: "homepage/layout",
-		RenderPartialsWithoutPrefix: true,
-	})
 
 	adminDashboardRenderer = render.New(render.Options{
 		Layout: "admin-layout",
@@ -95,19 +89,19 @@ func newServer() *negroni.Negroni {
 	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./web/assets/"))))
 	mx.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./web/build/static/"))))
 
-	mx.NotFoundHandler = cohesioned.NotFoundViewHandler(homepageRenderer)
-	mx.Methods(http.MethodGet).Path("/401").Handler(cohesioned.UnauthorizedViewHandler(homepageRenderer))
-	mx.Methods(http.MethodGet).Path("/403").Handler(cohesioned.ForbiddenViewHandler(homepageRenderer))
-	mx.Methods(http.MethodGet).Path("/500").Handler(cohesioned.InternalServerErrorViewHandler(homepageRenderer))
+	//TODO - register 404
+	// mx.NotFoundHandler = cohesioned.NotFoundViewHandler(homepageRenderer)
+	// mx.Methods(http.MethodGet).Path("/401").Handler(cohesioned.UnauthorizedViewHandler(homepageRenderer))
+	// mx.Methods(http.MethodGet).Path("/403").Handler(cohesioned.ForbiddenViewHandler(homepageRenderer))
+	// mx.Methods(http.MethodGet).Path("/500").Handler(cohesioned.InternalServerErrorViewHandler(homepageRenderer))
 
 	//Public Routes
-	//mx.Methods(http.MethodGet).Path("/").Handler(homepage.HomepageViewHandler(homepageRenderer, homepageRepo))
 	mx.Methods(http.MethodGet).Path("/logout").Handler(auth.LogoutHandler(authConfig))
 	mx.Methods(http.MethodGet).Path("/callback").Handler(auth.CallbackHandler(authConfig))
 	mx.Methods(http.MethodGet).Path("/auth/config").Handler(auth.ConfigHandler(authConfig))
 
 	//Public APIs
-	mx.Methods(http.MethodGet).Path("/api/homepage").Handler(homepage.HomepageHandler(homepageRenderer, homepageRepo))
+	mx.Methods(http.MethodGet).Path("/api/homepage").Handler(homepage.HomepageHandler(apiRenderer, homepageRepo))
 	mx.Methods(http.MethodGet).Path("/api/taxonomy/flatten").Handler(taxonomy.FlatListHandler(apiRenderer, taxonomyRepo))
 
 	isAuthenticatedHandler := auth.IsAuthenticatedHandler(authConfig)

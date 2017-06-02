@@ -15,9 +15,9 @@ type Homepage struct {
 func NewHomepage(id int64) *Homepage {
 	h := &Homepage{}
 	h.Header = &Header{}
-	h.Features = &Features{}
-	h.Testimonials = &Testimonials{}
-	h.Pricing = &Pricing{}
+	h.Features = &Features{Highlights: []*Highlight{}}
+	h.Testimonials = &Testimonials{List: []*Testimonial{}}
+	h.Pricing = &Pricing{List: []*PricingDetail{}}
 
 	h.GCPPersisted.id = id
 	h.Auditable.Created = time.Now()
@@ -31,9 +31,9 @@ type Header struct {
 }
 
 type Features struct {
-	Title      string      `datastore:"title" json:"title"`
-	Subtitle   string      `datastore:"subtitle" json:"subtitle"`
-	Highlights []Highlight `datastore:"higlights" json:"highlights"`
+	Title      string       `datastore:"title" json:"title"`
+	Subtitle   string       `datastore:"subtitle" json:"subtitle"`
+	Highlights []*Highlight `datastore:"higlights" json:"highlights"`
 }
 
 type Highlight struct {
@@ -55,9 +55,9 @@ type Testimonial struct {
 }
 
 type Pricing struct {
-	Title    string          `datastore:"title" json:"title"`
-	Subtitle string          `datastore:"subtitle" json:"subtitle"`
-	List     []PricingDetail `json:"list" datastore:"list"`
+	Title    string           `datastore:"title" json:"title"`
+	Subtitle string           `datastore:"subtitle" json:"subtitle"`
+	List     []*PricingDetail `json:"list" datastore:"list"`
 }
 
 type PricingDetail struct {
