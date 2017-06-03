@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-class Pricing extends React.Component {
+export default class PricingPlan extends React.Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
     price: PropTypes.string.isRequired,
@@ -38,6 +38,3 @@ class Pricing extends React.Component {
     )
   }
 }
-
-
-export default Pricing;

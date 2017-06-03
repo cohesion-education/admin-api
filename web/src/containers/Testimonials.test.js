@@ -1,9 +1,9 @@
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
-import { Testimonials } from './'
+import Testimonials from './Testimonials'
 
 
-jest.mock('../views/TestimonialList')
+jest.mock('../views/Testimonial')
 
 describe("<Testimonials /> Container ", () => {
     let wrapper
@@ -12,11 +12,13 @@ describe("<Testimonials /> Container ", () => {
         subscribe: jest.fn(),
         getState: jest.fn(() =>
           ({
-              testimonials:[{
-                text: 'Super Awesome!',
-                avatar:'test-avatar.png',
-                name:'Satisfied Parent'
-              }]
+              testimonials:{
+                list:[{
+                  text: 'Super Awesome!',
+                  avatar:'test-avatar.png',
+                  name:'Satisfied Parent'
+                }]
+              }
           })
         )
     }

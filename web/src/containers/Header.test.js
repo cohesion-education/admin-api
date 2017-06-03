@@ -1,10 +1,8 @@
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
-import { HomepageHeader } from './'
+import Header from './Header'
 
-jest.mock('../views/Header')
-
-describe("<HomepageHeader /> Container ", () => {
+describe("<Header /> Container ", () => {
     let wrapper
     let _store = {
         dispatch: jest.fn(),
@@ -21,7 +19,7 @@ describe("<HomepageHeader /> Container ", () => {
 
     beforeAll(() => wrapper = mount(
       <Provider store={_store}>
-        <HomepageHeader />
+        <Header />
       </Provider>
     ))
 

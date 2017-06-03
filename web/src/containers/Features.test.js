@@ -1,9 +1,6 @@
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
-import { Features } from './'
-
-
-jest.mock('../views/FeatureList')
+import Features from './Features'
 
 describe("<Features /> Container ", () => {
     let wrapper

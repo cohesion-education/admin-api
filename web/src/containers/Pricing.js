@@ -1,7 +1,8 @@
 import React from 'react'
+import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import ScrollableAnchor from 'react-scrollable-anchor'
-import Pricing from './Pricing'
+import PricingPlan from '../views/PricingPlan'
 
 class PricingList extends React.Component {
   static propTypes = {
@@ -32,8 +33,8 @@ class PricingList extends React.Component {
             <div className="row">
               <div className="col-lg-10 col-lg-offset-1">
                 <div className="row">
-                  {list.map((pricing, i) =>
-                    <Pricing key={i} {...pricing} />
+                  {list.map((pricingPlan, i) =>
+                    <PricingPlan key={i} {...pricingPlan} />
                   )}
                 </div>
               </div>
@@ -45,4 +46,6 @@ class PricingList extends React.Component {
   }
 }
 
-export default PricingList;
+export default connect(
+  state => ({ ...state.pricing })
+)(PricingList)

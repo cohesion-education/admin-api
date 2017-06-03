@@ -1,7 +1,8 @@
 import React from 'react'
+import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import OwlCarousel from 'react-owl-carousel'
-import Testimonial from './Testimonial'
+import Testimonial from '../views/Testimonial'
 
 
 class TestimonialList extends React.Component {
@@ -14,9 +15,7 @@ class TestimonialList extends React.Component {
   }
 
   render(){
-    const {list} = this.props
-
-    //console.log(`testimonial list: ${JSON.stringify(list)}`)
+    const { list } = this.props
 
     const owlOpts = {
       loop:true,
@@ -52,4 +51,6 @@ class TestimonialList extends React.Component {
   }
 }
 
-export default TestimonialList;
+export default connect(
+  state => ({ ...state.testimonials })
+)(TestimonialList)

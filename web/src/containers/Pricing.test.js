@@ -1,9 +1,8 @@
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
-import { Pricing } from './'
+import Pricing from './Pricing'
 
-
-jest.mock('../views/PricingList')
+jest.mock('../views/PricingPlan')
 
 describe("<Pricing /> Container ", () => {
     let wrapper

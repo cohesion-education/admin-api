@@ -1,4 +1,5 @@
 import React from 'react'
+import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 
 class Header extends React.Component {
@@ -38,4 +39,6 @@ class Header extends React.Component {
   }
 }
 
-export default Header;
+export default connect(
+  state => ({ ...state.header })
+)(Header)
