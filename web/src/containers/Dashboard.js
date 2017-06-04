@@ -3,22 +3,14 @@ import { connect } from 'react-redux'
 import DashboardTopBar from './DashboardTopBar'
 import DashboardLeftSideMenu from './DashboardLeftSideMenu'
 import DashboardFooter from '../views/DashboardFooter'
-import Auth from '../utils/Auth'
 
 import '../css/core.css'
 import '../css/components.css'
 // import '../css/icons.css'
-import '../css/pages.css'
+// import '../css/pages.css'
 import '../css/responsive.css'
 
 class Dashboard extends React.Component {
-  auth = new Auth()
-
-  componentDidMount(){
-    //this.props.dispatch(fetchHomepage())
-    console.log(`Dashboard.componentDidMount`)
-    console.log(`is authenticated? ${this.auth.isAuthenticated()}`)
-  }
 
   render (){
     return(

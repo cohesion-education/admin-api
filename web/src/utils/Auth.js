@@ -8,7 +8,7 @@ export default class Auth {
     redirectUri: process.env.REACT_APP_CALLBACK_URL,
     audience: `https://${process.env.REACT_APP_AUTH0_DOMAIN}/userinfo`,
     responseType: 'token id_token',
-    scope: 'openid email'
+    scope: 'openid profile email' /* https://auth0.com/docs/scopes/current, https://auth0.com/docs/scopes */
   })
 
   userProfile
@@ -23,7 +23,10 @@ export default class Auth {
   }
 
   login(e) {
-    e.preventDefault()
+    if(e){
+      e.preventDefault()
+    }
+
     this.webAuth.authorize()
   }
 

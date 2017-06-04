@@ -2,6 +2,7 @@ import fetch from 'isomorphic-fetch'
 
 export const REQUEST_HOMEPAGE = 'REQUEST_HOMEPAGE'
 export const RECEIVE_HOMEPAGE = 'RECEIVE_HOMEPAGE'
+export const RECEIVE_PROFILE = 'RECEIVE_PROFILE'
 
 
 function requestHomepage() {
@@ -17,6 +18,14 @@ function receiveHomepage(json) {
     features:json.features,
     testimonials:json.testimonials,
     pricing:json.pricing,
+    receivedAt: Date.now()
+  }
+}
+
+export function receiveProfile(profile) {
+  return {
+    type: RECEIVE_PROFILE,
+    profile:profile,
     receivedAt: Date.now()
   }
 }

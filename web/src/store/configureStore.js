@@ -9,6 +9,9 @@ import {
   testimonialsReducer,
   pricingReducer
 } from './homepageReducers'
+import {
+  profileReducer
+} from './dashboardReducers'
 
 const loggerMiddleware = createLogger()
 
@@ -21,7 +24,8 @@ export default function configureStore(preloadedState) {
       header:headerReducer,
       features:featuresReducer,
       testimonials:testimonialsReducer,
-      pricing:pricingReducer
+      pricing:pricingReducer,
+      profile:profileReducer
     }),
     preloadedState,
     applyMiddleware(

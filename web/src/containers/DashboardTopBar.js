@@ -1,11 +1,21 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
 
 class DashboardTopBar extends React.Component {
 
+  static propTypes = {
+    picture: PropTypes.string.isRequired
+  }
+
+  static defaultProps =  {
+    picture:''
+  }
+
   render (){
-    const { profile } = this.props
+    const { picture } = this.props
+    console.log(`picture: ${picture}`)
 
     return(
       <div className="topbar">
@@ -24,7 +34,7 @@ class DashboardTopBar extends React.Component {
               <ul className="nav navbar-nav navbar-right pull-right">
                 <li className="dropdown top-menu-item-xs">
                   <a href="#" className="dropdown-toggle profile waves-effect waves-light" data-toggle="dropdown" aria-expanded="true">
-                    <img src="picture-url" alt="user-img" className="img-circle" />
+                    <img src={picture} alt="user-img" className="img-circle" />
                   </a>
                   <ul className="dropdown-menu">
                     <li><a href="#"><i className="ti-user m-r-10 text-custom"></i> Profile</a></li>
@@ -43,4 +53,6 @@ class DashboardTopBar extends React.Component {
   }
 }
 
-export default connect((state) => state)(DashboardTopBar)
+export default connect(
+  state => ({ ...state.profile })
+)(DashboardTopBar)

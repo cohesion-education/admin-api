@@ -7,7 +7,6 @@ import FeatureDescriptionList from '../views/FeatureDescriptionList'
 import Testimonials from './Testimonials'
 import Pricing from './Pricing'
 import Footer from '../views/Footer'
-import Auth from '../utils/Auth'
 import history from '../history'
 import { fetchHomepage } from '../actions'
 import '../css/fonts.css'
@@ -15,15 +14,7 @@ import '../css/font-awesome.css'
 import '../css/homepage.css'
 
 class Homepage extends React.Component {
-  auth = new Auth()
-
-  componentDidMount(){
-    if(this.auth.isAuthenticated()){
-      history.replace('/dashboard')
-      return
-    }
-
-    console.log('not logged in - dispatching fetchHomepage')
+  componentWillMount(){
     this.props.dispatch(fetchHomepage())
   }
 

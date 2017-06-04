@@ -6,8 +6,11 @@ import { ConnectedRouter } from 'react-router-redux'
 import configureStore from './store/configureStore'
 import history from './history'
 import Homepage from './containers/Homepage'
-import Callback from './views/Callback'
+import Callback from './utils/Callback'
+import Login from './utils/Login'
+import Logout from './utils/Logout'
 import Dashboard from './containers/Dashboard'
+import RequiresAuth from './utils/RequiresAuth'
 
 const logPageView = () => {
   ReactGA.set({ page: window.location.pathname + window.location.search });
@@ -22,7 +25,9 @@ const Routes = () => (
       <div>
         <Route exact path="/" component={Homepage} />
         <Route path="/callback" component={Callback} />
-        <Route path="/dashboard" component={Dashboard} />
+        <Route path="/login" component={Login} />
+        <Route path="/logout" component={RequiresAuth(Logout)} />
+        <Route path="/dashboard" component={RequiresAuth(Dashboard)} />
       </div>
     </ConnectedRouter>
   </Provider>
