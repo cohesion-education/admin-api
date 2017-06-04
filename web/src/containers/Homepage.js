@@ -8,6 +8,7 @@ import Testimonials from './Testimonials'
 import Pricing from './Pricing'
 import Footer from '../views/Footer'
 import Auth from '../utils/Auth'
+import history from '../history'
 import { fetchHomepage } from '../actions'
 import '../css/fonts.css'
 import '../css/font-awesome.css'
@@ -17,17 +18,13 @@ class Homepage extends React.Component {
   auth = new Auth()
 
   componentDidMount(){
-    this.props.dispatch(fetchHomepage())
+    if(this.auth.isAuthenticated()){
+      history.replace('/dashboard')
+      return
+    }
 
-    console.log(`Homepage.componentDidMount`)
-    console.log(`is authenticated? ${this.auth.isAuthenticated()}`)
-    this.auth.getProfile((err, profile) => {
-      if(err){
-        console.log(`failed to get profile: ${err}`)
-        return
-      }
-      console.log(`profile: ${JSON.stringify(profile)}`)
-    })
+    console.log('not logged in - dispatching fetchHomepage')
+    this.props.dispatch(fetchHomepage())
   }
 
   render (){

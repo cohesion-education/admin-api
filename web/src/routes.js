@@ -7,6 +7,7 @@ import configureStore from './store/configureStore'
 import history from './history'
 import Homepage from './containers/Homepage'
 import Callback from './views/Callback'
+import Dashboard from './containers/Dashboard'
 
 const logPageView = () => {
   ReactGA.set({ page: window.location.pathname + window.location.search });
@@ -20,7 +21,8 @@ const Routes = () => (
     <ConnectedRouter history={history} onUpdate={logPageView}>
       <div>
         <Route exact path="/" component={Homepage} />
-        <Route path="/callback" comoponent={Callback} />
+        <Route path="/callback" component={Callback} />
+        <Route path="/dashboard" component={Dashboard} />
       </div>
     </ConnectedRouter>
   </Provider>

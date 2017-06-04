@@ -101,15 +101,15 @@ func newServer() *negroni.Negroni {
 	requiresAuth(http.MethodGet, "/api/taxonomy/{id:[0-9]+}/children", taxonomy.ListChildrenHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/video/stream/{id:[0-9]+}", video.StreamHandler(apiRenderer, videoRepo, gcpConfig), mx, authMiddleware)
 
+	mx.PathPrefix("/callback").Handler(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		fmt.Println("serving /callback as index.html")
+		http.ServeFile(w, req, "./web/build/index.html")
+	}))
+
 	mx.PathPrefix("/").Handler(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		fmt.Println("serving / as index.html")
 		http.ServeFile(w, req, "./web/build/index.html")
 	}))
-	//
-	// mx.PathPrefix("/callback").Handler(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-	// 	fmt.Println("serving /callback as index.html")
-	// 	http.ServeFile(w, req, "./web/build/index.html")
-	// }))
 
 	n.UseHandler(mx)
 	return n

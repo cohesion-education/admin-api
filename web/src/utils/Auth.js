@@ -33,7 +33,7 @@ export default class Auth {
       console.log(authResult)
       if (authResult && authResult.accessToken && authResult.idToken) {
         this.setSession(authResult)
-        history.replace('/')
+        history.replace('/dashboard')
       } else if (err) {
         history.replace('/')
         console.log(err)
@@ -62,7 +62,7 @@ export default class Auth {
       localStorage.setItem('expires_at', expiresAt)
       localStorage.setItem('expires_in', authResult.expiresIn)
 
-      history.replace('/')
+      // history.replace('/')
     }
   }
 
@@ -86,7 +86,6 @@ export default class Auth {
     }catch(err){
       cb(err, null)
     }
-
   }
 
   logout() {
