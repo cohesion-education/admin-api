@@ -34,11 +34,11 @@ export default class Auth {
     this.webAuth.parseHash((err, authResult) => {
       console.log(err)
       console.log(authResult)
+      console.log(JSON.stringify(authResult))
+      console.log(`app_metadata: ${authResult.app_metadata}`)
       if (authResult && authResult.accessToken && authResult.idToken) {
         this.setSession(authResult)
-        history.replace('/dashboard')
       } else if (err) {
-        history.replace('/')
         console.log(err)
         alert(`Error: ${err.error}. Check the console for further details.`)
       }
@@ -60,12 +60,11 @@ export default class Auth {
     if (authResult && authResult.accessToken && authResult.idToken) {
       // Set the time that the access token will expire at
       let expiresAt = JSON.stringify((authResult.expiresIn * 1000) + new Date().getTime())
+      localStorage.setItem('authResult', JSON.stringify(authResult))
       localStorage.setItem('access_token', authResult.accessToken)
       localStorage.setItem('id_token', authResult.idToken)
       localStorage.setItem('expires_at', expiresAt)
       localStorage.setItem('expires_in', authResult.expiresIn)
-
-      // history.replace('/')
     }
   }
 

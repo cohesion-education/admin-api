@@ -23,7 +23,7 @@ const Navbar = () =>
           <li><a href="#features" className="nav-link">Features</a></li>
           <li><a href="#pricing" className="nav-link">Plans</a></li>
           <li><a href="/login" className="btn-login" onClick={auth.login}>Login</a></li>
-          <li><a href="/register" className="btn btn-white-bordered navbar-btn btn-login">Try for Free</a></li>
+          <li><a href="/register" onClick={auth.login} className="btn btn-white-bordered navbar-btn btn-login">Try for Free</a></li>
         </ul>
       </div>
     </div>

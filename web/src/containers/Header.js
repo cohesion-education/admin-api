@@ -1,6 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
+import Auth from '../utils/Auth'
+
+const auth = new Auth()
 
 class Header extends React.Component {
   static propTypes = {
@@ -27,7 +30,7 @@ class Header extends React.Component {
                   <div className="home-wrapper home-wrapper-alt">
                     <h2 className="font-light text-white">{title}</h2>
                     <h4 className="text-white">{subtitle}</h4>
-                    <a href="/register" className="btn btn-custom btn-login">Sign Up</a>
+                    <a href="/register" onClick={auth.login} className="btn btn-custom btn-login">Sign Up</a>
                   </div>
                 </div>
               </div>

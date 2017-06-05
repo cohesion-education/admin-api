@@ -45,6 +45,5 @@ const RequiresAuth = (ComposedComponent) => {
   return connect((state) => state)(RequiresAuth)
 }
 
-export default RequiresAuth
 
-// export default connect((state) => state)(RequiresAuth)
+export default RequiresAuth
