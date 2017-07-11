@@ -40,12 +40,6 @@ build:
           go get -u github.com/Masterminds/glide
           glide install
 
-    # Build the project
-    - script:
-        name: go build
-        code: |
-          go build ./cmd/srv
-          go build ./pkg/cohesioned
 
     # Test the project
     - script:
@@ -67,6 +61,11 @@ build:
 
 deploy:
   steps:
+    - script:
+        name: go build
+        code: |
+          GOOS=linux GOARCH=amd64 go build  -o ./build/cohesion-api ./cmd/srv
+
     - script:
         name: install-cf-cli
         code: |
