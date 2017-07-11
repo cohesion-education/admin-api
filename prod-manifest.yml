@@ -1,13 +1,13 @@
 ---
 applications:
-- name: admin
+- name: api
   buildpack: go_buildpack
   memory: 64M
   instances: 2
   services:
    - auth0-admin
   routes:
-   - route: www.cohesioned.io
+   - route: api.cohesioned.io
   env:
     DATASTORE_PROJECT_ID: cohesion-education
     GCP_STORAGE_VIDEO_BUCKET: cohesion-videos
