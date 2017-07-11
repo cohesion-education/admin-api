@@ -45,14 +45,12 @@ class DashboardTopBar extends React.Component {
             <img src={logo} alt='Cohesion Education' style={styles.logo}/>
           </Navbar.Brand>
         </Navbar.Header>
-        <Nav pullRight>
-          <Navbar.Text>
-            <Navbar.Link href="/profile">
-              <img src={picture} alt="user-img" className="img-circle" style={styles.profilePicture}/>
-            </Navbar.Link>
-          </Navbar.Text>
+        <Navbar.Collapse>
+          <Navbar.Link href="/profile" pullRight>
+            <img src={picture} alt="user-img" className="img-circle" style={styles.profilePicture}/>
+          </Navbar.Link>
           <Button href="/logout" bsStyle="primary" style={styles.navLinks}>Logout</Button>
-        </Nav>
+        </Navbar.Collapse>
       </Navbar>
     )
   }

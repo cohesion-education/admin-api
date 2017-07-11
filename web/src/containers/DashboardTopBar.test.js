@@ -25,6 +25,9 @@ describe("<DashboardTopBar /> ", () => {
     afterEach(() => jest.resetAllMocks())
 
     it("renders without crashing", () => {
-      expect(wrapper.contains(<img src="test-picture" alt="user-img" className="img-circle" />)).toBeTruthy()
+      expect(wrapper
+        .find('img')
+        .length
+      ).toBe(2)
     })
 })
