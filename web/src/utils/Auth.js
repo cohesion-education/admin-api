@@ -38,11 +38,12 @@ export default class Auth {
       console.log(`app_metadata: ${authResult.app_metadata}`)
       if (authResult && authResult.accessToken && authResult.idToken) {
         this.setSession(authResult)
+        history.replace('/dashboard')
       } else if (err) {
         console.log(err)
         alert(`Error: ${err.error}. Check the console for further details.`)
       }
-    });
+    })
   }
 
 

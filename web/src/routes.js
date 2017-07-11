@@ -13,8 +13,8 @@ import Dashboard from './containers/Dashboard'
 import RequiresAuth from './utils/RequiresAuth'
 
 const logPageView = () => {
-  ReactGA.set({ page: window.location.pathname + window.location.search });
-  ReactGA.pageview(window.location.pathname + window.location.search);
+  ReactGA.set({ page: window.location.pathname + window.location.search })
+  ReactGA.pageview(window.location.pathname + window.location.search)
 }
 
 const store = configureStore()
@@ -27,7 +27,7 @@ const Routes = () => (
         <Route path="/callback" component={Callback} />
         <Route path="/login" component={Login} />
         <Route path="/logout" component={RequiresAuth(Logout)} />
-        <Route path="/dashboard" component={RequiresAuth(Dashboard)} />
+        <Route path="/dashboard" component={Dashboard} />
       </div>
     </ConnectedRouter>
   </Provider>

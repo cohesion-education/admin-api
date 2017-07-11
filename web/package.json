@@ -6,12 +6,14 @@
     "auth0-js": "^8.7.0",
     "auth0-lock": "^10.16.0",
     "bootstrap": "3",
+    "classnames": "^2.2.5",
     "history": "^4.6.1",
     "isomorphic-fetch": "^2.2.1",
     "react": "^15.5.4",
     "react-bootstrap": "^0.31.0",
     "react-dom": "^15.5.4",
     "react-ga": "^2.2.0",
+    "react-jss": "^6.1.1",
     "react-owl-carousel": "^2.2.0",
     "react-redux": "^5.0.5",
     "react-router-dom": "^4.1.1",
@@ -19,7 +21,8 @@
     "react-scrollable-anchor": "^0.4.2",
     "redux": "^3.6.0",
     "redux-logger": "^3.0.6",
-    "redux-thunk": "^2.2.0"
+    "redux-thunk": "^2.2.0",
+    "video.js": "^5.19.2"
   },
   "devDependencies": {
     "deep-freeze": "^0.0.1",

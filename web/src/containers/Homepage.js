@@ -13,6 +13,7 @@ import '../css/fonts.css'
 import '../css/font-awesome.css'
 import '../css/homepage.css'
 
+
 class Homepage extends React.Component {
   componentWillMount(){
     this.props.dispatch(fetchHomepage())

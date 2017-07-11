@@ -252,29 +252,6 @@ a:hover,a:focus,.a:active {
 
 /*===== 5. Navbar Custom ======*/
 
-.navbar-custom {
-  background-color: #ffffff;
-  width: 100%;
-  border-radius: 0px;
-  z-index: 999;
-  margin-bottom: 0px;
-  -webkit-transition: all 0.5s ease-in-out;
-  -moz-transition: all 0.5s ease-in-out;
-  -o-transition: all 0.5s ease-in-out;
-  transition: all 0.5s ease-in-out;
-}
-
-.navbar-custom .navbar-nav li a {
-  /*color: rgba(255, 255, 255, 0.75);*/
-  font-size: 15px;
-  margin: 5px 0px;
-  padding-top:20px;
-}
-
-.navbar-custom .nav>li>a:focus,.navbar-custom .nav>li>a:hover,.navbar-custom .navbar-nav li.active a {
-  background-color: transparent;
-  /*color: #ffffff;*/
-}
 
 .navbar-toggle .icon-bar {
   background-color: #ffffff;
@@ -287,11 +264,6 @@ a:hover,a:focus,.a:active {
   margin-top: 18px !important;
 }
 
-.logo img{
-  margin-top:-0.6em;
-  height: 3em;
-}
-
 .navbar-toggle {
   font-size: 30px;
 }
@@ -301,7 +273,9 @@ a:hover,a:focus,.a:active {
   margin-left: 20px;
 }
 
-.nav .open>a, .nav .open>a:focus, .nav .open>a:hover {
+.nav .open>a,
+.nav .open>a:focus,
+.nav .open>a:hover {
   background-color: transparent;
   border-color: #337ab7;
 }
@@ -593,10 +567,6 @@ ul.social-icons li a i {
 @media (min-width: 768px) {
   .nav-custom-left {
     margin-left: 5%;
-  }
-  .navbar-nav>li>a {
-    padding-top: 10px;
-    padding-bottom: 10px;
   }
 }
 

@@ -1,7 +1,29 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { Button, Navbar, Nav, NavItem, NavDropdown, MenuItem } from 'react-bootstrap'
+import logo from '../images/cohesion-logo.png'
 
+const styles = {
+  nav:{
+    backgroundColor: '#e2e2e2',
+    borderColor: '#cecece',
+  },
+  logo:{
+    height:'4.5em',
+  },
+  navLinks:{
+    marginTop: '18px',
+    fontSize: '1.2em',
+    marginRight: '5px',
+  },
+  profilePicture:{
+    border: '2px solid #edf0f0',
+    height: '48px',
+    width: '48px',
+    cursor:'pointer',
+  }
+}
 
 class DashboardTopBar extends React.Component {
 
@@ -15,40 +37,23 @@ class DashboardTopBar extends React.Component {
 
   render (){
     const { picture } = this.props
-    console.log(`picture: ${picture}`)
 
     return(
-      <div className="topbar">
-        <div className="topbar-left">
-          <div className="logo">
-            <a href="#" className="open-left">
-              <img className="icon-c-collapsed" src="/assets/images/cohesion-c-70x68.png" height="60"/>
-              <img className="icon-c-logo" src="/assets/images/cohesion-logo.png" height="60"/>
-            </a>
-          </div>
-        </div>
-
-        <div className="navbar navbar-default" role="navigation">
-          <div className="container">
-            <div>
-              <ul className="nav navbar-nav navbar-right pull-right">
-                <li className="dropdown top-menu-item-xs">
-                  <a href="#" className="dropdown-toggle profile waves-effect waves-light" data-toggle="dropdown" aria-expanded="true">
-                    <img src={picture} alt="user-img" className="img-circle" />
-                  </a>
-                  <ul className="dropdown-menu">
-                    <li><a href="#"><i className="ti-user m-r-10 text-custom"></i> Profile</a></li>
-                    <li><a href="#"><i className="ti-settings m-r-10 text-custom"></i> Settings</a></li>
-                    <li><a href="#"><i className="ti-lock m-r-10 text-custom"></i> Lock screen</a></li>
-                    <li className="divider"></li>
-                    <li><a href="/logout"><i className="ti-power-off m-r-10 text-danger"></i> Logout</a></li>
-                  </ul>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Navbar fluid style={styles.nav} fixedTop>
+        <Navbar.Header>
+          <Navbar.Brand>
+            <img src={logo} alt='Cohesion Education' style={styles.logo}/>
+          </Navbar.Brand>
+        </Navbar.Header>
+        <Nav pullRight>
+          <Navbar.Text>
+            <Navbar.Link href="/profile">
+              <img src={picture} alt="user-img" className="img-circle" style={styles.profilePicture}/>
+            </Navbar.Link>
+          </Navbar.Text>
+          <Button href="/logout" bsStyle="primary" style={styles.navLinks}>Logout</Button>
+        </Nav>
+      </Navbar>
     )
   }
 }

@@ -1,20 +1,13 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import { ListGroup, ListGroupItem } from 'react-bootstrap'
 
 class DashboardLeftSideMenu extends React.Component {
   render (){
     return(
-      <div className="left side-menu">
-        <div className="sidebar-inner slimscrollleft">
-          <div id="sidebar-menu">
-            <ul>
-              <li className="text-muted menu-title">User Functions</li>
-            </ul>
-            <div className="clearfix"></div>
-          </div>
-          <div className="clearfix"></div>
-        </div>
-      </div>
+      <ListGroup>
+        <ListGroupItem href="/videos">Videos</ListGroupItem>
+      </ListGroup>
     )
   }
 }
