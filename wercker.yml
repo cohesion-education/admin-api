@@ -27,11 +27,11 @@ build:
     - setup-go-workspace:
         package-dir: github.com/cohesion-education/admin-api
 
-    - script:
-      name: install nodejs
-      code: |
-        apt-get update && apt-get install -y nodejs npm
-        npm --version
+#    - script:
+#      name: install nodejs
+#      code: |
+#        apt-get update && apt-get install -y nodejs npm
+#        npm --version
 
     # Gets the dependencies
     - script:
@@ -54,16 +54,16 @@ build:
           go test ./pkg/cohesioned $(glide novendor) --cover
 
     # Test the web project
-    - script:
-        name: npm install
-        code: |
-          CI=true npm --prefix ./web install ./web
+#    - script:
+#        name: npm install
+#        code: |
+#          CI=true npm --prefix ./web install ./web
 
     # Test the web project
-    - script:
-        name: npm test
-        code: |
-          CI=true npm --prefix ./web test ./web
+#    - script:
+#        name: npm test
+#        code: |
+#          CI=true npm --prefix ./web test ./web
 
 deploy:
   steps:
