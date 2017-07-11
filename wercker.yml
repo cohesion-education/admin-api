@@ -55,11 +55,15 @@ build:
 
     # Test the web project
     - script:
+        name: npm install
+        code: |
+          CI=true npm --prefix ./web install ./web
+
+    # Test the web project
+    - script:
         name: npm test
         code: |
-          cd web
-          CI=true npm test
-          cd ..
+          CI=true npm --prefix ./web test ./web
 
 deploy:
   steps:
