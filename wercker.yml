@@ -94,6 +94,6 @@ deploy:
           echo "$GCP_KEY" > gcp-keyfile.json
 
     - script:
-        name: cf-push-to-dev
+        name: cf-push
         code: |
-          cf zero-downtime-push admin -f ${CF_SPACE}-manifest.yml
+          cf zero-downtime-push api -f ${CF_SPACE}-manifest.yml
