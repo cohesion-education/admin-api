@@ -27,15 +27,10 @@ build:
     - setup-go-workspace:
         package-dir: github.com/cohesion-education/admin-api
 
-#    - script:
-#      name: install nodejs
-#      code: |
-#        apt-get update && apt-get install -y nodejs npm
-#        npm --version
 
     # Gets the dependencies
     - script:
-        name: go get
+        name: glide install
         code: |
           go get -u github.com/Masterminds/glide
           glide install
@@ -47,25 +42,14 @@ build:
         code: |
           go test ./pkg/cohesioned $(glide novendor) --cover
 
-    # Test the web project
-#    - script:
-#        name: npm install
-#        code: |
-#          CI=true npm --prefix ./web install ./web
-
-    # Test the web project
-#    - script:
-#        name: npm test
-#        code: |
-#          CI=true npm --prefix ./web test ./web
-
-deploy:
-  steps:
+    # Test the project
     - script:
         name: go build
         code: |
           GOOS=linux GOARCH=amd64 go build  -o ./build/cohesion-api ./cmd/srv
 
+deploy:
+  steps:
     - script:
         name: install-cf-cli
         code: |
