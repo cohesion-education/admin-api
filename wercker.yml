@@ -42,6 +42,20 @@ build:
         code: |
           go test ./pkg/cohesioned $(glide novendor) --cover
 
+deploy:
+  steps:
+    # Sets the go workspace and places you package
+    # at the right place in the workspace tree
+    - setup-go-workspace:
+        package-dir: github.com/cohesion-education/admin-api
+
+    # Gets the dependencies
+    - script:
+        name: glide install
+        code: |
+          go get -u github.com/Masterminds/glide
+          glide install
+
     # Test the project
     - script:
         name: go build
@@ -49,8 +63,6 @@ build:
           GOOS=linux GOARCH=amd64 go build -o ./build/cohesion-api ./cmd/srv
           ls -la ./build
 
-deploy:
-  steps:
     - script:
         name: install-cf-cli
         code: |
@@ -84,6 +96,4 @@ deploy:
     - script:
         name: cf-push-to-dev
         code: |
-          ls -la ./
-          ls -la ./build
           cf zero-downtime-push admin -f ${CF_SPACE}-manifest.yml
