@@ -84,4 +84,6 @@ deploy:
     - script:
         name: cf-push-to-dev
         code: |
+          ls -la ./
+          ls -la ./build
           cf zero-downtime-push admin -f ${CF_SPACE}-manifest.yml
