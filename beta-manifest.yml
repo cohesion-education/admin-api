@@ -1,13 +1,15 @@
 ---
 applications:
 - name: api
-  buildpack: go_buildpack
+  buildpack: binary_buildpack
+  path: ./build
+  command: ./cohesion-api
   memory: 64M
   instances: 2
   services:
    - auth0-admin
   routes:
-   - route: beta-api.cohesioned.io
+   - route: beta.cohesioned.io/api
   env:
     DATASTORE_PROJECT_ID: cohesion-education-beta
     GCP_STORAGE_VIDEO_BUCKET: cohesion-videos-beta

@@ -9,7 +9,7 @@ applications:
   services:
    - auth0-admin
   routes:
-   - route: dev-api.cohesioned.io
+   - route: dev.cohesioned.io/api
   env:
     DATASTORE_PROJECT_ID: cohesion-education-dev
     GCP_STORAGE_VIDEO_BUCKET: cohesion-videos-dev
