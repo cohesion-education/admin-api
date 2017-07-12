@@ -45,6 +45,18 @@ build:
 deploy:
   steps:
     - script:
+        name: glide install
+        code: |
+          go get -u github.com/Masterminds/glide
+          glide install
+
+    - script:
+        name: go build
+        code: |
+          GOOS=linux GOARCH=amd64 go build -o ./build/cohesion-api ./cmd/srv
+          ls -la ./build
+
+    - script:
         name: install-cf-cli
         code: |
           wget -O cf.tgz https://cli.run.pivotal.io/stable?release=linux64-binary
@@ -72,7 +84,7 @@ deploy:
     - script:
         name: gcp-keyfile
         code: |
-          echo "$GCP_KEY" > gcp-keyfile.json
+          echo "$GCP_KEY" > ./build/gcp-keyfile.json
 
     - script:
         name: cf-push

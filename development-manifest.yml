@@ -1,7 +1,9 @@
 ---
 applications:
 - name: api
-  buildpack: go_buildpack
+  buildpack: binary_buildpack
+  path: ./build
+  command: ./cohesion-api
   memory: 64M
   instances: 2
   services:
