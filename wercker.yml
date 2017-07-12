@@ -44,6 +44,9 @@ build:
 
 deploy:
   steps:
+    - setup-go-workspace:
+        package-dir: github.com/cohesion-education/api
+        
     - script:
         name: glide install
         code: |
