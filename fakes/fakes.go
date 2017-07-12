@@ -9,26 +9,14 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
+	"github.com/cohesion-education/api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned/config"
 	"github.com/gorilla/sessions"
 	"github.com/unrolled/render"
 )
 
 var (
 	FakeRenderer = render.New()
-
-	FakeAdminDashboardRenderer = render.New(render.Options{
-		Layout: "admin-layout",
-		RenderPartialsWithoutPrefix: true,
-		Directory:                   "../../../templates",
-	})
-
-	FakeUserDashboardRenderer = render.New(render.Options{
-		Layout: "user-layout",
-		RenderPartialsWithoutPrefix: true,
-		Directory:                   "../../../templates",
-	})
 
 	FakeAuthConfig = &config.AuthConfig{
 		SessionStore: sessions.NewFilesystemStore("/tmp", []byte("oursecret")),
@@ -61,20 +49,6 @@ func FakeAdmin() *cohesioned.Profile {
 			Roles: []string{"admin"},
 		},
 	}
-}
-
-func RenderHTMLWithNoLayout(templateFileName string, data interface{}) []byte {
-	return RenderHTML(FakeRenderer, templateFileName, data, render.HTMLOptions{Layout: ""})
-}
-
-func RenderHTML(renderer *render.Render, templateFileName string, data interface{}, htmlOpt ...render.HTMLOptions) []byte {
-	buffer := bytes.NewBuffer(make([]byte, 0))
-	err := renderer.HTML(buffer, http.StatusOK, templateFileName, data, htmlOpt...)
-	if err != nil {
-		panic("Failed to render template " + templateFileName + "; error: " + err.Error())
-	}
-
-	return buffer.Bytes()
 }
 
 func RenderJSON(data interface{}) []byte {

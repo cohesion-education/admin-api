@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/gcp"
+	"github.com/cohesion-education/api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned/gcp"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
 )
@@ -16,62 +16,6 @@ type VideoAPIResponse struct {
 	cohesioned.APIResponse
 	Video *cohesioned.Video   `json:"video,omitempty"`
 	List  []*cohesioned.Video `json:"list,omitempty"`
-}
-
-func ListViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		list, err := repo.List()
-		if err != nil {
-			fmt.Printf("Failed to list videos %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusSeeOther)
-			return
-		}
-
-		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
-		if err != nil {
-			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusSeeOther)
-			return
-		}
-
-		dashboard.Set("list", list)
-		r.HTML(w, http.StatusOK, "video/list", dashboard)
-		return
-	}
-}
-
-func FormViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
-		if err != nil {
-			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusSeeOther)
-			return
-		}
-
-		vars := mux.Vars(req)
-		idParam := vars["id"]
-		if len(idParam) > 0 {
-			videoID, err := strconv.ParseInt(vars["id"], 10, 64)
-			if err != nil {
-				// r.Text(w, http.StatusInternalServerError, fmt.Sprintf("%s is not a valid id %v", vars["id"], err))
-				http.Redirect(w, req, "/404", http.StatusSeeOther)
-				return
-			}
-
-			video, err := repo.Get(videoID)
-			if err != nil {
-				fmt.Printf("Failed to get video by id %d %v\n", videoID, err)
-				http.Redirect(w, req, "/404", http.StatusSeeOther)
-				return
-			}
-
-			dashboard.Set("video", video)
-		}
-
-		r.HTML(w, http.StatusOK, "video/form", dashboard)
-		return
-	}
 }
 
 func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
@@ -199,37 +143,6 @@ func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 		resp.RedirectURL = fmt.Sprintf("/admin/video/%d", video.ID())
 		r.JSON(w, http.StatusOK, resp)
-	}
-}
-
-func ShowViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		vars := mux.Vars(req)
-
-		videoID, err := strconv.ParseInt(vars["id"], 10, 64)
-		if err != nil {
-			fmt.Printf("%s is not a valid video id %v\n", vars["id"], err)
-			http.Redirect(w, req, "/404", http.StatusSeeOther)
-			return
-		}
-
-		video, err := repo.Get(videoID)
-		if err != nil {
-			fmt.Printf("Failed to get video by id %d %v\n", videoID, err)
-			http.Redirect(w, req, "/404", http.StatusSeeOther)
-			return
-		}
-
-		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
-		if err != nil {
-			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
-			http.Redirect(w, req, "/401", http.StatusSeeOther)
-			return
-		}
-
-		dashboard.Set("video", video)
-		r.HTML(w, http.StatusOK, "video/show", dashboard)
-		return
 	}
 }
 

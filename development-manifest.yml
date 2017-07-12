@@ -1,9 +1,7 @@
 ---
 applications:
 - name: api
-  path: ./build
-  buildpack: binary_buildpack
-  command: ./cohesion-api
+  buildpack: go_buildpack
   memory: 64M
   instances: 2
   services:
@@ -13,4 +11,4 @@ applications:
   env:
     DATASTORE_PROJECT_ID: cohesion-education-dev
     GCP_STORAGE_VIDEO_BUCKET: cohesion-videos-dev
-    GCP_KEYFILE_LOCATION: gcp-keyfile.json  
+    GCP_KEYFILE_LOCATION: gcp-keyfile.json

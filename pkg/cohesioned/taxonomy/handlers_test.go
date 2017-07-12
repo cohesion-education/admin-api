@@ -7,50 +7,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/cohesion-education/admin-api/fakes"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/taxonomy"
+	"github.com/cohesion-education/api/fakes"
+	"github.com/cohesion-education/api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned/taxonomy"
 	"github.com/gorilla/mux"
 )
 
 var (
 	testUser = &cohesioned.Profile{FullName: "Test User"}
 )
-
-func TestListViewHandler(t *testing.T) {
-	req, err := http.NewRequest("GET", "/taxonomy", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-
-	repo := new(fakes.FakeTaxonomyRepo)
-	repo.ListReturns([]*cohesioned.Taxonomy{}, nil)
-
-	renderer := fakes.FakeAdminDashboardRenderer
-	handler := taxonomy.ListViewHandler(renderer, repo)
-	profile := fakes.FakeProfile()
-
-	ctx := req.Context()
-	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
-	req = req.WithContext(ctx)
-
-	handler.ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
-
-	dashboard := &cohesioned.DashboardView{}
-	dashboard.Set("profile", profile)
-	dashboard.Set("list", []*cohesioned.Taxonomy{})
-
-	expectedBody := fakes.RenderHTML(renderer, "taxonomy/list", dashboard)
-	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
-		t.Errorf("HTML response was not generated as expected. Expected:\n\n%s\n\nActual:\n\n%s", string(expectedBody), rr.Body.String())
-	}
-}
 
 func TestAddHandler(t *testing.T) {
 	expectedTaxonomy := cohesioned.NewTaxonomy("Test", 1, testUser)

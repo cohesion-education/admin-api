@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/http"
+	"github.com/cohesion-education/api/pkg/cohesioned/http"
 )
 
 func main() {

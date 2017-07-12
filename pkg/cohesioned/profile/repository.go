@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/datastore"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned"
 )
 
 type Repo interface {

@@ -3,37 +3,14 @@ package taxonomy
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"reflect"
 	"strconv"
 
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
 )
-
-func ListViewHandler(r *render.Render, repo Repo) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-
-		list, err := repo.List()
-		if err != nil {
-			fmt.Printf("Failed to list taxonomy items %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusSeeOther)
-			return
-		}
-
-		dashboard, err := cohesioned.NewDashboardViewWithProfile(req)
-		if err != nil {
-			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusSeeOther)
-			return
-		}
-		dashboard.Set("list", list)
-		r.HTML(w, http.StatusOK, "taxonomy/list", dashboard)
-		return
-	}
-}
 
 func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {

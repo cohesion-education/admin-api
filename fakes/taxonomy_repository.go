@@ -1,7 +1,7 @@
 package fakes
 
 import (
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned"
 )
 
 type FakeTaxonomyRepo struct {

@@ -3,7 +3,13 @@ vendor/
 scripts/
 .git/
 tmp/
+docs/
+testdata/
+fakes/
 admin-api
-manifest.yml
+*manifest.yml
+.gitignore
+.env
+README.md
 wercker.env
 wercker.yml

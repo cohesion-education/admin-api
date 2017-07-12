@@ -6,9 +6,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/cohesion-education/admin-api/fakes"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
+	"github.com/cohesion-education/api/fakes"
+	"github.com/cohesion-education/api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned/auth"
 )
 
 func TestAuthenticatedAsNonAdminUserRedirectsToUserDashboard(t *testing.T) {

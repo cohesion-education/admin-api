@@ -7,7 +7,7 @@ import (
 	"os"
 
 	cfenv "github.com/cloudfoundry-community/go-cfenv"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned"
 	"github.com/gorilla/sessions"
 )
 

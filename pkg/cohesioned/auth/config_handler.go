@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
+	"github.com/cohesion-education/api/pkg/cohesioned/config"
 )
 
 func ConfigHandler(cfg *config.AuthConfig) http.HandlerFunc {

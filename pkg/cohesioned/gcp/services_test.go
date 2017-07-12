@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/gcp"
+	"github.com/cohesion-education/api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned/gcp"
 )
 
 func TestCreateSignedURL(t *testing.T) {

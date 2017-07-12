@@ -1,6 +1,6 @@
 package fakes
 
-import "github.com/cohesion-education/admin-api/pkg/cohesioned"
+import "github.com/cohesion-education/api/pkg/cohesioned"
 
 type FakeProfileRepo struct {
 	err error

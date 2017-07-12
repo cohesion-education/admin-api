@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned"
 
 	"google.golang.org/api/option"
 

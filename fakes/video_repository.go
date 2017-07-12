@@ -3,7 +3,7 @@ package fakes
 import (
 	"io"
 
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned"
 )
 
 type FakeVideoRepo struct {

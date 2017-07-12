@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/auth"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/config"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/gcp"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/homepage"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/profile"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/taxonomy"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/video"
+	"github.com/cohesion-education/api/pkg/cohesioned/auth"
+	"github.com/cohesion-education/api/pkg/cohesioned/config"
+	"github.com/cohesion-education/api/pkg/cohesioned/gcp"
+	"github.com/cohesion-education/api/pkg/cohesioned/homepage"
+	"github.com/cohesion-education/api/pkg/cohesioned/profile"
+	"github.com/cohesion-education/api/pkg/cohesioned/taxonomy"
+	"github.com/cohesion-education/api/pkg/cohesioned/video"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/unrolled/render"
@@ -74,10 +74,6 @@ func newServer() *negroni.Negroni {
 	mx := mux.NewRouter()
 	mx.StrictSlash(true)
 
-	// Static Assets
-	mx.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./web/assets/"))))
-	mx.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./web/build/static/"))))
-
 	//TODO - register 404
 	// mx.NotFoundHandler = cohesioned.NotFoundViewHandler(homepageRenderer)
 
@@ -100,16 +96,6 @@ func newServer() *negroni.Negroni {
 	requiresAuth(http.MethodGet, "/api/taxonomy", taxonomy.ListHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/taxonomy/{id:[0-9]+}/children", taxonomy.ListChildrenHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/video/stream/{id:[0-9]+}", video.StreamHandler(apiRenderer, videoRepo, gcpConfig), mx, authMiddleware)
-
-	// mx.PathPrefix("/callback").Handler(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-	// 	fmt.Println("serving /callback as index.html")
-	// 	http.ServeFile(w, req, "./web/build/index.html")
-	// }))
-
-	mx.PathPrefix("/").Handler(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		fmt.Printf("serving %s as index.html\n", req.RequestURI)
-		http.ServeFile(w, req, "./web/build/index.html")
-	}))
 
 	n.UseHandler(mx)
 	return n

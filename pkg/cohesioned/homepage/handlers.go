@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned"
 	"github.com/unrolled/render"
 )
 

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cohesion-education/admin-api/fakes"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned"
-	"github.com/cohesion-education/admin-api/pkg/cohesioned/profile"
+	"github.com/cohesion-education/api/fakes"
+	"github.com/cohesion-education/api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned/profile"
 )
 
 func TestSavePreferences(t *testing.T) {
