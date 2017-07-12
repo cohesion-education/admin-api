@@ -78,24 +78,24 @@ func newServer() *negroni.Negroni {
 	// mx.NotFoundHandler = cohesioned.NotFoundViewHandler(homepageRenderer)
 
 	//Public APIs
-	mx.Methods(http.MethodGet).Path("/api/homepage").Handler(homepage.HomepageHandler(apiRenderer, homepageRepo))
-	mx.Methods(http.MethodGet).Path("/api/taxonomy/flatten").Handler(taxonomy.FlatListHandler(apiRenderer, taxonomyRepo))
+	mx.Methods(http.MethodGet).Path("/homepage").Handler(homepage.HomepageHandler(apiRenderer, homepageRepo))
+	mx.Methods(http.MethodGet).Path("/taxonomy/flatten").Handler(taxonomy.FlatListHandler(apiRenderer, taxonomyRepo))
 
 	isAuthenticatedHandler := auth.IsAuthenticatedHandler(authConfig)
 	authMiddleware := negroni.New(
 		negroni.HandlerFunc(isAuthenticatedHandler),
 	)
 
-	//APIs that require Admin priveleges
-	requiresAdmin(http.MethodPost, "/api/taxonomy", taxonomy.AddHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
-	requiresAdmin(http.MethodPost, "/api/video", video.SaveHandler(apiRenderer, videoRepo), mx, authMiddleware)
-	requiresAdmin(http.MethodPut, "/api/video", video.UpdateHandler(apiRenderer, videoRepo), mx, authMiddleware)
+	//endpoints that require Admin priveleges
+	requiresAdmin(http.MethodPost, "/taxonomy", taxonomy.AddHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodPost, "/video", video.SaveHandler(apiRenderer, videoRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodPut, "/video", video.UpdateHandler(apiRenderer, videoRepo), mx, authMiddleware)
 
-	//APIs that only require Authentication
-	requiresAuth(http.MethodPost, "/api/profile/preferences", profile.SavePreferencesHandler(apiRenderer, authConfig, profileRepo), mx, authMiddleware)
-	requiresAuth(http.MethodGet, "/api/taxonomy", taxonomy.ListHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
-	requiresAuth(http.MethodGet, "/api/taxonomy/{id:[0-9]+}/children", taxonomy.ListChildrenHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
-	requiresAuth(http.MethodGet, "/api/video/stream/{id:[0-9]+}", video.StreamHandler(apiRenderer, videoRepo, gcpConfig), mx, authMiddleware)
+	//endpoints that only require Authentication
+	requiresAuth(http.MethodPost, "/profile/preferences", profile.SavePreferencesHandler(apiRenderer, authConfig, profileRepo), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/taxonomy", taxonomy.ListHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/taxonomy/{id:[0-9]+}/children", taxonomy.ListChildrenHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/video/stream/{id:[0-9]+}", video.StreamHandler(apiRenderer, videoRepo, gcpConfig), mx, authMiddleware)
 
 	n.UseHandler(mx)
 	return n
