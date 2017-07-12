@@ -46,7 +46,8 @@ build:
     - script:
         name: go build
         code: |
-          GOOS=linux GOARCH=amd64 go build  -o ./build/cohesion-api ./cmd/srv
+          GOOS=linux GOARCH=amd64 go build -o ./build/cohesion-api ./cmd/srv
+          ls -la ./build
 
 deploy:
   steps:

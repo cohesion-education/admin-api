@@ -27,7 +27,7 @@ To run tests:
 
 Build locally using the Wercker CLI:
 
-    wercker --environment wercker.env build --docker-local
+    wercker build --docker-local
 
 
 
