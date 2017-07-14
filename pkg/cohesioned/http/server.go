@@ -78,6 +78,7 @@ func newServer() *negroni.Negroni {
 	// mx.NotFoundHandler = cohesioned.NotFoundViewHandler(homepageRenderer)
 
 	//Public APIs
+	mx.Methods(http.MethodGet).Path("/api/config").Handler(config.Handler(apiRenderer))
 	mx.Methods(http.MethodGet).Path("/api/homepage").Handler(homepage.HomepageHandler(apiRenderer, homepageRepo))
 	mx.Methods(http.MethodGet).Path("/api/taxonomy/flatten").Handler(taxonomy.FlatListHandler(apiRenderer, taxonomyRepo))
 
