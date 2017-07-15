@@ -1,36 +1,18 @@
 package config
 
 import (
-	"encoding/gob"
 	"fmt"
-	"net/http"
 	"os"
 
 	cfenv "github.com/cloudfoundry-community/go-cfenv"
-	"github.com/cohesion-education/api/pkg/cohesioned"
-	"github.com/gorilla/sessions"
 )
 
 type AuthConfig struct {
-	SessionStore     sessions.Store
 	ClientID         string
 	ClientSecret     string
 	Domain           string
 	CallbackURL      string
 	LogoutRedirectTo string
-}
-
-func (config *AuthConfig) GetCurrentSession(r *http.Request) (*sessions.Session, error) {
-	return config.SessionStore.Get(r, cohesioned.AuthSessionCookieName)
-}
-
-func newSessionStore(authKey string) sessions.Store {
-	if len(authKey) == 0 {
-		return nil
-	}
-	gob.Register(&cohesioned.Profile{})
-	sessionStore := sessions.NewCookieStore([]byte(authKey))
-	return sessionStore
 }
 
 func NewAuthConfig() (*AuthConfig, error) {
@@ -52,9 +34,6 @@ func NewAuthConfig() (*AuthConfig, error) {
 			}
 			if LogoutRedirectTo, ok := auth0Service.CredentialString("logout-redirect-to"); ok {
 				config.LogoutRedirectTo = LogoutRedirectTo
-			}
-			if sessionStoreAuthKey, ok := auth0Service.CredentialString("session-auth-key"); ok {
-				config.SessionStore = newSessionStore(sessionStoreAuthKey)
 			}
 		}
 	}
@@ -79,10 +58,6 @@ func NewAuthConfig() (*AuthConfig, error) {
 		config.LogoutRedirectTo = os.Getenv("LOGOUT_REDIRECT_TO")
 	}
 
-	if config.SessionStore == nil {
-		config.SessionStore = newSessionStore(os.Getenv("SESSION_AUTH_KEY"))
-	}
-
 	var missingConfig []string
 	if len(config.ClientID) == 0 {
 		missingConfig = append(missingConfig, "ClientID")
@@ -102,10 +77,6 @@ func NewAuthConfig() (*AuthConfig, error) {
 
 	if len(config.LogoutRedirectTo) == 0 {
 		missingConfig = append(missingConfig, "LogoutRedirectTo")
-	}
-
-	if config.SessionStore == nil {
-		missingConfig = append(missingConfig, "SessionStoreAuthKey")
 	}
 
 	if len(missingConfig) > 0 {

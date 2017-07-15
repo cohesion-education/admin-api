@@ -1,4 +1,4 @@
-package: github.com/cohesion-education/admin-api
+package: github.com/cohesion-education/api
 import:
 - package: github.com/auth0/go-jwt-middleware
 - package: github.com/codegangsta/negroni
@@ -6,8 +6,10 @@ import:
 - package: github.com/gorilla/mux
 - package: github.com/cloudfoundry-community/go-cfenv
 - package: github.com/joho/godotenv
-- package: github.com/gorilla/sessions
 - package: github.com/unrolled/render
 - package: github.com/urfave/negroni
 - package: golang.org/x/oauth2
 - package: cloud.google.com/go
+- package: github.com/auth0-community/go-auth0
+- package: github.com/go-errors/errors
+- package: gopkg.in/square/go-jose.v2

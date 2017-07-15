@@ -12,16 +12,15 @@ import (
 type key int
 
 const (
-	AuthSessionCookieName string = "auth-session"
-	CurrentUserKey        key    = iota
-	CurrentUserSessionKey string = "profile"
-	profileKey            string = "profile"
+	CurrentUserKey key    = iota
+	profileKey     string = "profile"
 )
 
-func GetProfile(req *http.Request) (*Profile, error) {
-	profile, ok := req.Context().Value(CurrentUserKey).(*Profile)
+func GetCurrentUser(req *http.Request) (*Profile, error) {
+	currentUser := req.Context().Value(CurrentUserKey)
+	profile, ok := currentUser.(*Profile)
 	if !ok {
-		return nil, fmt.Errorf("profile not of the proper type: %s", reflect.TypeOf(profile).String())
+		return nil, fmt.Errorf("Current user not stored in Context as *cohesioned.Profile but as %s", reflect.TypeOf(currentUser))
 	}
 
 	return profile, nil
@@ -31,7 +30,7 @@ type DashboardView map[string]interface{}
 
 func NewDashboardViewWithProfile(req *http.Request) (*DashboardView, error) {
 	d := &DashboardView{}
-	profile, err := GetProfile(req)
+	profile, err := GetCurrentUser(req)
 	if err != nil {
 		return nil, err
 	}

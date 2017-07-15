@@ -5,43 +5,62 @@ import (
 	"fmt"
 	"net/http"
 
+	jose "gopkg.in/square/go-jose.v2"
+
+	auth0 "github.com/auth0-community/go-auth0"
 	"github.com/cohesion-education/api/pkg/cohesioned"
 	"github.com/cohesion-education/api/pkg/cohesioned/config"
+	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
 )
 
-func IsAuthenticatedHandler(cfg *config.AuthConfig) negroni.HandlerFunc {
+func IsAdmin(r *render.Render) negroni.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-		session, err := cfg.GetCurrentSession(req)
+		profile, err := cohesioned.GetCurrentUser(req)
 		if err != nil {
-			fmt.Printf("error getting current user from session %v\n", err)
-			http.Redirect(w, req, "/401", http.StatusSeeOther)
+			resp := cohesioned.NewAPIErrorResponse("error getting current user from request context %v", err)
+			fmt.Printf("%s\n", resp.ErrMsg)
+			r.JSON(w, http.StatusUnauthorized, resp)
 			return
 		}
 
-		profile, ok := session.Values[cohesioned.CurrentUserSessionKey]
-		if !ok {
-			http.Redirect(w, req, "/401", http.StatusSeeOther)
+		if !profile.IsAdmin() {
+			r.JSON(w, http.StatusForbidden, &cohesioned.APIResponse{ErrMsg: "You are not authorized to access this resource"})
 			return
 		}
 
-		ctx := context.WithValue(req.Context(), cohesioned.CurrentUserKey, profile)
-		next(w, req.WithContext(ctx))
+		next(w, req)
 	}
 }
 
-func IsAdmin(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	profile, err := cohesioned.GetProfile(req)
-	if err != nil {
-		fmt.Printf("error getting current user from request context %v\n", err)
-		http.Redirect(w, req, "/401", http.StatusSeeOther)
-		return
-	}
+func CheckJwt(r *render.Render, cfg *config.AuthConfig) negroni.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+		jwksURI := fmt.Sprintf("%s/.well-known/jwks.json", cfg.Domain)
+		client := auth0.NewJWKClient(auth0.JWKClientOptions{URI: jwksURI})
+		audience := []string{cfg.ClientID}
+		issuer := fmt.Sprintf("%s/", cfg.Domain)
 
-	if profile.HasRole("admin") {
-		next(w, req)
-		return
-	}
+		//fmt.Printf("CheckJwt config::\n\tjwksURI: %s\n\tissuer: %s\n\taudience: %v\n", jwksURI, issuer, audience)
 
-	http.Redirect(w, req, "/403", http.StatusSeeOther)
+		configuration := auth0.NewConfiguration(client, audience, issuer, jose.RS256)
+		validator := auth0.NewValidator(configuration)
+
+		token, err := validator.ValidateRequest(req)
+		if err != nil {
+			resp := cohesioned.NewAPIErrorResponse("Missing or invalid token. %v", err)
+			fmt.Printf("%s\n", resp.ErrMsg)
+			r.JSON(w, http.StatusUnauthorized, resp)
+		} else {
+			profile := &cohesioned.Profile{}
+			if err := validator.Claims(req, token, profile); err != nil {
+				resp := cohesioned.NewAPIErrorResponse("Failed to read claims: %v", err)
+				fmt.Printf("%s\n", resp.ErrMsg)
+				r.JSON(w, http.StatusUnauthorized, resp)
+				return
+			}
+
+			ctx := context.WithValue(req.Context(), cohesioned.CurrentUserKey, profile)
+			next(w, req.WithContext(ctx))
+		}
+	}
 }

@@ -5,13 +5,12 @@ import (
 	"net/http"
 
 	"github.com/cohesion-education/api/pkg/cohesioned"
-	"github.com/cohesion-education/api/pkg/cohesioned/config"
 	"github.com/unrolled/render"
 )
 
-func SavePreferencesHandler(r *render.Render, cfg *config.AuthConfig, repo Repo) http.HandlerFunc {
+func SavePreferencesHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		p, err := cohesioned.GetProfile(req)
+		p, err := cohesioned.GetCurrentUser(req)
 		if err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("An unexpected error occurred when trying to get the current user %v", err)
 			fmt.Println(apiResponse.ErrMsg)
@@ -30,23 +29,6 @@ func SavePreferencesHandler(r *render.Render, cfg *config.AuthConfig, repo Repo)
 
 		if err = repo.Save(p); err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("Failed to save User %v", err)
-			fmt.Println(apiResponse.ErrMsg)
-			r.JSON(w, http.StatusInternalServerError, apiResponse)
-			return
-		}
-
-		session, err := cfg.GetCurrentSession(req)
-		if err != nil {
-			apiResponse := cohesioned.NewAPIErrorResponse("unable to Get Current Session %v", err)
-			fmt.Println(apiResponse.ErrMsg)
-			r.JSON(w, http.StatusInternalServerError, apiResponse)
-			return
-		}
-
-		session.Values[cohesioned.CurrentUserSessionKey] = p
-
-		if err := session.Save(req, w); err != nil {
-			apiResponse := cohesioned.NewAPIErrorResponse("failed to save Session %v", err)
 			fmt.Println(apiResponse.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, apiResponse)
 			return

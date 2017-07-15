@@ -26,11 +26,10 @@ func TestSavePreferences(t *testing.T) {
 	}
 
 	renderer := fakes.FakeRenderer
-	config := fakes.FakeAuthConfig
 	repo := new(fakes.FakeProfileRepo)
 	repo.SaveReturns(nil)
 
-	handler := profile.SavePreferencesHandler(renderer, config, repo)
+	handler := profile.SavePreferencesHandler(renderer, repo)
 	rr := httptest.NewRecorder()
 
 	p := fakes.FakeProfile()

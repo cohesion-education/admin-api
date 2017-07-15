@@ -1,6 +1,9 @@
 package cohesioned
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 //AppMetadata mapping of metadata provided by auth0
 type AppMetadata struct {
@@ -32,20 +35,15 @@ type Profile struct {
 	Preferences   Preferences `json:"preferences"`
 }
 
-func (p *Profile) HasRole(roleName string) bool {
-	if len(roleName) == 0 {
+//IsAdmin returns true if the user has a verified email address in the cohesioned.io domain
+func (p *Profile) IsAdmin() bool {
+	if len(p.Email) == 0 {
 		return false
 	}
 
-	if len(p.Metadata.Roles) == 0 {
+	if !p.EmailVerified {
 		return false
 	}
 
-	for _, role := range p.Metadata.Roles {
-		if role == roleName {
-			return true
-		}
-	}
-
-	return false
+	return strings.HasSuffix(p.Email, "@cohesioned.io")
 }

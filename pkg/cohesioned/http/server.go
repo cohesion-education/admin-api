@@ -14,6 +14,7 @@ import (
 	"github.com/cohesion-education/api/pkg/cohesioned/profile"
 	"github.com/cohesion-education/api/pkg/cohesioned/taxonomy"
 	"github.com/cohesion-education/api/pkg/cohesioned/video"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/unrolled/render"
@@ -27,6 +28,8 @@ var (
 func Run(port string) {
 	s := newServer()
 	s.Run(":" + port)
+
+	//http.ListenAndServe(":" + port, handlers.CORS()(r))
 }
 
 func newServer() *negroni.Negroni {
@@ -78,13 +81,11 @@ func newServer() *negroni.Negroni {
 	// mx.NotFoundHandler = cohesioned.NotFoundViewHandler(homepageRenderer)
 
 	//Public APIs
-	mx.Methods(http.MethodGet).Path("/api/config").Handler(config.Handler(apiRenderer))
 	mx.Methods(http.MethodGet).Path("/api/homepage").Handler(homepage.HomepageHandler(apiRenderer, homepageRepo))
 	mx.Methods(http.MethodGet).Path("/api/taxonomy/flatten").Handler(taxonomy.FlatListHandler(apiRenderer, taxonomyRepo))
 
-	isAuthenticatedHandler := auth.IsAuthenticatedHandler(authConfig)
 	authMiddleware := negroni.New(
-		negroni.HandlerFunc(isAuthenticatedHandler),
+		negroni.HandlerFunc(auth.CheckJwt(apiRenderer, authConfig)),
 	)
 
 	//endpoints that require Admin priveleges
@@ -93,12 +94,14 @@ func newServer() *negroni.Negroni {
 	requiresAdmin(http.MethodPut, "/api/video", video.UpdateHandler(apiRenderer, videoRepo), mx, authMiddleware)
 
 	//endpoints that only require Authentication
-	requiresAuth(http.MethodPost, "/api/profile/preferences", profile.SavePreferencesHandler(apiRenderer, authConfig, profileRepo), mx, authMiddleware)
+	requiresAuth(http.MethodPost, "/api/profile/preferences", profile.SavePreferencesHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/taxonomy", taxonomy.ListHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/taxonomy/{id:[0-9]+}/children", taxonomy.ListChildrenHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/video/stream/{id:[0-9]+}", video.StreamHandler(apiRenderer, videoRepo, gcpConfig), mx, authMiddleware)
 
-	n.UseHandler(mx)
+	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
+	allowedHeaders := handlers.AllowedHeaders([]string{"authorization", "content-type"})
+	n.UseHandler(handlers.CORS(allowedOrigins, allowedHeaders)(mx))
 	return n
 }
 
@@ -110,7 +113,7 @@ func requiresAuth(method string, uri string, handler http.Handler, mx *mux.Route
 
 func requiresAdmin(method string, uri string, handler http.Handler, mx *mux.Router, authMiddleware *negroni.Negroni) {
 	mx.Methods(method).Path(uri).Handler(authMiddleware.With(
-		negroni.HandlerFunc(auth.IsAdmin),
+		negroni.HandlerFunc(auth.IsAdmin(apiRenderer)),
 		negroni.Wrap(handler),
 	))
 }

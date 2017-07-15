@@ -6,7 +6,6 @@ echo $(cat <<-EOF
   "secret":"$AUTH0_CLIENT_SECRET",
   "domain":"$AUTH0_DOMAIN",
   "callback-url":"$CALLBACK_URL",
-  "session-auth-key":"$SESSION_AUTH_KEY",
   "logout-redirect-to":"$LOGOUT_REDIRECT_TO"
 }
 EOF

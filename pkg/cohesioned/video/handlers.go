@@ -23,7 +23,7 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		video := &cohesioned.Video{}
 		resp := &VideoAPIResponse{}
 
-		profile, err := cohesioned.GetProfile(req)
+		profile, err := cohesioned.GetCurrentUser(req)
 		video.CreatedBy = profile
 		if err != nil {
 			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
@@ -84,7 +84,7 @@ func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		resp := &VideoAPIResponse{}
 
-		profile, err := cohesioned.GetProfile(req)
+		profile, err := cohesioned.GetCurrentUser(req)
 		if err != nil {
 			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
 			resp.SetErrMsg("Unexpected error %v")
