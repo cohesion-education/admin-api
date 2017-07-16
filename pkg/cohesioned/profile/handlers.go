@@ -31,13 +31,6 @@ func SavePreferencesHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			p = currentUser
 		}
 
-		// if err = req.ParseForm(); err != nil {
-		// 	apiResponse := cohesioned.NewAPIErrorResponse("Error processing form %v", err)
-		// 	fmt.Println(apiResponse.ErrMsg)
-		// 	r.JSON(w, http.StatusInternalServerError, apiResponse)
-		// 	return
-		// }
-
 		defer req.Body.Close()
 		decoder := json.NewDecoder(req.Body)
 
@@ -51,7 +44,7 @@ func SavePreferencesHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		}
 
 		p.Preferences.Newsletter = preferences["newsletter"]
-		p.Preferences.BetaProgram = preferences["betaprogram"]
+		p.Preferences.BetaProgram = preferences["beta_program"]
 
 		if err = repo.Save(p); err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("Failed to save User %v", err)

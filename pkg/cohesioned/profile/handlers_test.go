@@ -14,7 +14,7 @@ import (
 )
 
 func TestSavePreferences(t *testing.T) {
-	prefs := "{\"newsletter\":true, \"betaprogram\":true}"
+	prefs := "{\"newsletter\":true, \"beta_program\":true}"
 
 	req, err := http.NewRequest("POST", "/api/profile/preferences", strings.NewReader(prefs))
 	req.Header.Set("Content-Type", "application/json")
