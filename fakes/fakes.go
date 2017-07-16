@@ -14,8 +14,7 @@ import (
 )
 
 var (
-	FakeRenderer = render.New()
-
+	FakeRenderer   = render.New()
 	FakeAuthConfig = &config.AuthConfig{}
 )
 
@@ -25,9 +24,6 @@ func FakeProfile() *cohesioned.Profile {
 		Email:      "hello@domain.com",
 		UserID:     "abc|123",
 		PictureURL: "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg",
-		Metadata: cohesioned.AppMetadata{
-			Roles: []string{},
-		},
 	}
 }
 
@@ -38,9 +34,6 @@ func FakeAdmin() *cohesioned.Profile {
 		EmailVerified: true,
 		UserID:        "abc|123",
 		PictureURL:    "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg",
-		Metadata: cohesioned.AppMetadata{
-			Roles: []string{"admin"},
-		},
 	}
 }
 

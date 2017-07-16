@@ -5,11 +5,6 @@ import (
 	"time"
 )
 
-//AppMetadata mapping of metadata provided by auth0
-type AppMetadata struct {
-	Roles []string `json:"roles"`
-}
-
 type Preferences struct {
 	Newsletter  bool `json:"newsletter"`
 	BetaProgram bool `json:"beta_program"`
@@ -31,7 +26,6 @@ type Profile struct {
 	ClientID      string      `json:"client_id"`
 	DateCreated   time.Time   `json:"created_at"`
 	LastUpdated   time.Time   `json:"updated_at"`
-	Metadata      AppMetadata `json:"app_metadata"`
 	Preferences   Preferences `json:"preferences"`
 }
 
