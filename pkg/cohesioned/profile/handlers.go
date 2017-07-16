@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -9,36 +10,6 @@ import (
 )
 
 func SavePreferencesHandler(r *render.Render, repo Repo) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		p, err := cohesioned.GetCurrentUser(req)
-		if err != nil {
-			apiResponse := cohesioned.NewAPIErrorResponse("An unexpected error occurred when trying to get the current user %v", err)
-			fmt.Println(apiResponse.ErrMsg)
-			r.JSON(w, http.StatusInternalServerError, apiResponse)
-			return
-		}
-		if err = req.ParseForm(); err != nil {
-			apiResponse := cohesioned.NewAPIErrorResponse("Error processing form %v", err)
-			fmt.Println(apiResponse.ErrMsg)
-			r.JSON(w, http.StatusInternalServerError, apiResponse)
-			return
-		}
-
-		p.Preferences.Newsletter = (req.PostFormValue("preferences.newsletter") == "on")
-		p.Preferences.BetaProgram = (req.PostFormValue("preferences.betaprogram") == "on")
-
-		if err = repo.Save(p); err != nil {
-			apiResponse := cohesioned.NewAPIErrorResponse("Failed to save User %v", err)
-			fmt.Println(apiResponse.ErrMsg)
-			r.JSON(w, http.StatusInternalServerError, apiResponse)
-			return
-		}
-
-		r.JSON(w, http.StatusOK, p)
-	}
-}
-
-func UpdatePreferencesHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		currentUser, err := cohesioned.GetCurrentUser(req)
 		if err != nil {
@@ -56,17 +27,33 @@ func UpdatePreferencesHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		if err = req.ParseForm(); err != nil {
-			apiResponse := cohesioned.NewAPIErrorResponse("Error processing form %v", err)
+		if p == nil {
+			p = currentUser
+		}
+
+		// if err = req.ParseForm(); err != nil {
+		// 	apiResponse := cohesioned.NewAPIErrorResponse("Error processing form %v", err)
+		// 	fmt.Println(apiResponse.ErrMsg)
+		// 	r.JSON(w, http.StatusInternalServerError, apiResponse)
+		// 	return
+		// }
+
+		defer req.Body.Close()
+		decoder := json.NewDecoder(req.Body)
+
+		preferences := map[string]bool{}
+
+		if err := decoder.Decode(&preferences); err != nil {
+			apiResponse := cohesioned.NewAPIErrorResponse("failed to unmarshall json %v", err)
 			fmt.Println(apiResponse.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, apiResponse)
 			return
 		}
 
-		p.Preferences.Newsletter = (req.PostFormValue("preferences.newsletter") == "on")
-		p.Preferences.BetaProgram = (req.PostFormValue("preferences.betaprogram") == "on")
+		p.Preferences.Newsletter = preferences["newsletter"]
+		p.Preferences.BetaProgram = preferences["betaprogram"]
 
-		if err = repo.Update(p); err != nil {
+		if err = repo.Save(p); err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("Failed to save User %v", err)
 			fmt.Println(apiResponse.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, apiResponse)

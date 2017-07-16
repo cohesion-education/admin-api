@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"strings"
 	"testing"
 
@@ -15,12 +14,10 @@ import (
 )
 
 func TestSavePreferences(t *testing.T) {
-	form := url.Values{}
-	form.Add("preferences.newsletter", "on")
-	form.Add("preferences.betaprogram", "on")
+	prefs := "{\"newsletter\":true, \"betaprogram\":true}"
 
-	req, err := http.NewRequest("POST", "/api/profile/preferences", strings.NewReader(form.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req, err := http.NewRequest("POST", "/api/profile/preferences", strings.NewReader(prefs))
+	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,54 +50,6 @@ func TestSavePreferences(t *testing.T) {
 
 	if result.Preferences.BetaProgram != true {
 		t.Error("Beta Program preferences did not save")
-	}
-}
-
-func TestUpdatePreferences(t *testing.T) {
-	form := url.Values{}
-	form.Add("preferences.newsletter", "on")
-	form.Add("preferences.betaprogram", "on")
-
-	req, err := http.NewRequest("PUT", "/api/profile/preferences", strings.NewReader(form.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fakeProfile := fakes.FakeProfile()
-	fakeProfile.Preferences = cohesioned.Preferences{
-		Newsletter:  false,
-		BetaProgram: false,
-	}
-
-	renderer := fakes.FakeRenderer
-	repo := new(fakes.FakeProfileRepo)
-	repo.FindByEmailReturns(fakeProfile, nil)
-	repo.UpdateReturns(nil)
-
-	handler := profile.UpdatePreferencesHandler(renderer, repo)
-	rr := httptest.NewRecorder()
-
-	ctx := context.WithValue(req.Context(), cohesioned.CurrentUserKey, fakeProfile)
-	handler.ServeHTTP(rr, req.WithContext(ctx))
-
-	expectedStatus := http.StatusOK
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
-	}
-
-	result := &cohesioned.Profile{}
-	decoder := json.NewDecoder(rr.Body)
-	if err := decoder.Decode(&result); err != nil {
-		t.Fatalf("failed to unmarshall json response %v", err)
-	}
-
-	if result.Preferences.Newsletter != true {
-		t.Error("Newletter preferences did not update")
-	}
-
-	if result.Preferences.BetaProgram != true {
-		t.Error("Beta Program preferences did not update")
 	}
 }
 
