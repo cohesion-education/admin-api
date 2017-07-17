@@ -2,7 +2,6 @@ package cohesioned
 
 import (
 	"strings"
-	"time"
 )
 
 type Preferences struct {
@@ -24,9 +23,9 @@ type Profile struct {
 	EmailVerified bool        `json:"email_verified"`
 	UserID        string      `json:"user_id"`
 	ClientID      string      `json:"client_id"`
-	DateCreated   time.Time   `json:"created_at"`
-	LastUpdated   time.Time   `json:"updated_at"`
 	Preferences   Preferences `json:"preferences"`
+	State         string      `json:"state"`
+	County        string      `json:"county"`
 }
 
 //IsAdmin returns true if the user has a verified email address in the cohesioned.io domain

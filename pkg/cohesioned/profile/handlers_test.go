@@ -13,6 +13,54 @@ import (
 	"github.com/cohesion-education/api/pkg/cohesioned/profile"
 )
 
+func TestSave(t *testing.T) {
+	prefs := "{\"email\":\"john@doe.com\", \"name\":\"John Doe\", \"state\":\"FL\",\"county\":\"Monroe County\"}"
+
+	req, err := http.NewRequest("POST", "/api/profile/preferences", strings.NewReader(prefs))
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	renderer := fakes.FakeRenderer
+	repo := new(fakes.FakeProfileRepo)
+	repo.SaveReturns(nil)
+
+	handler := profile.SaveHandler(renderer, repo)
+	rr := httptest.NewRecorder()
+
+	p := fakes.FakeProfile()
+	ctx := context.WithValue(req.Context(), cohesioned.CurrentUserKey, p)
+	handler.ServeHTTP(rr, req.WithContext(ctx))
+
+	expectedStatus := http.StatusOK
+	if status := rr.Code; status != expectedStatus {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
+	}
+
+	result := &cohesioned.Profile{}
+	decoder := json.NewDecoder(rr.Body)
+	if err := decoder.Decode(&result); err != nil {
+		t.Fatalf("failed to unmarshall json response %v", err)
+	}
+
+	if result.Email != "john@doe.com" {
+		t.Error("Email did not update")
+	}
+
+	if result.FullName != "John Doe" {
+		t.Error("Name did not update")
+	}
+
+	if result.State != "FL" {
+		t.Error("State did not update")
+	}
+
+	if result.County != "Monroe County" {
+		t.Error("County did not update")
+	}
+}
+
 func TestSavePreferences(t *testing.T) {
 	prefs := "{\"newsletter\":true, \"beta_program\":true}"
 
