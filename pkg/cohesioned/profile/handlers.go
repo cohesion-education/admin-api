@@ -34,7 +34,7 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		defer req.Body.Close()
 		decoder := json.NewDecoder(req.Body)
 
-		nextState := map[string]string{}
+		nextState := make(map[string]interface{})
 
 		if err = decoder.Decode(&nextState); err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("failed to unmarshall json %v", err)
@@ -43,10 +43,10 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		p.FullName = nextState["name"]
-		p.Email = nextState["email"]
-		p.State = nextState["state"]
-		p.County = nextState["county"]
+		p.FullName = nextState["name"].(string)
+		p.Email = nextState["email"].(string)
+		p.State = nextState["state"].(string)
+		p.County = nextState["county"].(string)
 
 		if err = repo.Save(p); err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("Failed to save User %v", err)
