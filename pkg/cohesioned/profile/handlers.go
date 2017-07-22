@@ -19,7 +19,7 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		p, err := repo.FindByEmail(currentUser.Email)
+		existing, err := repo.FindByEmail(currentUser.Email)
 		if err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("An unexpected error occurred when trying to retrieve your profile: %v", err)
 			fmt.Println(apiResponse.ErrMsg)
@@ -27,35 +27,35 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		if p == nil {
-			p = currentUser
+		if existing == nil {
+			existing = currentUser
 		}
 
 		defer req.Body.Close()
 		decoder := json.NewDecoder(req.Body)
 
-		nextState := make(map[string]interface{})
-
-		if err = decoder.Decode(&nextState); err != nil {
+		incoming := &cohesioned.Profile{}
+		if err = decoder.Decode(&incoming); err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("failed to unmarshall json %v", err)
 			fmt.Println(apiResponse.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, apiResponse)
 			return
 		}
 
-		p.FullName = nextState["name"].(string)
-		p.Email = nextState["email"].(string)
-		p.State = nextState["state"].(string)
-		p.County = nextState["county"].(string)
+		existing.FullName = incoming.FullName
+		existing.Email = incoming.Email
+		existing.State = incoming.State
+		existing.County = incoming.County
+		existing.Students = incoming.Students
 
-		if err = repo.Save(p); err != nil {
+		if err = repo.Save(existing); err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("Failed to save User %v", err)
 			fmt.Println(apiResponse.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, apiResponse)
 			return
 		}
 
-		r.JSON(w, http.StatusOK, p)
+		r.JSON(w, http.StatusOK, existing)
 	}
 }
 

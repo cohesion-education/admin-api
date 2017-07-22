@@ -14,9 +14,21 @@ import (
 )
 
 func TestSave(t *testing.T) {
-	prefs := "{\"email\":\"john@doe.com\", \"name\":\"John Doe\", \"state\":\"FL\",\"county\":\"Monroe County\"}"
+	profilePayload := `{
+		"email":"john@doe.com",
+		"name":"John Doe",
+		"state":"FL",
+		"county":"Monroe County",
+		"students":[
+			{
+				"name":"Billy",
+				"grade":"1",
+				"school":"Key West Elementary"
+			}
+		]
+	}`
 
-	req, err := http.NewRequest("POST", "/api/profile/preferences", strings.NewReader(prefs))
+	req, err := http.NewRequest("POST", "/api/profile", strings.NewReader(profilePayload))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		t.Fatal(err)
@@ -59,10 +71,26 @@ func TestSave(t *testing.T) {
 	if result.County != "Monroe County" {
 		t.Error("County did not update")
 	}
+
+	if len(result.Students) != 1 {
+		t.Error("There should be exactly 1 Student in Students")
+	}
+
+	if result.Students[0].Name != "Billy" {
+		t.Error("Students[0].Name did not update")
+	}
+
+	if result.Students[0].Grade != "1" {
+		t.Error("Students[0].Grade did not update")
+	}
+
+	if result.Students[0].School != "Key West Elementary" {
+		t.Error("Students[0].School did not update")
+	}
 }
 
 func TestSavePreferences(t *testing.T) {
-	prefs := "{\"newsletter\":true, \"beta_program\":true}"
+	prefs := `{"newsletter":true, "beta_program":true}`
 
 	req, err := http.NewRequest("POST", "/api/profile/preferences", strings.NewReader(prefs))
 	req.Header.Set("Content-Type", "application/json")

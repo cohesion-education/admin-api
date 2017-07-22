@@ -9,6 +9,12 @@ type Preferences struct {
 	BetaProgram bool `json:"beta_program"`
 }
 
+type Student struct {
+	Name   string `json:"name"`
+	Grade  string `json:"grade"`
+	School string `json:"school"`
+}
+
 //Profile represents a User of this system
 type Profile struct {
 	Auditable
@@ -26,6 +32,7 @@ type Profile struct {
 	Preferences   Preferences `json:"preferences"`
 	State         string      `json:"state"`
 	County        string      `json:"county"`
+	Students      []Student   `json:"students"`
 }
 
 //IsAdmin returns true if the user has a verified email address in the cohesioned.io domain
