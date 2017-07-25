@@ -82,6 +82,8 @@ func newServer() *negroni.Negroni {
 
 	//Public APIs
 	mx.Methods(http.MethodGet).Path("/api/homepage").Handler(homepage.HomepageHandler(apiRenderer, homepageRepo))
+	mx.Methods(http.MethodGet).Path("/api/taxonomy").Handler(taxonomy.ListHandler(apiRenderer, taxonomyRepo))
+	mx.Methods(http.MethodGet).Path("/api/taxonomy/{id:[0-9]+}/children").Handler(taxonomy.ListChildrenHandler(apiRenderer, taxonomyRepo))
 	mx.Methods(http.MethodGet).Path("/api/taxonomy/flatten").Handler(taxonomy.FlatListHandler(apiRenderer, taxonomyRepo))
 
 	authMiddleware := negroni.New(
@@ -97,8 +99,6 @@ func newServer() *negroni.Negroni {
 	requiresAuth(http.MethodGet, "/api/profile", profile.GetCurrentUserHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile", profile.SaveHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile/preferences", profile.SavePreferencesHandler(apiRenderer, profileRepo), mx, authMiddleware)
-	requiresAuth(http.MethodGet, "/api/taxonomy", taxonomy.ListHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
-	requiresAuth(http.MethodGet, "/api/taxonomy/{id:[0-9]+}/children", taxonomy.ListChildrenHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/video/stream/{id:[0-9]+}", video.StreamHandler(apiRenderer, videoRepo, gcpConfig), mx, authMiddleware)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})

@@ -16,13 +16,13 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		list, err := repo.List()
 		if err != nil {
-			data := struct {
-				Error error `json:"error"`
-			}{
-				err,
-			}
-			r.JSON(w, http.StatusInternalServerError, data)
+			apiResponse := cohesioned.NewAPIErrorResponse("An unexpected error occurred listing Taxonomy entities %v", err)
+			r.JSON(w, http.StatusInternalServerError, apiResponse)
 			return
+		}
+
+		if list == nil {
+			list = []*cohesioned.Taxonomy{}
 		}
 
 		r.JSON(w, http.StatusOK, list)

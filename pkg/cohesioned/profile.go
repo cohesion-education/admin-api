@@ -18,21 +18,22 @@ type Student struct {
 //Profile represents a User of this system
 type Profile struct {
 	Auditable
-	Enabled       bool        `json:"enabled"`
-	Email         string      `json:"email"`
-	FullName      string      `json:"name"`
-	FirstName     string      `json:"given_name"`
-	LastName      string      `json:"family_name"`
-	PictureURL    string      `json:"picture"`
-	Locale        string      `json:"locale"`
-	Nickname      string      `json:"nickname"`
-	EmailVerified bool        `json:"email_verified"`
-	UserID        string      `json:"user_id"`
-	ClientID      string      `json:"client_id"`
-	Preferences   Preferences `json:"preferences"`
-	State         string      `json:"state"`
-	County        string      `json:"county"`
-	Students      []Student   `json:"students"`
+	Enabled       bool        `json:"enabled" datastore:"Enabled,omitempty"`
+	Email         string      `json:"email" datastore:"Email,omitempty"`
+	FullName      string      `json:"name" datastore:"FullName,omitempty"`
+	FirstName     string      `json:"given_name" datastore:"FirstName,omitempty"`
+	LastName      string      `json:"family_name" datastore:"LastName,omitempty"`
+	PictureURL    string      `json:"picture" datastore:"PictureURL,omitempty"`
+	Locale        string      `json:"locale" datastore:"Locale,omitempty"`
+	Nickname      string      `json:"nickname" datastore:"Nickname,omitempty"`
+	EmailVerified bool        `json:"email_verified" datastore:"EmailVerified,omitempty"`
+	UserID        string      `json:"user_id" datastore:"UserID,omitempty"`
+	ClientID      string      `json:"client_id" datastore:"ClientID,omitempty"`
+	Sub           string      `json:"sub" datastore:"Sub,omitempty"`
+	Preferences   Preferences `json:"preferences" datastore:"Preferences,omitempty"`
+	State         string      `json:"state" datastore:"State,omitempty"`
+	County        string      `json:"county" datastore:"County,omitempty"`
+	Students      []Student   `json:"students" datastore:"Students,omitempty"`
 }
 
 //IsAdmin returns true if the user has a verified email address in the cohesioned.io domain
