@@ -12,9 +12,11 @@ import (
 
 //Repo for interacting with the persistent store for the Taxonomy type
 type Repo interface {
+	Get(id int64) (*cohesioned.Taxonomy, error)
 	List() ([]*cohesioned.Taxonomy, error)
 	ListChildren(parentID int64) ([]*cohesioned.Taxonomy, error)
 	Add(t *cohesioned.Taxonomy) (*cohesioned.Taxonomy, error)
+	Save(t *cohesioned.Taxonomy) (*cohesioned.Taxonomy, error)
 	Flatten(t *cohesioned.Taxonomy) ([]*cohesioned.Taxonomy, error)
 }
 
@@ -29,6 +31,23 @@ func NewGCPDatastoreRepo(client *datastore.Client) Repo {
 type gcpDatastoreRepo struct {
 	client *datastore.Client
 	ctx    context.Context
+}
+
+func (r *gcpDatastoreRepo) Get(id int64) (*cohesioned.Taxonomy, error) {
+	taxonomy := &cohesioned.Taxonomy{}
+
+	key := datastore.IDKey("Taxonomy", id, nil)
+	err := r.client.Get(r.ctx, key, taxonomy)
+
+	if err == datastore.ErrInvalidEntityType {
+		return nil, fmt.Errorf("%d returns an invalid entity type %v", id, err)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get Taxonomy by id %d %v", id, err)
+	}
+
+	return taxonomy, nil
 }
 
 func (repo *gcpDatastoreRepo) List() ([]*cohesioned.Taxonomy, error) {
@@ -53,6 +72,22 @@ func (repo *gcpDatastoreRepo) Add(t *cohesioned.Taxonomy) (*cohesioned.Taxonomy,
 	key, err := repo.client.Put(repo.ctx, key, t)
 	if err != nil {
 		return t, fmt.Errorf("Failed to save Taxonomy %v", err)
+	}
+
+	t.Key = key
+	return t, nil
+}
+
+func (repo *gcpDatastoreRepo) Save(t *cohesioned.Taxonomy) (*cohesioned.Taxonomy, error) {
+	if t.ID() == -1 {
+		t.Created = time.Now()
+		t.Key = datastore.IncompleteKey("Taxonomy", nil)
+	}
+
+	t.Updated = time.Now()
+	key, err := repo.client.Put(repo.ctx, t.Key, t)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to save Taxonomy %v", err)
 	}
 
 	t.Key = key

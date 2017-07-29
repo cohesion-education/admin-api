@@ -7,8 +7,9 @@ import (
 
 type Taxonomy struct {
 	Auditable
-	Name     string `datastore:"name" json:"name"`
-	ParentID int64  `datastore:"parent_id" schema:"parent_id" json:"parent_id"`
+	Name     string      `datastore:"name" json:"name"`
+	ParentID int64       `datastore:"parent_id" schema:"parent_id" json:"parent_id"`
+	Children []*Taxonomy `datastore:"children" json:"children"`
 }
 
 //NewTaxonomy creates a Taxonomy with the Auditable fields initialized

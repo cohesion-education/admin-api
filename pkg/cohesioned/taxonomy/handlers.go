@@ -78,6 +78,71 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	}
 }
 
+func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		vars := mux.Vars(req)
+
+		id, err := strconv.ParseInt(vars["id"], 10, 64)
+		if err != nil {
+			apiResponse := &cohesioned.APIResponse{
+				ErrMsg: fmt.Sprintf("%s is not a valid id %v", vars["id"], err),
+			}
+			fmt.Println(apiResponse.ErrMsg)
+			r.JSON(w, http.StatusBadRequest, apiResponse)
+			return
+		}
+
+		existing, err := repo.Get(id)
+		if err != nil {
+			apiResponse := cohesioned.NewAPIErrorResponse("An unexpected error occurred when trying to find Taxonomy by ID: %v", err)
+			fmt.Println(apiResponse.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, apiResponse)
+			return
+		}
+
+		if existing == nil {
+			apiResponse := &cohesioned.APIResponse{
+				ErrMsg: fmt.Sprintf("%s is not a valid id", id),
+			}
+			fmt.Println(apiResponse.ErrMsg)
+			r.JSON(w, http.StatusNotFound, apiResponse)
+			return
+		}
+
+		defer req.Body.Close()
+		decoder := json.NewDecoder(req.Body)
+
+		incoming := &cohesioned.Taxonomy{}
+		if err := decoder.Decode(&incoming); err != nil {
+			apiResponse := cohesioned.NewAPIErrorResponse("failed to unmarshall json %v", err)
+			fmt.Println(apiResponse.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, apiResponse)
+			return
+		}
+
+		currentUser, err := cohesioned.GetCurrentUser(req)
+		if err != nil {
+			apiResponse := cohesioned.NewAPIErrorResponse("An unexpected error occurred when trying to get the current user %v", err)
+			fmt.Println(apiResponse.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, apiResponse)
+			return
+		}
+
+		existing.Name = incoming.Name
+		existing.Children = incoming.Children
+		existing.UpdatedBy = currentUser
+
+		if existing, err = repo.Save(existing); err != nil {
+			apiResponse := cohesioned.NewAPIErrorResponse("Failed to save taxonomy %v", err)
+			fmt.Println(apiResponse.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, apiResponse)
+			return
+		}
+
+		r.JSON(w, http.StatusOK, existing)
+	}
+}
+
 func ListChildrenHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
