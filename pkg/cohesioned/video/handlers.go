@@ -1,8 +1,8 @@
 package video
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -18,49 +18,36 @@ type VideoAPIResponse struct {
 	List  []*cohesioned.Video `json:"list,omitempty"`
 }
 
-func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
+func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+		defer req.Body.Close()
+		decoder := json.NewDecoder(req.Body)
+
 		video := &cohesioned.Video{}
 		resp := &VideoAPIResponse{}
 
-		profile, err := cohesioned.GetCurrentUser(req)
-		video.CreatedBy = profile
+		if err := decoder.Decode(&video); err != nil {
+			resp.SetErrMsg("Unable to process the Video payload. Error: %v\n", err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, resp)
+			return
+		}
+
+		currentUser, err := cohesioned.GetCurrentUser(req)
 		if err != nil {
-			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
-			resp.SetErrMsg("Unexpected error %v", err)
+			resp.SetErrMsg("An unexpected error occurred when trying to get the current user %v", err)
+			fmt.Println(resp.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, resp)
 			return
 		}
 
-		if err = req.ParseMultipartForm(1000 * 10); err != nil {
-			resp.SetErrMsg("Failed to parse form %v", err)
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		file, fileHeader, err := req.FormFile("video_file")
-		if err == http.ErrMissingFile {
-			resp.AddValidationError("video_file", "You must select a file for upload")
-		} else if err != nil {
-			resp.SetErrMsg("Failed to get form file %v", err)
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		if file != nil && fileHeader != nil {
-			video.FileName = fileHeader.Filename
-			video.FileReader = file
-		}
-
-		video.Title = req.FormValue("title")
+		//TODO - integrate this into the Video struct for consistency
 		if len(video.Title) == 0 {
-			resp.AddValidationError("title", "Title is required")
+			resp.AddValidationError("title", "Video Title is required")
 		}
 
-		taxonomyID, err := strconv.ParseInt(req.FormValue("taxonomy_id"), 10, 64)
-		video.TaxonomyID = taxonomyID
-		if err != nil {
-			resp.AddValidationError("taxonomy_id", "Invalid Taxonomy ID "+err.Error())
+		if video.TaxonomyID == -1 {
+			resp.AddValidationError("taxonomy_id", "Video Taxonomy ID is required")
 		}
 
 		if len(resp.ValidationErrors) > 0 {
@@ -69,80 +56,143 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		video, err = repo.Add(file, video)
+		video.CreatedBy = currentUser
+		video, err = repo.Add(video)
 		if err != nil {
-			r.Text(w, http.StatusInternalServerError, "Failed to save video "+err.Error())
+			resp.SetErrMsg("Failed to save video %v", err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, resp)
 			return
 		}
 
-		resp.RedirectURL = fmt.Sprintf("/admin/video/%d", video.ID())
+		resp.ID = video.ID()
+		resp.Video = video
+
+		r.JSON(w, http.StatusOK, resp)
+	}
+}
+
+func UploadHandler(r *render.Render, repo Repo) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		defer req.Body.Close()
+
+		resp := &VideoAPIResponse{}
+
+		pathParams := mux.Vars(req)
+		idParam := pathParams["id"]
+		id, err := strconv.ParseInt(idParam, 10, 64)
+		if err != nil {
+			resp.SetErrMsg("%s is not a valid video ID; %v", idParam, err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusBadRequest, resp)
+			return
+		}
+
+		video, err := repo.Get(id)
+		if err != nil {
+			resp.SetErrMsg("Unable to retrieve video by id %v - %v", idParam, err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, resp)
+			return
+		}
+
+		if video == nil {
+			resp.SetErrMsg("%v is not a valid video id", idParam)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusNotFound, resp)
+			return
+		}
+
+		currentUser, err := cohesioned.GetCurrentUser(req)
+		if err != nil {
+			resp.SetErrMsg("An unexpected error occurred when trying to get the current user %v", err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, resp)
+			return
+		}
+
+		fmt.Printf("Headers: %v\n", req.Header)
+
+		video.FileName = req.Header.Get("file-name")
+		video.UpdatedBy = currentUser
+		video, err = repo.SetFile(req.Body, video)
+		if err != nil {
+			resp.SetErrMsg("An unknown error occurred when saving the video file: %v", err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, resp)
+			return
+		}
+
+		resp.ID = video.ID()
+		resp.Video = video
+
 		r.JSON(w, http.StatusOK, resp)
 	}
 }
 
 func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &VideoAPIResponse{}
-
-		profile, err := cohesioned.GetCurrentUser(req)
-		if err != nil {
-			log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
-			resp.SetErrMsg("Unexpected error %v")
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		if err = req.ParseMultipartForm(1000 * 10); err != nil {
-			resp.SetErrMsg("Failed to parse form " + err.Error())
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		file, fileHeader, err := req.FormFile("video_file")
-		if err != nil && err != http.ErrMissingFile {
-			resp.SetErrMsg("Failed to get form file " + err.Error())
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		id, err := strconv.ParseInt(req.FormValue("id"), 10, 64)
-		if err != nil {
-			resp.SetErrMsg("Invalid video id %s %v", req.FormValue("id"), err)
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		taxonomyID, err := strconv.ParseInt(req.FormValue("taxonomy_id"), 10, 64)
-		if err != nil {
-			resp.SetErrMsg("Invalid taxonomy id %s %v", req.FormValue("taxonomy_id"), err)
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		video, err := repo.Get(id)
-		if err != nil {
-			resp.SetErr(err)
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		video.Title = req.FormValue("title")
-		video.TaxonomyID = taxonomyID
-		video.UpdatedBy = profile
-
-		if fileHeader != nil {
-			video.FileName = fileHeader.Filename
-		}
-
-		video, err = repo.Update(file, video)
-		if err != nil {
-			resp.SetErrMsg("Failed to update video %v", err)
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		resp.RedirectURL = fmt.Sprintf("/admin/video/%d", video.ID())
-		r.JSON(w, http.StatusOK, resp)
+		// resp := &VideoAPIResponse{}
+		//
+		// profile, err := cohesioned.GetCurrentUser(req)
+		// if err != nil {
+		// 	log.Printf("Unexpected error when trying to get dashboard view with profile %v\n", err)
+		// 	resp.SetErrMsg("Unexpected error %v")
+		// 	r.JSON(w, http.StatusInternalServerError, resp)
+		// 	return
+		// }
+		//
+		// if err = req.ParseMultipartForm(1000 * 10); err != nil {
+		// 	resp.SetErrMsg("Failed to parse form " + err.Error())
+		// 	r.JSON(w, http.StatusInternalServerError, resp)
+		// 	return
+		// }
+		//
+		// file, fileHeader, err := req.FormFile("video_file")
+		// if err != nil && err != http.ErrMissingFile {
+		// 	resp.SetErrMsg("Failed to get form file " + err.Error())
+		// 	r.JSON(w, http.StatusInternalServerError, resp)
+		// 	return
+		// }
+		//
+		// id, err := strconv.ParseInt(req.FormValue("id"), 10, 64)
+		// if err != nil {
+		// 	resp.SetErrMsg("Invalid video id %s %v", req.FormValue("id"), err)
+		// 	r.JSON(w, http.StatusInternalServerError, resp)
+		// 	return
+		// }
+		//
+		// taxonomyID, err := strconv.ParseInt(req.FormValue("taxonomy_id"), 10, 64)
+		// if err != nil {
+		// 	resp.SetErrMsg("Invalid taxonomy id %s %v", req.FormValue("taxonomy_id"), err)
+		// 	r.JSON(w, http.StatusInternalServerError, resp)
+		// 	return
+		// }
+		//
+		// video, err := repo.Get(id)
+		// if err != nil {
+		// 	resp.SetErr(err)
+		// 	r.JSON(w, http.StatusInternalServerError, resp)
+		// 	return
+		// }
+		//
+		// video.Title = req.FormValue("title")
+		// video.TaxonomyID = taxonomyID
+		// video.UpdatedBy = profile
+		//
+		// if fileHeader != nil {
+		// 	video.FileName = fileHeader.Filename
+		// }
+		//
+		// video, err = repo.Update(file, video)
+		// if err != nil {
+		// 	resp.SetErrMsg("Failed to update video %v", err)
+		// 	r.JSON(w, http.StatusInternalServerError, resp)
+		// 	return
+		// }
+		//
+		// resp.RedirectURL = fmt.Sprintf("/admin/video/%d", video.ID())
+		// r.JSON(w, http.StatusOK, resp)
 	}
 }
 

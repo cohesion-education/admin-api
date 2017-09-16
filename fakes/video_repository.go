@@ -32,16 +32,25 @@ func (r *FakeVideoRepo) UpdateReturns(v *cohesioned.Video, err error) {
 	r.err = err
 }
 
+func (r *FakeVideoRepo) SetFileReturns(v *cohesioned.Video, err error) {
+	r.v = v
+	r.err = err
+}
+
 func (r *FakeVideoRepo) List() ([]*cohesioned.Video, error) {
 	return r.list, r.err
 }
 func (r *FakeVideoRepo) Get(id int64) (*cohesioned.Video, error) {
 	return r.v, r.err
 }
-func (r *FakeVideoRepo) Add(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error) {
+func (r *FakeVideoRepo) Add(video *cohesioned.Video) (*cohesioned.Video, error) {
 	return r.v, r.err
 }
 
-func (r *FakeVideoRepo) Update(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error) {
+func (r *FakeVideoRepo) Update(video *cohesioned.Video) (*cohesioned.Video, error) {
+	return r.v, r.err
+}
+
+func (r *FakeVideoRepo) SetFile(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error) {
 	return r.v, r.err
 }

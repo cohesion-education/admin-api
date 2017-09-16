@@ -15,8 +15,9 @@ import (
 type Repo interface {
 	List() ([]*cohesioned.Video, error)
 	Get(id int64) (*cohesioned.Video, error)
-	Add(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error)
-	Update(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error)
+	Add(video *cohesioned.Video) (*cohesioned.Video, error)
+	Update(video *cohesioned.Video) (*cohesioned.Video, error)
+	SetFile(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error)
 }
 
 type gcpRepo struct {
@@ -69,26 +70,19 @@ func (r *gcpRepo) List() ([]*cohesioned.Video, error) {
 	return list, nil
 }
 
-func (r *gcpRepo) Add(fileReader io.Reader, v *cohesioned.Video) (*cohesioned.Video, error) {
-	v.Created = time.Now()
-	v.StorageBucket = r.storageBucketName
-
+func (r *gcpRepo) Add(v *cohesioned.Video) (*cohesioned.Video, error) {
 	key, err := r.datastoreClient.Put(r.ctx, datastore.IncompleteKey("Video", nil), v)
 	v.Key = key
-	fmt.Printf("key returned from Put: %v", key)
+	v.Created = time.Now()
+	fmt.Printf("Video Key returned from GCP: %v\n", key)
 	if err != nil {
-		return v, fmt.Errorf("Failed to save video %v", err)
-	}
-
-	v, err = r.writeFileToStorage(fileReader, v)
-	if err != nil {
-		return v, err
+		return nil, fmt.Errorf("Failed to save video %v", err)
 	}
 
 	return v, nil
 }
 
-func (r *gcpRepo) Update(fileReader io.Reader, v *cohesioned.Video) (*cohesioned.Video, error) {
+func (r *gcpRepo) Update(v *cohesioned.Video) (*cohesioned.Video, error) {
 	v.Updated = time.Now()
 
 	_, err := r.datastoreClient.Put(r.ctx, v.Key, v)
@@ -96,34 +90,40 @@ func (r *gcpRepo) Update(fileReader io.Reader, v *cohesioned.Video) (*cohesioned
 		return v, fmt.Errorf("Failed to save video %v", err)
 	}
 
-	v, err = r.writeFileToStorage(fileReader, v)
-	if err != nil {
-		return v, err
-	}
-
 	return v, nil
 }
 
-func (r *gcpRepo) writeFileToStorage(fileReader io.Reader, v *cohesioned.Video) (*cohesioned.Video, error) {
-	if fileReader == nil {
-		return v, nil
+func (r *gcpRepo) SetFile(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error) {
+	objectName := fmt.Sprintf("%d-%s", video.ID(), video.FileName)
+	if err := r.writeFileToStorage(fileReader, objectName); err != nil {
+		return video, err
 	}
 
-	v.StorageObjectName = fmt.Sprintf("%d-%s", v.ID(), v.FileName)
-	objectHandle := r.storageClient.Bucket(v.StorageBucket).Object(v.StorageObjectName)
+	video.Updated = time.Now()
+	video.StorageBucket = r.storageBucketName
+	video.StorageObjectName = objectName
+	if _, err := r.datastoreClient.Put(r.ctx, video.Key, video); err != nil {
+		return video, fmt.Errorf("Failed to save video %v", err)
+	}
+
+	return video, nil
+}
+
+func (r *gcpRepo) writeFileToStorage(fileReader io.Reader, objectName string) error {
+	if fileReader == nil {
+		return nil
+	}
+
+	objectHandle := r.storageClient.Bucket(r.storageBucketName).Object(objectName)
 	writer := objectHandle.NewWriter(r.ctx)
 
 	if _, err := io.Copy(writer, fileReader); err != nil {
-		return v, fmt.Errorf("Failed to write video file %v", err)
+		return fmt.Errorf("Failed to write video file %v", err)
 	}
 
 	if err := writer.Close(); err != nil {
-		return v, fmt.Errorf("Failed to write video file %v", err)
+		return fmt.Errorf("Failed to write video file %v", err)
 	}
 
-	if _, err := r.datastoreClient.Put(r.ctx, v.Key, v); err != nil {
-		return v, fmt.Errorf("Failed to update video %v", err)
-	}
-
-	return v, nil
+	return nil
 }

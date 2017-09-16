@@ -2,18 +2,20 @@ package cohesioned
 
 import (
 	"encoding/json"
-	"io"
 	"time"
 )
 
 type Video struct {
 	Auditable
-	Title             string    `datastore:"title" json:"title"`
-	FileName          string    `datastore:"file_name" json:"file_name"`
-	FileReader        io.Reader `datastore:"-" json:"-"`
-	StorageBucket     string    `datastore:"bucket" json:"bucket"`
-	StorageObjectName string    `datastore:"object_name" json:"object_name"`
-	TaxonomyID        int64     `datastore:"taxonomy_id" json:"taxonomy_id"`
+	Title    string `datastore:"title" json:"title"`
+	FileName string `datastore:"file_name" json:"file_name"`
+	// FileReader        io.Reader `datastore:"-" json:"-"`
+	StorageBucket       string   `datastore:"bucket" json:"bucket"`
+	StorageObjectName   string   `datastore:"object_name" json:"object_name"`
+	TaxonomyID          int64    `datastore:"taxonomy_id" json:"taxonomy_id"`
+	KeyTerms            []string `datastore:"key_terms" json:"key_terms"`
+	StateStandards      []string `datastore:"state_standards" json:"state_standards"`
+	CommonCoreStandards []string `datastore:"common_core_standards" json:"common_core_standards"`
 	//TODO - Teacher, Tags, Related Videos, FAQs
 }
 

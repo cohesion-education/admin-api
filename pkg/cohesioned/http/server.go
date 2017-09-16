@@ -93,7 +93,8 @@ func newServer() *negroni.Negroni {
 	//endpoints that require Admin priveleges
 	requiresAdmin(http.MethodPost, "/api/taxonomy", taxonomy.AddHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
 	requiresAdmin(http.MethodPut, "/api/taxonomy/{id:[0-9]+}", taxonomy.UpdateHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
-	requiresAdmin(http.MethodPost, "/api/video", video.SaveHandler(apiRenderer, videoRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodPost, "/api/video", video.AddHandler(apiRenderer, videoRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodPost, "/api/video/upload/{id:[0-9]+}", video.UploadHandler(apiRenderer, videoRepo), mx, authMiddleware)
 	requiresAdmin(http.MethodPut, "/api/video", video.UpdateHandler(apiRenderer, videoRepo), mx, authMiddleware)
 
 	//endpoints that only require Authentication
@@ -103,7 +104,7 @@ func newServer() *negroni.Negroni {
 	requiresAuth(http.MethodGet, "/api/video/stream/{id:[0-9]+}", video.StreamHandler(apiRenderer, videoRepo, gcpConfig), mx, authMiddleware)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
-	allowedHeaders := handlers.AllowedHeaders([]string{"authorization", "content-type"})
+	allowedHeaders := handlers.AllowedHeaders([]string{"authorization", "content-type", "file-name"})
 	allowedMethods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD"})
 	n.UseHandler(handlers.CORS(allowedOrigins, allowedHeaders, allowedMethods)(mx))
 	return n

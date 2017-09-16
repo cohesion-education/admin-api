@@ -2,6 +2,7 @@ package fakes
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -48,7 +49,7 @@ func RenderJSON(data interface{}) []byte {
 }
 
 //NewfileUploadRequest Creates a new file upload http request with optional extra params
-func NewfileUploadRequest(method string, uri string, params map[string]string, paramName, filePath string) (*http.Request, error) {
+func NewMultipartFileUploadRequest(method string, uri string, params map[string]string, paramName, filePath string) (*http.Request, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -76,5 +77,15 @@ func NewfileUploadRequest(method string, uri string, params map[string]string, p
 
 	req, err := http.NewRequest(method, uri, body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
+	return req, err
+}
+
+func NewFileUploadRequest(method string, uri string, localFilePath string) (*http.Request, error) {
+	file, err := os.Open(localFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("%s does not seem to be a valid file path: %v", localFilePath, err)
+	}
+
+	req, err := http.NewRequest(method, uri, file)
 	return req, err
 }
