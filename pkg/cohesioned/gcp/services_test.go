@@ -15,7 +15,6 @@ func TestCreateSignedURL(t *testing.T) {
 		FileName:          "test.mp4",
 		StorageBucket:     "test-bucket",
 		StorageObjectName: "1234-test.mp4",
-		TaxonomyID:        1,
 	}
 
 	video.SetID(1234)
