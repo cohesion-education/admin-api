@@ -93,19 +93,21 @@ func newServer() *negroni.Negroni {
 	//endpoints that require Admin priveleges
 	requiresAdmin(http.MethodPost, "/api/taxonomy", taxonomy.AddHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
 	requiresAdmin(http.MethodPut, "/api/taxonomy/{id:[0-9]+}", taxonomy.UpdateHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodGet, "/api/videos", video.ListHandler(apiRenderer, videoRepo), mx, authMiddleware)
 	requiresAdmin(http.MethodPost, "/api/video", video.AddHandler(apiRenderer, videoRepo), mx, authMiddleware)
 	requiresAdmin(http.MethodPost, "/api/video/upload/{id:[0-9]+}", video.UploadHandler(apiRenderer, videoRepo), mx, authMiddleware)
-	requiresAdmin(http.MethodPut, "/api/video", video.UpdateHandler(apiRenderer, videoRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodDelete, "/api/video/{id:[0-9]+}", video.DeleteHandler(apiRenderer, videoRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodPut, "/api/video/{id:[0-9]+}", video.UpdateHandler(apiRenderer, videoRepo), mx, authMiddleware)
 
 	//endpoints that only require Authentication
 	requiresAuth(http.MethodGet, "/api/profile", profile.GetCurrentUserHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile", profile.SaveHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile/preferences", profile.SavePreferencesHandler(apiRenderer, profileRepo), mx, authMiddleware)
-	requiresAuth(http.MethodGet, "/api/video/stream/{id:[0-9]+}", video.StreamHandler(apiRenderer, videoRepo, gcpConfig), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/api/video/{id:[0-9]+}", video.GetByIDHandler(apiRenderer, videoRepo, gcpConfig), mx, authMiddleware)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
-	allowedHeaders := handlers.AllowedHeaders([]string{"authorization", "content-type", "file-name"})
-	allowedMethods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD"})
+	allowedHeaders := handlers.AllowedHeaders([]string{"authorization", "content-type", "content-length"})
+	allowedMethods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "HEAD"})
 	n.UseHandler(handlers.CORS(allowedOrigins, allowedHeaders, allowedMethods)(mx))
 	return n
 }

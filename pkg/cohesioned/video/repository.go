@@ -15,6 +15,7 @@ import (
 type Repo interface {
 	List() ([]*cohesioned.Video, error)
 	Get(id int64) (*cohesioned.Video, error)
+	Delete(id int64) error
 	Add(video *cohesioned.Video) (*cohesioned.Video, error)
 	Update(video *cohesioned.Video) (*cohesioned.Video, error)
 	SetFile(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error)
@@ -54,6 +55,32 @@ func (r *gcpRepo) Get(id int64) (*cohesioned.Video, error) {
 	return video, nil
 }
 
+func (r *gcpRepo) Delete(id int64) error {
+	video := &cohesioned.Video{}
+
+	key := datastore.IDKey("Video", id, nil)
+	err := r.datastoreClient.Get(r.ctx, key, video)
+
+	if err == datastore.ErrInvalidEntityType {
+		return fmt.Errorf("%d returns an invalid entity type %v", id, err)
+	}
+
+	if err != nil {
+		return fmt.Errorf("Failed to get video by id %d %v", id, err)
+	}
+
+	objectHandle := r.storageClient.Bucket(video.StorageBucket).Object(video.StorageObjectName)
+	if err := objectHandle.Delete(r.ctx); err != nil {
+		return fmt.Errorf("Failed to delete video storage object %s/%s for video %d: %v", video.StorageBucket, video.StorageObjectName, video.ID(), err)
+	}
+
+	if err := r.datastoreClient.Delete(r.ctx, key); err != nil {
+		return fmt.Errorf("Failed to delete video with id %d from data store: %v", video.ID(), err)
+	}
+
+	return nil
+}
+
 func (r *gcpRepo) List() ([]*cohesioned.Video, error) {
 	var list []*cohesioned.Video
 
@@ -74,7 +101,6 @@ func (r *gcpRepo) Add(v *cohesioned.Video) (*cohesioned.Video, error) {
 	key, err := r.datastoreClient.Put(r.ctx, datastore.IncompleteKey("Video", nil), v)
 	v.Key = key
 	v.Created = time.Now()
-	fmt.Printf("Video Key returned from GCP: %v\n", key)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to save video %v", err)
 	}

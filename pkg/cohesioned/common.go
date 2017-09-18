@@ -139,3 +139,16 @@ func (a *Auditable) SetCreatedBy(p *Profile) {
 func (a *Auditable) SetUpdatedBy(p *Profile) {
 	a.UpdatedBy = p
 }
+
+type Validatable struct {
+	ValidationErrors []*ValidationError `json:"validation_errors,omitempty"`
+}
+
+func (v *Validatable) AddValidationError(field, err string) *Validatable {
+	v.ValidationErrors = append(v.ValidationErrors, &ValidationError{
+		Field: field,
+		Err:   err,
+	})
+
+	return v
+}
