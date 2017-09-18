@@ -9,16 +9,17 @@ type Video struct {
 	Auditable
 	Validatable
 	Title               string   `datastore:"title" json:"title"`
+	FlattenedTaxonomy   string   `datastore:"flattened_taxonomy" json:"flattened_taxonomy"`
+	KeyTerms            []string `datastore:"key_terms" json:"key_terms,omitempty"`
+	StateStandards      []string `datastore:"state_standards" json:"state_standards,omitempty"`
+	CommonCoreStandards []string `datastore:"common_core_standards" json:"common_core_standards,omitempty"`
 	FileName            string   `datastore:"file_name" json:"file_name"`
+	FileType            string   `datastore:"file_type" json:"file_type"`
+	FileSize            int64    `datastore:"file_size" json:"file_size"`
 	StorageBucket       string   `datastore:"bucket" json:"bucket"`
 	StorageObjectName   string   `datastore:"object_name" json:"object_name"`
-	FlattenedTaxonomy   string   `datastore:"flattened_taxonomy" json:"flattened_taxonomy"`
-	KeyTerms            []string `datastore:"key_terms" json:"key_terms"`
-	StateStandards      []string `datastore:"state_standards" json:"state_standards"`
-	CommonCoreStandards []string `datastore:"common_core_standards" json:"common_core_standards"`
+	SignedURL           string   `json:"signed_url,omitempty"`
 	//TODO - Teacher, Related Videos, FAQs
-
-	SignedURL string `json:"signed_url,omitempty"`
 }
 
 //NewVideo creates a Video with the Auditable fields initialized
