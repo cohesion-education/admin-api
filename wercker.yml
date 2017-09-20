@@ -46,7 +46,7 @@ deploy:
   steps:
     - setup-go-workspace:
         package-dir: github.com/cohesion-education/api
-        
+
     - script:
         name: glide install
         code: |
@@ -83,6 +83,11 @@ deploy:
         name: cups-auth0
         code: |
           ./scripts/cups-auth0
+
+    - script:
+        name: cups-aws
+        code: |
+          ./scripts/cups-aws
 
     - script:
         name: gcp-keyfile

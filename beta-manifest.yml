@@ -8,6 +8,7 @@ applications:
   instances: 2
   services:
    - auth0-admin
+   - aws
   routes:
    - route: beta.cohesioned.io/api
   env:
