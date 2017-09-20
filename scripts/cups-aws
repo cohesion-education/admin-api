@@ -1,0 +1,23 @@
+#!/bin/bash
+
+echo $(cat <<-EOF
+{
+  "region":"$AWS_REGION",
+  "access_key_id":"$AWS_ACCESS_KEY_ID",
+  "secret_access_key":"$AWS_SECRET_ACCESS_KEY",
+  "rds_username":"$AWS_RDS_USERNAME",
+  "rds_password":"$AWS_RDS_PASSWORD",
+  "rds_host":"$AWS_RDS_HOST",
+  "rds_port":"$AWS_RDS_PORT",
+  "rds_dbname":"$AWS_RDS_DBNAME"
+}
+EOF
+) > credentials.json
+
+cf cups aws -p credentials.json
+rc=$?;
+if [[ $rc != 0 ]]
+then
+  echo "cups failed; falling back to uups"
+  cf uups aws -p credentials.json
+fi
