@@ -1,3 +1,5 @@
+// +build unit
+
 package video_test
 
 import (
@@ -59,7 +61,7 @@ func TestGetByIDHandler(t *testing.T) {
 	fakeUser := fakes.FakeProfile()
 	testVideo := cohesioned.NewVideo("Test Before", "test.mp4", 1234, fakeUser)
 
-	apiURL := fmt.Sprintf("/api/video/%d", testVideo.ID())
+	apiURL := fmt.Sprintf("/api/video/%d", testVideo.ID)
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
 		t.Fatalf("Failed to initialize create video request %v", err)
@@ -224,7 +226,7 @@ func TestAddHandler(t *testing.T) {
 	fakeResp := &video.VideoAPIResponse{
 		Video: testVideo,
 	}
-	fakeResp.ID = testVideo.ID()
+	fakeResp.ID = testVideo.ID
 
 	expectedBody := fakes.RenderJSON(fakeResp)
 	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
@@ -235,7 +237,7 @@ func TestAddHandler(t *testing.T) {
 func TestUploadHandler(t *testing.T) {
 	testVideo := cohesioned.NewVideo("Test After", "test.mp4", 1234, &cohesioned.Profile{FullName: "Test User"})
 
-	videoUploadURI := fmt.Sprintf("/api/video/upload/%d", testVideo.ID())
+	videoUploadURI := fmt.Sprintf("/api/video/upload/%d", testVideo.ID)
 	req, err := fakes.NewFileUploadRequest("POST", videoUploadURI, "../../../testdata/file-upload.txt")
 	if err != nil {
 		t.Fatal(err)
@@ -268,7 +270,7 @@ func TestUploadHandler(t *testing.T) {
 	fakeResp := &video.VideoAPIResponse{
 		Video: testVideo,
 	}
-	fakeResp.ID = testVideo.ID()
+	fakeResp.ID = testVideo.ID
 
 	expectedBody := fakes.RenderJSON(fakeResp)
 	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
@@ -295,7 +297,7 @@ func TestUpdateHandler(t *testing.T) {
 		t.Fatalf("Failed to marshall video json: %v", err)
 	}
 
-	apiURL := fmt.Sprintf("/api/video/%d", testVideo.ID())
+	apiURL := fmt.Sprintf("/api/video/%d", testVideo.ID)
 	req, err := http.NewRequest("PUT", apiURL, bytes.NewReader(testJSON))
 	if err != nil {
 		t.Fatalf("Failed to initialize create video request %v", err)

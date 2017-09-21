@@ -1,3 +1,5 @@
+// +build unit
+
 package profile_test
 
 import (

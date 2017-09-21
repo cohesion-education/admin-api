@@ -22,7 +22,7 @@ func NewAPIResponse(v *cohesioned.Video) *VideoAPIResponse {
 	resp := &VideoAPIResponse{
 		Video: v,
 	}
-	resp.ID = v.ID()
+	resp.ID = v.ID
 
 	return resp
 }
@@ -82,7 +82,7 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		resp.ID = video.ID()
+		resp.ID = video.ID
 		resp.Video = video
 
 		r.JSON(w, http.StatusOK, resp)
@@ -137,7 +137,7 @@ func UploadHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		resp.ID = video.ID()
+		resp.ID = video.ID
 		resp.Video = video
 
 		r.JSON(w, http.StatusOK, resp)
@@ -196,7 +196,7 @@ func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		resp.ID = existing.ID()
+		resp.ID = existing.ID
 		resp.Video = existing
 
 		r.JSON(w, http.StatusOK, resp)

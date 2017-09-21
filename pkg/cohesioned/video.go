@@ -8,6 +8,7 @@ import (
 type Video struct {
 	Auditable
 	Validatable
+	ID                  int64    `json:"id"`
 	Title               string   `datastore:"title" json:"title"`
 	FlattenedTaxonomy   string   `datastore:"flattened_taxonomy" json:"flattened_taxonomy"`
 	KeyTerms            []string `datastore:"key_terms" json:"key_terms,omitempty"`
@@ -27,9 +28,9 @@ func NewVideo(title, fileName string, id int64, createdBy *Profile) *Video {
 	v := &Video{
 		Title:    title,
 		FileName: fileName,
+		ID:       id,
 	}
 
-	v.GCPPersisted.id = id
 	v.Auditable.Created = time.Now()
 	v.Auditable.CreatedBy = createdBy
 
@@ -42,7 +43,7 @@ func (v *Video) MarshalJSON() ([]byte, error) {
 		ID int64 `json:"id"`
 		*Alias
 	}{
-		ID:    v.ID(),
+		ID:    v.ID,
 		Alias: (*Alias)(v),
 	})
 }

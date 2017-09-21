@@ -3,7 +3,7 @@
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cohesion`.`video` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(255) NULL,
+  `title` VARCHAR(255) NULL,
   `audit_info_id` INT NULL,
   `taxonomy_id` INT NOT NULL,
   `file_name` VARCHAR(255) NOT NULL,

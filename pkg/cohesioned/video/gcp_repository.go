@@ -62,11 +62,11 @@ func (r *gcpRepo) Delete(id int64) error {
 
 	objectHandle := r.storageClient.Bucket(video.StorageBucket).Object(video.StorageObjectName)
 	if err := objectHandle.Delete(r.ctx); err != nil {
-		return fmt.Errorf("Failed to delete video storage object %s/%s for video %d: %v", video.StorageBucket, video.StorageObjectName, video.ID(), err)
+		return fmt.Errorf("Failed to delete video storage object %s/%s for video %d: %v", video.StorageBucket, video.StorageObjectName, video.ID, err)
 	}
 
 	if err := r.datastoreClient.Delete(r.ctx, key); err != nil {
-		return fmt.Errorf("Failed to delete video with id %d from data store: %v", video.ID(), err)
+		return fmt.Errorf("Failed to delete video with id %d from data store: %v", video.ID, err)
 	}
 
 	return nil
@@ -111,7 +111,7 @@ func (r *gcpRepo) Update(v *cohesioned.Video) (*cohesioned.Video, error) {
 }
 
 func (r *gcpRepo) SetFile(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error) {
-	objectName := fmt.Sprintf("%d-%s", video.ID(), video.FileName)
+	objectName := fmt.Sprintf("%d-%s", video.ID, video.FileName)
 	if err := r.writeFileToStorage(fileReader, objectName); err != nil {
 		return video, err
 	}

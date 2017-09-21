@@ -38,9 +38,9 @@ build:
 
     # Test the project
     - script:
-        name: go test
+        name: unit test
         code: |
-          go test ./pkg/cohesioned $(glide novendor) --cover
+          go test ./pkg/cohesioned $(glide novendor) --cover -tags=unit
 
 deploy:
   steps:

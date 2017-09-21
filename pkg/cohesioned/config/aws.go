@@ -155,9 +155,9 @@ func NewAwsConfig() (AwsConfig, error) {
 		missingConfig = append(missingConfig, "RDS.Username")
 	}
 
-	if len(config.rds.password) == 0 {
-		missingConfig = append(missingConfig, "RDS.Password")
-	}
+	// if len(config.rds.password) == 0 {
+	// 	missingConfig = append(missingConfig, "RDS.Password")
+	// }
 
 	if len(config.rds.host) == 0 {
 		missingConfig = append(missingConfig, "RDS.Host")

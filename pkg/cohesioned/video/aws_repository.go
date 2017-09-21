@@ -1,6 +1,7 @@
 package video
 
 import (
+	"database/sql"
 	"fmt"
 	"io"
 	"time"
@@ -14,19 +15,38 @@ import (
 )
 
 type awsRepo struct {
+	*sql.DB
 	s3BucketName string
 	awsConfig    config.AwsConfig
 }
 
-func NewAwsRepo(awsConfig config.AwsConfig, s3BucketName string) Repo {
+func NewAwsRepo(awsConfig config.AwsConfig, s3BucketName string) (Repo, error) {
+	db, err := awsConfig.DialRDS()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to connect to RDS: %v", err)
+	}
+
 	return &awsRepo{
 		s3BucketName: s3BucketName,
 		awsConfig:    awsConfig,
-	}
+		DB:           db,
+	}, nil
 }
 
 func (r *awsRepo) Get(id int64) (*cohesioned.Video, error) {
-	return nil, nil
+	var video cohesioned.Video
+
+	row := r.QueryRow("select id, title from video where id = ?", id)
+	if err := row.Scan(&video.ID, &video.Title); err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			return nil, fmt.Errorf("No video with ID %d", id)
+		default:
+			return nil, fmt.Errorf("Unexpected error querying for user by id %d: %v", id, err)
+		}
+	}
+
+	return &video, nil
 }
 
 func (r *awsRepo) Delete(id int64) error {
@@ -36,12 +56,7 @@ func (r *awsRepo) Delete(id int64) error {
 func (r *awsRepo) List() ([]*cohesioned.Video, error) {
 	var list []*cohesioned.Video
 
-	db, err := r.awsConfig.DialRDS()
-	if err != nil {
-		return list, fmt.Errorf("Failed to connect to RDS: %v", err)
-	}
-
-	rows, err := db.Query("select * from video")
+	rows, err := r.Query("select * from video")
 	if err != nil {
 		return list, fmt.Errorf("Failed to execute query: %v", err)
 	}
