@@ -1,5 +1,3 @@
-// +build unit
-
 package auth_test
 
 const userInfoPayload = `{

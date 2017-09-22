@@ -1,5 +1,3 @@
-// +build unit
-
 package fakes
 
 import (
@@ -10,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/cohesion-education/api/pkg/cohesioned"
 	"github.com/cohesion-education/api/pkg/cohesioned/config"
@@ -23,9 +22,12 @@ var (
 
 func FakeProfile() *cohesioned.Profile {
 	return &cohesioned.Profile{
+		Created:    time.Now(),
 		FullName:   "Test User",
+		FirstName:  "Test",
+		LastName:   "User",
 		Email:      "hello@domain.com",
-		UserID:     "abc|123",
+		Sub:        "abc|123",
 		PictureURL: "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg",
 	}
 }
@@ -35,7 +37,7 @@ func FakeAdmin() *cohesioned.Profile {
 		FullName:      "Test User",
 		Email:         "admin@cohesioned.io",
 		EmailVerified: true,
-		UserID:        "abc|123",
+		Sub:           "abc|123",
 		PictureURL:    "https://pbs.twimg.com/profile_images/2043299214/Adam_Avatar_Small_400x400.jpg",
 	}
 }

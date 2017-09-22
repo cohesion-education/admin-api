@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	cfenv "github.com/cloudfoundry-community/go-cfenv"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type AwsConfig interface {
@@ -30,7 +31,7 @@ func (r *rds) String() string {
 }
 
 func (r *rds) DialRDS() (*sql.DB, error) {
-	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?tls=skip-verify",
+	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?tls=skip-verify&parseTime=true",
 		r.username,
 		r.password,
 		r.host,

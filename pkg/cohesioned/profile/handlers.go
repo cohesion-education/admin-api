@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/cohesion-education/api/pkg/cohesioned"
 	"github.com/unrolled/render"
@@ -29,6 +30,7 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 		if existing == nil {
 			existing = currentUser
+			existing.Created = time.Now()
 		}
 
 		defer req.Body.Close()
@@ -48,7 +50,9 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		existing.County = incoming.County
 		existing.Students = incoming.Students
 
-		if err = repo.Save(existing); err != nil {
+		id, err := repo.Save(existing)
+		existing.ID = id
+		if err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("Failed to save User %v", err)
 			fmt.Println(apiResponse.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, apiResponse)
@@ -96,7 +100,9 @@ func SavePreferencesHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		p.Preferences.Newsletter = preferences["newsletter"]
 		p.Preferences.BetaProgram = preferences["beta_program"]
 
-		if err = repo.Save(p); err != nil {
+		id, err := repo.Save(p)
+		p.ID = id
+		if err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("Failed to save User %v", err)
 			fmt.Println(apiResponse.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, apiResponse)

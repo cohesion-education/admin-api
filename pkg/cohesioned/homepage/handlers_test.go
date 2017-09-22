@@ -1,5 +1,3 @@
-// +build unit
-
 package homepage_test
 
 import "testing"

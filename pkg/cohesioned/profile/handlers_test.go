@@ -1,5 +1,3 @@
-// +build unit
-
 package profile_test
 
 import (
@@ -38,7 +36,7 @@ func TestSave(t *testing.T) {
 
 	renderer := fakes.FakeRenderer
 	repo := new(fakes.FakeProfileRepo)
-	repo.SaveReturns(nil)
+	repo.SaveReturns(5, nil)
 
 	handler := profile.SaveHandler(renderer, repo)
 	rr := httptest.NewRecorder()
@@ -102,7 +100,7 @@ func TestSavePreferences(t *testing.T) {
 
 	renderer := fakes.FakeRenderer
 	repo := new(fakes.FakeProfileRepo)
-	repo.SaveReturns(nil)
+	repo.SaveReturns(5, nil)
 
 	handler := profile.SavePreferencesHandler(renderer, repo)
 	rr := httptest.NewRecorder()
