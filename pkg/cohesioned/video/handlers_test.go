@@ -193,7 +193,9 @@ func TestUploadHandler(t *testing.T) {
 	req = req.WithContext(ctx)
 
 	renderer := fakes.FakeRenderer
-	handler := video.UploadHandler(renderer, repo)
+	awsConfig := new(fakes.FakeAwsConfig)
+	awsConfig.GetVideoBucketReturns("fake-bucket")
+	handler := video.UploadHandler(renderer, repo, awsConfig)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/video/upload/{id:[0-9]+}", handler)
@@ -280,6 +282,6 @@ func TestUpdateHandler(t *testing.T) {
 	}
 
 	if fakeResp.Video.UpdatedBy != fakeUser.ID {
-		t.Errorf("Video UpdatedBy was not set correctly; expected: %s - actual: %s", fakeUser.ID, fakeResp.Video.FileName)
+		t.Errorf("Video UpdatedBy was not set correctly; expected: %d - actual: %d", fakeUser.ID, fakeResp.Video.UpdatedBy)
 	}
 }

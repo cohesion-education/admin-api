@@ -90,7 +90,7 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	}
 }
 
-func UploadHandler(r *render.Render, repo Repo) http.HandlerFunc {
+func UploadHandler(r *render.Render, repo Repo, cfg config.AwsConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		defer req.Body.Close()
 
@@ -129,6 +129,8 @@ func UploadHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
+		video.StorageBucket = cfg.GetVideoBucket()
+		video.StorageObjectName = fmt.Sprintf("%d-%s", video.ID, video.FileName)
 		video.UpdatedBy = currentUser.ID
 		video.Updated = time.Now()
 		video, err = repo.SetFile(req.Body, video)

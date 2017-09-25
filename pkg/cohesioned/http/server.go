@@ -24,8 +24,6 @@ var (
 func Run(port string) {
 	s := newServer()
 	s.Run(":" + port)
-
-	//http.ListenAndServe(":" + port, handlers.CORS()(r))
 }
 
 func newServer() *negroni.Negroni {
@@ -105,7 +103,7 @@ func newServer() *negroni.Negroni {
 	requiresAdmin(http.MethodPut, "/api/taxonomy/{id:[0-9]+}", taxonomy.UpdateHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
 	requiresAdmin(http.MethodGet, "/api/videos", video.ListHandler(apiRenderer, videoRepo), mx, authMiddleware)
 	requiresAdmin(http.MethodPost, "/api/video", video.AddHandler(apiRenderer, videoRepo), mx, authMiddleware)
-	requiresAdmin(http.MethodPost, "/api/video/upload/{id:[0-9]+}", video.UploadHandler(apiRenderer, videoRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodPost, "/api/video/upload/{id:[0-9]+}", video.UploadHandler(apiRenderer, videoRepo, awsConfig), mx, authMiddleware)
 	requiresAdmin(http.MethodDelete, "/api/video/{id:[0-9]+}", video.DeleteHandler(apiRenderer, videoRepo), mx, authMiddleware)
 	requiresAdmin(http.MethodPut, "/api/video/{id:[0-9]+}", video.UpdateHandler(apiRenderer, videoRepo), mx, authMiddleware)
 
