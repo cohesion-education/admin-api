@@ -64,9 +64,9 @@ build:
     - script:
         name: integration test flyway db migration
         code: |
-          ls -la $PWD/sql/
+          ls -la ./sql/
 
-          flyway -user=root -password=$MYSQL_ENV_MYSQL_ROOT_PASSWORD -url=jdbc:mysql://$MYSQL_PORT_3306_TCP_ADDR:$MYSQL_PORT_3306_TCP_PORT/$MYSQL_ENV_MYSQL_DATABASE -locations=filesystem:$PWD/sql/ migrate
+          flyway -user=root -password=$MYSQL_ENV_MYSQL_ROOT_PASSWORD -url=jdbc:mysql://$MYSQL_PORT_3306_TCP_ADDR:$MYSQL_PORT_3306_TCP_PORT/$MYSQL_ENV_MYSQL_DATABASE -locations=filesystem:./sql/ migrate
 
     - script:
         name: integration test
