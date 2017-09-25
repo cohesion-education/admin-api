@@ -1,3 +1,5 @@
+//+build integration
+
 package video_test
 
 import (
@@ -25,11 +27,12 @@ func TestMain(m *testing.M) {
 		panic("Unexpected error initializing AwsConfig: " + err.Error())
 	}
 
-	db, _ := awsConfig.DialRDS()
-	repo, err = video.NewAwsRepo(awsConfig, "test-bucket")
+	db, err := awsConfig.DialRDS()
 	if err != nil {
 		panic("Failed to connect to db " + err.Error())
 	}
+
+	repo = video.NewAwsRepo(db, awsConfig)
 
 	if err := testutils.SetupDB(db); err != nil {
 		fmt.Println(err.Error())
@@ -61,5 +64,9 @@ func TestList(t *testing.T) {
 		t.Errorf("Failed to List videos: %v", err)
 	}
 
-	fmt.Printf("video list: %v\n", list)
+	if len(list) == 0 {
+		t.Error("repo returned empty list")
+	}
+
+	// fmt.Printf("video list: %v\n", list)
 }

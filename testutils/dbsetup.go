@@ -1,3 +1,5 @@
+//+build integration
+
 package testutils
 
 import (
@@ -10,6 +12,8 @@ func SetupDB(db *sql.DB) error {
 	setupSql := `
 		insert into user (created, email, full_name, first_name, last_name) values (now(), 'test@cohesioned.io', 'Test User', 'Test', 'User');
 		insert into taxonomy (name, created_by, created) values ('test-taxonomy', 1, now());
+		insert into taxonomy (name, created_by, created) values ('test-parent', 1, now());
+		insert into taxonomy (name, created_by, created, parent_id) values ('test-child', 1, now(), 2);
 		insert into video (title, file_name, bucket, object_key, taxonomy_id, created_by, created) values ('test-video', 'test-file.fake', 'test-bucket', 'test-obj-key', 1, 1, now());
 	`
 
@@ -35,6 +39,7 @@ func SetupDB(db *sql.DB) error {
 func CleanupDB(db *sql.DB) error {
 	cleanupSql := `
 		delete from video;
+		delete from taxonomy where parent_id is not null;
 		delete from taxonomy;
 		delete from student;
 		delete from user;

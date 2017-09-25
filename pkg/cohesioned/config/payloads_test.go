@@ -18,6 +18,26 @@ const auth0ServicePayload = `{
   "tags": []
 }`
 
+const awsServicePayload = `{
+  "credentials":{
+    "region":"us-east-1",
+    "access_key_id": "abc123",
+    "secret_access_key": "abc123",
+    "session_token": "",
+    "s3_video_bucket": "test-bucket",
+    "rds_username":"user",
+    "rds_password":"pass",
+    "rds_host":"localhost",
+    "rds_port": "3309",
+    "rds_dbname": "dbname"
+  },
+  "syslog_drain_url": "",
+  "volume_mounts": [],
+  "label": "user-provided",
+  "name": "aws",
+  "tags": []
+}`
+
 const auth0ServicePartialPayload = `{
   "credentials":{
     "secret":"test-secret",
@@ -40,9 +60,10 @@ var vcapApplicationPayload = `{
 
 var vcapServicesPayload = fmt.Sprintf(`{
   "user-provided": [
+    %s,
     %s
   ]
-}`, auth0ServicePayload)
+}`, auth0ServicePayload, awsServicePayload)
 
 var vcapServicesPartialPayload = fmt.Sprintf(`{
   "user-provided": [

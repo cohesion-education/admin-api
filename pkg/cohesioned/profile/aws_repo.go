@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cohesion-education/api/pkg/cohesioned"
+	"github.com/cohesion-education/api/pkg/cohesioned/db"
 )
 
 type awsRepo struct {
@@ -143,7 +144,7 @@ func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
 
 	row := repo.QueryRow(query, email)
 
-	var updated cohesioned.NullTime
+	var updated db.NullTime
 	var nickname sql.NullString
 	var pictureURL sql.NullString
 	var locale sql.NullString

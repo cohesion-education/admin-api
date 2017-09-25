@@ -22,6 +22,7 @@ var (
 
 func FakeProfile() *cohesioned.Profile {
 	return &cohesioned.Profile{
+		ID:         1,
 		Created:    time.Now(),
 		FullName:   "Test User",
 		FirstName:  "Test",

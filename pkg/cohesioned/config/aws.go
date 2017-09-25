@@ -16,6 +16,11 @@ import (
 type AwsConfig interface {
 	NewSession() (*session.Session, error)
 	DialRDS() (*sql.DB, error)
+	GetVideoBucket() string
+}
+
+type s3 struct {
+	videoBucket string
 }
 
 type rds struct {
@@ -44,6 +49,7 @@ func (r *rds) DialRDS() (*sql.DB, error) {
 
 type config struct {
 	rds
+	s3
 	region          string
 	accessKeyID     string
 	secretAccessKey string
@@ -52,6 +58,10 @@ type config struct {
 
 func (c *config) String() string {
 	return fmt.Sprintf("Region: %s\tAccess Key ID: %s", c.region, c.accessKeyID)
+}
+
+func (c *config) GetVideoBucket() string {
+	return c.videoBucket
 }
 
 func (c *config) NewSession() (*session.Session, error) {
@@ -79,6 +89,9 @@ func NewAwsConfig() (AwsConfig, error) {
 			}
 			if sessionToken, ok := awsService.CredentialString("session_token"); ok {
 				config.sessionToken = sessionToken
+			}
+			if s3VideoBucketName, ok := awsService.CredentialString("s3_video_bucket"); ok {
+				config.s3.videoBucket = s3VideoBucketName
 			}
 			if rdsUsername, ok := awsService.CredentialString("rds_username"); ok {
 				config.rds.username = rdsUsername
@@ -114,6 +127,10 @@ func NewAwsConfig() (AwsConfig, error) {
 
 	if len(config.sessionToken) == 0 {
 		config.sessionToken = os.Getenv("AWS_SESSION_TOKEN")
+	}
+
+	if len(config.s3.videoBucket) == 0 {
+		config.s3.videoBucket = os.Getenv("AWS_S3_VIDEO_BUCKET")
 	}
 
 	if len(config.rds.username) == 0 {
@@ -152,13 +169,13 @@ func NewAwsConfig() (AwsConfig, error) {
 		missingConfig = append(missingConfig, "AccessKeyID")
 	}
 
+	if len(config.s3.videoBucket) == 0 {
+		missingConfig = append(missingConfig, "S3.VideoBucket")
+	}
+
 	if len(config.rds.username) == 0 {
 		missingConfig = append(missingConfig, "RDS.Username")
 	}
-
-	// if len(config.rds.password) == 0 {
-	// 	missingConfig = append(missingConfig, "RDS.Password")
-	// }
 
 	if len(config.rds.host) == 0 {
 		missingConfig = append(missingConfig, "RDS.Host")

@@ -21,12 +21,18 @@ build:
   # Steps make up the actions in your pipeline
   # Read more about steps on our dev center:
   # http://devcenter.wercker.com/docs/steps/index.html
+  service:
+    - mysql
+    
   steps:
     # Sets the go workspace and places you package
     # at the right place in the workspace tree
     - setup-go-workspace:
         package-dir: github.com/cohesion-education/api
 
+    - script:
+        name: env
+        code: env
 
     # Gets the dependencies
     - script:
@@ -40,8 +46,12 @@ build:
     - script:
         name: unit test
         code: |
-          go test ./pkg/cohesioned $(glide novendor) --cover -tags=unit
+          go test ./pkg/cohesioned $(glide novendor) --cover
 
+    - script:
+        name: integration test
+        code: |
+          go test ./pkg/cohesioned $(glide novendor) --cover -tags=integration
 deploy:
   steps:
     - setup-go-workspace:

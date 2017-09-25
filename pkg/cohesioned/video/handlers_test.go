@@ -104,7 +104,7 @@ func TestGetByIDHandler(t *testing.T) {
 	expectedResp := &video.VideoAPIResponse{}
 
 	decoder := json.NewDecoder(rr.Body)
-	if err := decoder.Decode(&expectedResp); err != nil {
+	if err = decoder.Decode(&expectedResp); err != nil {
 		t.Errorf("Failed to unmarshall response json to VideoAPIResponse: %v", err)
 	}
 

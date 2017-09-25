@@ -18,7 +18,8 @@ var (
 )
 
 func TestAddHandler(t *testing.T) {
-	expectedTaxonomy := cohesioned.NewTaxonomy("Test", 1, testUser)
+	expectedTaxonomy := cohesioned.NewTaxonomy("Test", testUser)
+	expectedTaxonomy.ID = 1
 
 	testJSON, err := expectedTaxonomy.MarshalJSON()
 	if err != nil {
@@ -36,7 +37,7 @@ func TestAddHandler(t *testing.T) {
 	req = req.WithContext(ctx)
 
 	repo := new(fakes.FakeTaxonomyRepo)
-	repo.AddReturns(expectedTaxonomy, err)
+	repo.SaveReturns(expectedTaxonomy.ID, err)
 
 	handler := taxonomy.AddHandler(fakes.FakeRenderer, repo)
 	rr := httptest.NewRecorder()
@@ -49,7 +50,7 @@ func TestAddHandler(t *testing.T) {
 	data := struct {
 		ID int64 `json:"id"`
 	}{
-		expectedTaxonomy.ID(),
+		expectedTaxonomy.ID,
 	}
 
 	expectedBody := fakes.RenderJSON(data)
@@ -66,8 +67,8 @@ func TestListChildrenHandler(t *testing.T) {
 	}
 
 	fakeList := []*cohesioned.Taxonomy{
-		cohesioned.NewTaxonomyWithParent("test-child-1", 1, 1234, testUser),
-		cohesioned.NewTaxonomyWithParent("test-child-2", 2, 1234, testUser),
+		cohesioned.NewTaxonomyWithParent("test-child-1", 1234, testUser),
+		cohesioned.NewTaxonomyWithParent("test-child-2", 1234, testUser),
 	}
 
 	repo := new(fakes.FakeTaxonomyRepo)
@@ -105,12 +106,12 @@ func TestFlattenHandler(t *testing.T) {
 	}
 
 	fakeList := []*cohesioned.Taxonomy{
-		cohesioned.NewTaxonomy("Parent 1", 1234, testUser),
+		cohesioned.NewTaxonomy("Parent 1", testUser),
 	}
 
 	fakeFlattened := []*cohesioned.Taxonomy{
-		cohesioned.NewTaxonomyWithParent("Parent 1 > Child 1", 5678, 1234, testUser),
-		cohesioned.NewTaxonomyWithParent("Parent 1 > Child 2", 9101, 1234, testUser),
+		cohesioned.NewTaxonomyWithParent("Parent 1 > Child 1", 1234, testUser),
+		cohesioned.NewTaxonomyWithParent("Parent 1 > Child 2", 1234, testUser),
 	}
 
 	repo := new(fakes.FakeTaxonomyRepo)

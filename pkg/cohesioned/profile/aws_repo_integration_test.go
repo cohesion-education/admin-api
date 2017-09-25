@@ -1,3 +1,5 @@
+//+build integration
+
 package profile_test
 
 import (

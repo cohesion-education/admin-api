@@ -2,16 +2,15 @@ package config_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/cohesion-education/api/pkg/cohesioned/config"
-	"github.com/joho/godotenv"
 )
 
 func TestNewAwsConfig(t *testing.T) {
-	if err := godotenv.Load("../../../.env"); err != nil {
-		t.Errorf("Failed to load .env file: %v", err)
-	}
+	os.Setenv("VCAP_APPLICATION", vcapApplicationPayload)
+	os.Setenv("VCAP_SERVICES", vcapServicesPayload)
 
 	config, err := config.NewAwsConfig()
 	if err != nil {
@@ -19,4 +18,6 @@ func TestNewAwsConfig(t *testing.T) {
 	}
 
 	fmt.Printf("aws config: %v\n", config)
+
+	os.Clearenv()
 }

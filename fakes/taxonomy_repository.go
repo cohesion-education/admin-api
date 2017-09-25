@@ -8,6 +8,7 @@ type FakeTaxonomyRepo struct {
 	t         *cohesioned.Taxonomy
 	list      []*cohesioned.Taxonomy
 	flattened []*cohesioned.Taxonomy
+	id        int64
 	err       error
 }
 
@@ -26,13 +27,12 @@ func (r *FakeTaxonomyRepo) ListChildrenReturns(list []*cohesioned.Taxonomy, err 
 	r.err = err
 }
 
-func (r *FakeTaxonomyRepo) AddReturns(t *cohesioned.Taxonomy, err error) {
-	r.t = t
+func (r *FakeTaxonomyRepo) SaveReturns(id int64, err error) {
+	r.id = id
 	r.err = err
 }
 
-func (r *FakeTaxonomyRepo) SaveReturns(t *cohesioned.Taxonomy, err error) {
-	r.t = t
+func (r *FakeTaxonomyRepo) UpdateReturns(err error) {
 	r.err = err
 }
 
@@ -50,11 +50,11 @@ func (r *FakeTaxonomyRepo) List() ([]*cohesioned.Taxonomy, error) {
 func (r *FakeTaxonomyRepo) ListChildren(parentID int64) ([]*cohesioned.Taxonomy, error) {
 	return r.list, r.err
 }
-func (r *FakeTaxonomyRepo) Add(t *cohesioned.Taxonomy) (*cohesioned.Taxonomy, error) {
-	return r.t, r.err
+func (r *FakeTaxonomyRepo) Save(t *cohesioned.Taxonomy) (int64, error) {
+	return r.id, r.err
 }
-func (r *FakeTaxonomyRepo) Save(t *cohesioned.Taxonomy) (*cohesioned.Taxonomy, error) {
-	return r.t, r.err
+func (r *FakeTaxonomyRepo) Update(t *cohesioned.Taxonomy) error {
+	return r.err
 }
 func (r *FakeTaxonomyRepo) Flatten(t *cohesioned.Taxonomy) ([]*cohesioned.Taxonomy, error) {
 	return r.flattened, r.err

@@ -16,21 +16,14 @@ import (
 
 type awsRepo struct {
 	*sql.DB
-	s3BucketName string
-	awsConfig    config.AwsConfig
+	awsConfig config.AwsConfig
 }
 
-func NewAwsRepo(awsConfig config.AwsConfig, s3BucketName string) (Repo, error) {
-	db, err := awsConfig.DialRDS()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to connect to RDS: %v", err)
-	}
-
+func NewAwsRepo(db *sql.DB, awsConfig config.AwsConfig) Repo {
 	return &awsRepo{
-		s3BucketName: s3BucketName,
-		awsConfig:    awsConfig,
-		DB:           db,
-	}, nil
+		DB:        db,
+		awsConfig: awsConfig,
+	}
 }
 
 func (r *awsRepo) Get(id int64) (*cohesioned.Video, error) {
@@ -66,7 +59,6 @@ func (r *awsRepo) List() ([]*cohesioned.Video, error) {
 		if err := rows.Scan(&video); err != nil {
 			fmt.Errorf("Failed to scan video row: %v", err)
 		}
-		fmt.Printf("video: %v\n", video)
 		list = append(list, &video)
 	}
 
@@ -101,7 +93,7 @@ func (r *awsRepo) writeFileToStorage(fileReader io.Reader, objectName string) er
 
 	// Upload input parameters
 	params := &s3manager.UploadInput{
-		Bucket: aws.String(r.s3BucketName),
+		Bucket: aws.String(r.awsConfig.GetVideoBucket()),
 		Key:    aws.String(objectName),
 		Body:   fileReader,
 	}
@@ -109,15 +101,12 @@ func (r *awsRepo) writeFileToStorage(fileReader io.Reader, objectName string) er
 	uploader := s3manager.NewUploaderWithClient(svc)
 
 	// Perform an upload.
-	result, err := uploader.Upload(params, func(u *s3manager.Uploader) {
+	if _, err := uploader.Upload(params, func(u *s3manager.Uploader) {
 		u.PartSize = 10 * 1024 * 1024 // 10MB part size
 		u.LeavePartsOnError = false
-	})
-
-	if err != nil {
+	}); err != nil {
 		return fmt.Errorf("Failed to upload file to s3: %v", err)
 	}
 
-	fmt.Printf("uploader result: %v\n", result)
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/cohesion-education/api/pkg/cohesioned"
 	"github.com/gorilla/mux"
@@ -54,14 +55,16 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		t.CreatedBy = profile
+		t.CreatedBy = profile.ID
+		t.Created = time.Now()
 
 		//TODO - validate taxonomy, and if fail, redirect back to form page with validation failure messages
 		// dashboard := newDashboardWithProfile(req)
 		// config.renderer.HTML(w, http.StatusOK, "taxonomy/add", dashboard)
 		// return
 
-		t, err := repo.Add(t)
+		id, err := repo.Save(t)
+		t.ID = id
 		if err != nil {
 			fmt.Printf("Failed to save taxonomy %v %v\n", t, err)
 			http.Redirect(w, req, "/500", http.StatusSeeOther)
@@ -71,7 +74,7 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		data := struct {
 			ID int64 `json:"id"`
 		}{
-			t.ID(),
+			t.ID,
 		}
 
 		r.JSON(w, http.StatusOK, data)
@@ -130,9 +133,10 @@ func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 		existing.Name = incoming.Name
 		existing.Children = incoming.Children
-		existing.UpdatedBy = currentUser
+		existing.UpdatedBy = currentUser.ID
+		existing.Updated = time.Now()
 
-		if existing, err = repo.Save(existing); err != nil {
+		if err = repo.Update(existing); err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("Failed to save taxonomy %v", err)
 			fmt.Println(apiResponse.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, apiResponse)
@@ -198,7 +202,7 @@ func FlatListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		for _, t := range list {
 			tFlattened, err := repo.Flatten(t)
 			if err != nil {
-				fmt.Printf("An unexpected error occured when trying to flatten %d %v", t.ID(), err.Error())
+				fmt.Printf("An unexpected error occured when trying to flatten %d %v", t.ID, err.Error())
 				continue
 			}
 			flattened = append(flattened, tFlattened...)
