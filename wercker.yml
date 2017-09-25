@@ -56,17 +56,19 @@ build:
     - script:
         name: integration test
         code: |
-          AWS_REGION=$AWS_REGION
+          export AWS_REGION=$AWS_REGION
 
-          AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-          AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-          AWS_S3_VIDEO_BUCKET=$AWS_S3_VIDEO_BUCKET
+          export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+          export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+          export AWS_S3_VIDEO_BUCKET=$AWS_S3_VIDEO_BUCKET
 
-          AWS_RDS_USERNAME=$MYSQL_ENV_MYSQL_USER
-          AWS_RDS_PASSWORD=$MYSQL_ENV_MYSQL_PASSWORD
-          AWS_RDS_HOST=$MYSQL_PORT_3306_TCP_ADDR
-          AWS_RDS_PORT=$MYSQL_PORT_3306_TCP_PORT
-          AWS_RDS_DBNAME=$MYSQL_ENV_MYSQL_DATABASE
+          export AWS_RDS_USERNAME=$MYSQL_ENV_MYSQL_USER
+          export AWS_RDS_PASSWORD=$MYSQL_ENV_MYSQL_PASSWORD
+          export AWS_RDS_HOST=$MYSQL_PORT_3306_TCP_ADDR
+          export AWS_RDS_PORT=$MYSQL_PORT_3306_TCP_PORT
+          export AWS_RDS_DBNAME=$MYSQL_ENV_MYSQL_DATABASE
+
+          env 
 
           go test ./pkg/cohesioned $(glide novendor) --cover -tags=integration
 deploy:
