@@ -21,10 +21,6 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	// if err := godotenv.Load("../../../.env"); err != nil {
-	// 	panic("Failed to load .env file: " + err.Error())
-	// }
-
 	awsConfig, err := config.NewAwsConfig()
 	if err != nil {
 		panic("Unexpected error initializing AwsConfig: " + err.Error())

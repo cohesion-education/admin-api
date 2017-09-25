@@ -7,12 +7,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
 	"github.com/cohesion-education/api/fakes"
 	"github.com/cohesion-education/api/pkg/cohesioned"
-	"github.com/cohesion-education/api/pkg/cohesioned/gcp"
 	"github.com/cohesion-education/api/pkg/cohesioned/video"
 	"github.com/gorilla/mux"
 )
@@ -45,7 +43,7 @@ func TestListHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 	}
 
-	fakeResp := &video.VideoAPIResponse{
+	fakeResp := &video.APIResponse{
 		List: videos,
 	}
 
@@ -72,13 +70,10 @@ func TestGetByIDHandler(t *testing.T) {
 	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, fakeUser)
 	req = req.WithContext(ctx)
 
-	gcpConfig, err := gcp.NewConfig("../../../testdata/test-gcp-keyfile.json")
-	if err != nil {
-		t.Fatalf("Failed to get gcp config %v", err)
-	}
-
 	renderer := fakes.FakeRenderer
-	handler := video.GetByIDHandler(renderer, repo, gcpConfig)
+	fakeAwsConfig := new(fakes.FakeAwsConfig)
+	fakeAwsConfig.GetSignedURLReturns("http://s3.aws.amazon.com.not.real", nil)
+	handler := video.GetByIDHandler(renderer, repo, fakeAwsConfig)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/video/{id:[0-9]+}", handler)
@@ -92,7 +87,7 @@ func TestGetByIDHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 	}
 
-	fakeResp := &video.VideoAPIResponse{
+	fakeResp := &video.APIResponse{
 		Video: testVideo,
 	}
 
@@ -101,97 +96,46 @@ func TestGetByIDHandler(t *testing.T) {
 		t.Errorf("The expected json was not generated.\n\nExpected: %s\n\nActual: %s", string(expectedBody), rr.Body.String())
 	}
 
-	expectedResp := &video.VideoAPIResponse{}
+	expectedResp := &video.APIResponse{}
 
 	decoder := json.NewDecoder(rr.Body)
 	if err = decoder.Decode(&expectedResp); err != nil {
-		t.Errorf("Failed to unmarshall response json to VideoAPIResponse: %v", err)
+		t.Errorf("Failed to unmarshall response json to APIResponse: %v", err)
 	}
 
 	if len(expectedResp.Video.SignedURL) == 0 {
 		t.Errorf("api response did not contain a signed url")
 	}
 
-	expectedHostName := "storage.googleapis.com"
-	signedURL, err := url.Parse(expectedResp.Video.SignedURL)
-	if err != nil {
-		t.Fatalf("%s does not appear to be a valid URL: %v", expectedResp.Video.SignedURL, err)
-	}
-
-	if signedURL.Host != expectedHostName {
-		t.Errorf("expected signed url host to be %s but was %s", expectedHostName, signedURL.Host)
-	}
-
-	q := signedURL.Query()
-
-	if len(q.Get("GoogleAccessId")) == 0 {
-		t.Errorf("Signed url did not have GoogleAccessId param")
-	}
-
-	if len(q.Get("Expires")) == 0 {
-		t.Errorf("Signed url did not have Expires param")
-	}
-
-	if len(q.Get("Signature")) == 0 {
-		t.Errorf("Signed url did not have Signature param")
-	}
+	// expectedHostName := "storage.googleapis.com"
+	// signedURL, err := url.Parse(expectedResp.Video.SignedURL)
+	// if err != nil {
+	// 	t.Fatalf("%s does not appear to be a valid URL: %v", expectedResp.Video.SignedURL, err)
+	// }
+	//
+	// if signedURL.Host != expectedHostName {
+	// 	t.Errorf("expected signed url host to be %s but was %s", expectedHostName, signedURL.Host)
+	// }
+	//
+	// q := signedURL.Query()
+	//
+	// if len(q.Get("GoogleAccessId")) == 0 {
+	// 	t.Errorf("Signed url did not have GoogleAccessId param")
+	// }
+	//
+	// if len(q.Get("Expires")) == 0 {
+	// 	t.Errorf("Signed url did not have Expires param")
+	// }
+	//
+	// if len(q.Get("Signature")) == 0 {
+	// 	t.Errorf("Signed url did not have Signature param")
+	// }
 }
 
-// func TestStreamHandler(t *testing.T) {
-// 	req, err := http.NewRequest("GET", "/api/video/stream/1234", nil)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-//
-// 	expectedVideo := cohesioned.NewVideo("Test Video", "test.mp4", "test-bucket", "1234-test.mp4", 1234, 1, &cohesioned.Profile{FullName: "Test User"})
-//
-// 	repo := new(fakes.FakeVideoRepo)
-// 	repo.GetReturns(expectedVideo, nil)
-//
-// 	gcpConfig, err := gcp.NewConfig("../../../testdata/test-gcp-keyfile.json")
-// 	if err != nil {
-// 		t.Fatalf("Failed to get gcp config %v", err)
-// 	}
-//
-// 	renderer := fakes.FakeRenderer
-// 	handler := video.StreamHandler(renderer, repo, gcpConfig)
-// 	rr := httptest.NewRecorder()
-//
-// 	router := mux.NewRouter()
-// 	router.HandleFunc("/api/video/stream/{id:[0-9]+}", handler).Methods("GET")
-// 	router.ServeHTTP(rr, req)
-//
-// 	if status := rr.Code; status != http.StatusSeeOther {
-// 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusSeeOther)
-// 	}
-//
-// 	expectedHostName := "storage.googleapis.com"
-// 	location, err := rr.Result().Location()
-// 	if err != nil {
-// 		t.Fatalf("Failed to read request recorder result's location %v", err)
-// 	}
-//
-// 	if location.Host != expectedHostName {
-// 		t.Errorf("expected signed url host to be %s but was %s", expectedHostName, location.Host)
-// 	}
-//
-// 	q := location.Query()
-//
-// 	if len(q.Get("GoogleAccessId")) == 0 {
-// 		t.Errorf("Signed url did not have GoogleAccessId param")
-// 	}
-//
-// 	if len(q.Get("Expires")) == 0 {
-// 		t.Errorf("Signed url did not have Expires param")
-// 	}
-//
-// 	if len(q.Get("Signature")) == 0 {
-// 		t.Errorf("Signed url did not have Signature param")
-// 	}
-// }
-
 func TestAddHandler(t *testing.T) {
-	testVideo := cohesioned.NewVideo("Test After", "test.mp4", 1234, &cohesioned.Profile{FullName: "Test User"})
+	profile := fakes.FakeProfile()
+	testVideo := fakes.FakeVideo()
+
 	testJSON, err := testVideo.MarshalJSON()
 	if err != nil {
 		t.Fatalf("Failed to marshall video json: %v", err)
@@ -203,9 +147,8 @@ func TestAddHandler(t *testing.T) {
 	}
 
 	repo := new(fakes.FakeVideoRepo)
-	repo.AddReturns(testVideo, nil)
+	repo.SaveReturns(testVideo.ID, nil)
 
-	profile := fakes.FakeProfile()
 	ctx := req.Context()
 	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
 	req = req.WithContext(ctx)
@@ -221,10 +164,9 @@ func TestAddHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 	}
 
-	fakeResp := &video.VideoAPIResponse{
+	fakeResp := &video.APIResponse{
 		Video: testVideo,
 	}
-	fakeResp.ID = testVideo.ID
 
 	expectedBody := fakes.RenderJSON(fakeResp)
 	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
@@ -265,10 +207,9 @@ func TestUploadHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 	}
 
-	fakeResp := &video.VideoAPIResponse{
+	fakeResp := &video.APIResponse{
 		Video: testVideo,
 	}
-	fakeResp.ID = testVideo.ID
 
 	expectedBody := fakes.RenderJSON(fakeResp)
 	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
@@ -277,7 +218,7 @@ func TestUploadHandler(t *testing.T) {
 
 	decoder := json.NewDecoder(rr.Body)
 	if err := decoder.Decode(&fakeResp); err != nil {
-		t.Errorf("Failed to unmarshall response json to VideoAPIResponse: %v", err)
+		t.Errorf("Failed to unmarshall response json to APIResponse: %v", err)
 	}
 
 	if fakeResp.Video.FileName != testVideo.FileName {
@@ -287,8 +228,15 @@ func TestUploadHandler(t *testing.T) {
 
 func TestUpdateHandler(t *testing.T) {
 	fakeUser := fakes.FakeProfile()
-	existingVideo := cohesioned.NewVideo("Test Before", "test.mp4", 1234, fakeUser)
-	testVideo := cohesioned.NewVideo("Test After", "test.mp4", 1234, fakeUser)
+	existingVideo := fakes.FakeVideo()
+	testVideo := &cohesioned.Video{
+		ID:         existingVideo.ID,
+		Title:      "Updated Video Title",
+		TaxonomyID: existingVideo.TaxonomyID,
+		FileName:   existingVideo.FileName,
+		Created:    existingVideo.Created,
+		CreatedBy:  existingVideo.CreatedBy,
+	}
 
 	testJSON, err := testVideo.MarshalJSON()
 	if err != nil {
@@ -303,7 +251,7 @@ func TestUpdateHandler(t *testing.T) {
 
 	repo := new(fakes.FakeVideoRepo)
 	repo.GetReturns(existingVideo, nil)
-	repo.UpdateReturns(existingVideo, nil)
+	repo.UpdateReturns(nil)
 
 	ctx := req.Context()
 	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, fakeUser)
@@ -324,10 +272,14 @@ func TestUpdateHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 	}
 
-	fakeResp := video.NewAPIResponse(existingVideo)
+	fakeResp := &video.APIResponse{}
 
-	expectedBody := fakes.RenderJSON(fakeResp)
-	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
-		t.Errorf("The expected json was not generated.\n\nExpected: %s\n\nActual: %s", string(expectedBody), rr.Body.String())
+	decoder := json.NewDecoder(rr.Body)
+	if err := decoder.Decode(&fakeResp); err != nil {
+		t.Errorf("Failed to unmarshall response json to APIResponse: %v", err)
+	}
+
+	if fakeResp.Video.UpdatedBy != fakeUser.ID {
+		t.Errorf("Video UpdatedBy was not set correctly; expected: %s - actual: %s", fakeUser.ID, fakeResp.Video.FileName)
 	}
 }

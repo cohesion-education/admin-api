@@ -1,16 +1,12 @@
 package http
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/cohesion-education/api/pkg/cohesioned/auth"
 	"github.com/cohesion-education/api/pkg/cohesioned/config"
-	"github.com/cohesion-education/api/pkg/cohesioned/gcp"
-	"github.com/cohesion-education/api/pkg/cohesioned/homepage"
 	"github.com/cohesion-education/api/pkg/cohesioned/profile"
 	"github.com/cohesion-education/api/pkg/cohesioned/taxonomy"
 	"github.com/cohesion-education/api/pkg/cohesioned/video"
@@ -42,36 +38,50 @@ func newServer() *negroni.Negroni {
 		log.Fatal(err)
 	}
 
-	gcpKeyfileLocation := os.Getenv("GCP_KEYFILE_LOCATION")
-	if len(gcpKeyfileLocation) == 0 {
-		log.Fatal("Required env var GCP_KEYFILE_LOCATION not set")
-	}
+	// gcpKeyfileLocation := os.Getenv("GCP_KEYFILE_LOCATION")
+	// if len(gcpKeyfileLocation) == 0 {
+	// 	log.Fatal("Required env var GCP_KEYFILE_LOCATION not set")
+	// }
+	//
+	// videoStorageBucketName := os.Getenv("GCP_STORAGE_VIDEO_BUCKET")
+	// if len(videoStorageBucketName) == 0 {
+	// 	log.Fatal("Required env var GCP_STORAGE_VIDEO_BUCKET not set")
+	// }
+	//
+	// gcpConfig, err := gcp.NewConfig(gcpKeyfileLocation)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	videoStorageBucketName := os.Getenv("GCP_STORAGE_VIDEO_BUCKET")
-	if len(videoStorageBucketName) == 0 {
-		log.Fatal("Required env var GCP_STORAGE_VIDEO_BUCKET not set")
-	}
-
-	gcpConfig, err := gcp.NewConfig(gcpKeyfileLocation)
+	awsConfig, err := config.NewAwsConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	ctx := context.TODO()
-	datastoreClient, err := gcp.NewDatastoreClient(ctx, gcpConfig)
+	// ctx := context.TODO()
+	// datastoreClient, err := gcp.NewDatastoreClient(ctx, gcpConfig)
+	// if err != nil {
+	// 	log.Fatalf("Failed to get datastore client %v", err)
+	// }
+	//
+	// storageClient, err := gcp.NewStorageClient(ctx, gcpConfig)
+	// if err != nil {
+	// 	log.Fatalf("Failed to get storage client %v", err)
+	// }
+	//
+	// homepageRepo := homepage.NewGCPDatastoreRepo(datastoreClient)
+	// profileRepo := profile.NewGCPDatastoreRepo(datastoreClient)
+	// taxonomyRepo := taxonomy.NewGCPDatastoreRepo(datastoreClient)
+	// videoRepo := video.NewGCPRepo(datastoreClient, storageClient, videoStorageBucketName)
+
+	db, err := awsConfig.DialRDS()
 	if err != nil {
-		log.Fatalf("Failed to get datastore client %v", err)
+		log.Fatal(err)
 	}
 
-	storageClient, err := gcp.NewStorageClient(ctx, gcpConfig)
-	if err != nil {
-		log.Fatalf("Failed to get storage client %v", err)
-	}
-
-	homepageRepo := homepage.NewGCPDatastoreRepo(datastoreClient)
-	profileRepo := profile.NewGCPDatastoreRepo(datastoreClient)
-	taxonomyRepo := taxonomy.NewGCPDatastoreRepo(datastoreClient)
-	videoRepo := video.NewGCPRepo(datastoreClient, storageClient, videoStorageBucketName)
+	profileRepo := profile.NewAwsRepo(db)
+	taxonomyRepo := taxonomy.NewAwsRepo(db)
+	videoRepo := video.NewAwsRepo(db, awsConfig)
 
 	n := negroni.Classic()
 	mx := mux.NewRouter()
@@ -81,7 +91,7 @@ func newServer() *negroni.Negroni {
 	// mx.NotFoundHandler = cohesioned.NotFoundViewHandler(homepageRenderer)
 
 	//Public APIs
-	mx.Methods(http.MethodGet).Path("/api/homepage").Handler(homepage.HomepageHandler(apiRenderer, homepageRepo))
+	// mx.Methods(http.MethodGet).Path("/api/homepage").Handler(homepage.HomepageHandler(apiRenderer, homepageRepo))
 	mx.Methods(http.MethodGet).Path("/api/taxonomy").Handler(taxonomy.ListHandler(apiRenderer, taxonomyRepo))
 	mx.Methods(http.MethodGet).Path("/api/taxonomy/{id:[0-9]+}/children").Handler(taxonomy.ListChildrenHandler(apiRenderer, taxonomyRepo))
 	mx.Methods(http.MethodGet).Path("/api/taxonomy/flatten").Handler(taxonomy.FlatListHandler(apiRenderer, taxonomyRepo))
@@ -103,7 +113,7 @@ func newServer() *negroni.Negroni {
 	requiresAuth(http.MethodGet, "/api/profile", profile.GetCurrentUserHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile", profile.SaveHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile/preferences", profile.SavePreferencesHandler(apiRenderer, profileRepo), mx, authMiddleware)
-	requiresAuth(http.MethodGet, "/api/video/{id:[0-9]+}", video.GetByIDHandler(apiRenderer, videoRepo, gcpConfig), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/api/video/{id:[0-9]+}", video.GetByIDHandler(apiRenderer, videoRepo, awsConfig), mx, authMiddleware)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
 	allowedHeaders := handlers.AllowedHeaders([]string{"authorization", "content-type", "content-length"})

@@ -5,25 +5,24 @@ package gcp_test
 import (
 	"net/url"
 	"testing"
-	"time"
 
-	"github.com/cohesion-education/api/pkg/cohesioned"
+	"github.com/cohesion-education/api/fakes"
 	"github.com/cohesion-education/api/pkg/cohesioned/gcp"
 )
 
 func TestCreateSignedURL(t *testing.T) {
-	video := &cohesioned.Video{
-		Title:             "Test Video",
-		FileName:          "test.mp4",
-		StorageBucket:     "test-bucket",
-		StorageObjectName: "1234-test.mp4",
-	}
+	video := fakes.FakeVideo()
 
-	video.SetID(1234)
-	video.SetCreatedBy(&cohesioned.Profile{
-		FullName: "Test User",
-	})
-	video.SetCreated(time.Now())
+	// video := &cohesioned.Video{
+	// 	Title:             "Test Video",
+	// 	FileName:          "test.mp4",
+	// 	StorageBucket:     "test-bucket",
+	// 	StorageObjectName: "1234-test.mp4",
+	// }
+	//
+	// video.SetID(1234)
+	// video.SetCreatedBy(fakeUser.ID)
+	// video.SetCreated(time.Now())
 
 	gcpConfig, err := gcp.NewConfig("../../../testdata/test-gcp-keyfile.json")
 	if err != nil {

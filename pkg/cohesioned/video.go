@@ -6,33 +6,35 @@ import (
 )
 
 type Video struct {
-	Auditable
 	Validatable
-	ID                  int64    `json:"id"`
-	Title               string   `datastore:"title" json:"title"`
-	FlattenedTaxonomy   string   `datastore:"flattened_taxonomy" json:"flattened_taxonomy"`
-	KeyTerms            []string `datastore:"key_terms" json:"key_terms,omitempty"`
-	StateStandards      []string `datastore:"state_standards" json:"state_standards,omitempty"`
-	CommonCoreStandards []string `datastore:"common_core_standards" json:"common_core_standards,omitempty"`
-	FileName            string   `datastore:"file_name" json:"file_name"`
-	FileType            string   `datastore:"file_type" json:"file_type"`
-	FileSize            int64    `datastore:"file_size" json:"file_size"`
-	StorageBucket       string   `datastore:"bucket" json:"bucket"`
-	StorageObjectName   string   `datastore:"object_name" json:"object_name"`
-	SignedURL           string   `json:"signed_url,omitempty"`
+	ID                  int64     `json:"id"`
+	Created             time.Time `json:"created"`
+	Updated             time.Time `json:"updated"`
+	CreatedBy           int64     `json:"created_by"`
+	UpdatedBy           int64     `json:"updated_by"`
+	Title               string    `json:"title"`
+	TaxonomyID          int64     `json:"taxonomy_id"`
+	KeyTerms            []string  `json:"key_terms,omitempty"`
+	StateStandards      []string  `json:"state_standards,omitempty"`
+	CommonCoreStandards []string  `json:"common_core_standards,omitempty"`
+	FileName            string    `json:"file_name"`
+	FileType            string    `json:"file_type"`
+	FileSize            int64     `json:"file_size"`
+	StorageBucket       string    `json:"bucket"`
+	StorageObjectName   string    `json:"object_name"`
+	SignedURL           string    `json:"signed_url,omitempty"`
 	//TODO - Teacher, Related Videos, FAQs
 }
 
 //NewVideo creates a Video with the Auditable fields initialized
 func NewVideo(title, fileName string, id int64, createdBy *Profile) *Video {
 	v := &Video{
-		Title:    title,
-		FileName: fileName,
-		ID:       id,
+		Title:     title,
+		FileName:  fileName,
+		ID:        id,
+		Created:   time.Now(),
+		CreatedBy: createdBy.ID,
 	}
-
-	v.Auditable.Created = time.Now()
-	v.Auditable.CreatedBy = createdBy
 
 	return v
 }
@@ -57,8 +59,8 @@ func (v *Video) Validate() bool {
 		v.AddValidationError("file_name", "file_name is required")
 	}
 
-	if len(v.FlattenedTaxonomy) == -1 {
-		v.AddValidationError("flattened_taxonomy", "flattened_taxonomy is required")
+	if v.TaxonomyID == 0 {
+		v.AddValidationError("taxonomy_id", "taxonomy_id is required")
 	}
 
 	return len(v.ValidationErrors) == 0

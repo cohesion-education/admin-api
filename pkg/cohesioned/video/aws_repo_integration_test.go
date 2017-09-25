@@ -6,21 +6,20 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/cohesion-education/api/fakes"
 	"github.com/cohesion-education/api/pkg/cohesioned/config"
 	"github.com/cohesion-education/api/pkg/cohesioned/video"
 	"github.com/cohesion-education/api/testutils"
 )
 
 var (
-	repo video.Repo
+	repo      video.Repo
+	emptyTime = time.Time{}
 )
 
 func TestMain(m *testing.M) {
-	// if err := godotenv.Load("../../../.env"); err != nil {
-	// 	panic("Failed to load .env file: " + err.Error())
-	// }
-
 	awsConfig, err := config.NewAwsConfig()
 	if err != nil {
 		panic("Unexpected error initializing AwsConfig: " + err.Error())
@@ -67,5 +66,38 @@ func TestList(t *testing.T) {
 		t.Error("repo returned empty list")
 	}
 
-	// fmt.Printf("video list: %v\n", list)
+	for _, video := range list {
+		if len(video.Title) == 0 {
+			t.Error("Video Title is empty")
+		}
+
+		if video.TaxonomyID == 0 {
+			t.Error("Video TaxonomyID is empty")
+		}
+
+		if len(video.FileName) == 0 {
+			t.Error("Video FileName is empty")
+		}
+
+		if video.Created == emptyTime {
+			t.Error("Video created is empty")
+		}
+
+		if video.CreatedBy == 0 {
+			t.Error("Video created by is empty")
+		}
+	}
+}
+
+func TestRepoSave(t *testing.T) {
+	video := fakes.FakeVideo()
+	id, err := repo.Save(video)
+
+	if err != nil {
+		t.Errorf("Failed to save video: %v", err)
+	}
+
+	if id == 0 {
+		t.Errorf("Video ID was zero - expected db to generate a video id")
+	}
 }

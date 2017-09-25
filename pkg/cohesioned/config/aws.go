@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	cfenv "github.com/cloudfoundry-community/go-cfenv"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -17,10 +19,16 @@ type AwsConfig interface {
 	NewSession() (*session.Session, error)
 	DialRDS() (*sql.DB, error)
 	GetVideoBucket() string
+	GetSignedURL(bucket, objectName string) (string, error)
 }
 
-type s3 struct {
-	videoBucket string
+type config struct {
+	rds
+	region          string
+	accessKeyID     string
+	secretAccessKey string
+	sessionToken    string
+	videoBucket     string
 }
 
 type rds struct {
@@ -47,15 +55,6 @@ func (r *rds) DialRDS() (*sql.DB, error) {
 	return sql.Open("mysql", connStr)
 }
 
-type config struct {
-	rds
-	s3
-	region          string
-	accessKeyID     string
-	secretAccessKey string
-	sessionToken    string
-}
-
 func (c *config) String() string {
 	return fmt.Sprintf("Region: %s\tAccess Key ID: %s", c.region, c.accessKeyID)
 }
@@ -71,6 +70,25 @@ func (c *config) NewSession() (*session.Session, error) {
 	})
 
 	return sess, err
+}
+
+func (c *config) GetSignedURL(bucket, objectKey string) (string, error) {
+	session, err := c.NewSession()
+	if err != nil {
+		return "", fmt.Errorf("Failed to initialize session: %v", err)
+	}
+	svc := s3.New(session)
+	req, _ := svc.GetObjectRequest(&s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(objectKey),
+	})
+
+	signedURL, err := req.Presign(15 * time.Minute)
+	if err != nil {
+		return "", fmt.Errorf("Failed to sign request: %v", err)
+	}
+
+	return signedURL, nil
 }
 
 func NewAwsConfig() (AwsConfig, error) {
@@ -91,7 +109,7 @@ func NewAwsConfig() (AwsConfig, error) {
 				config.sessionToken = sessionToken
 			}
 			if s3VideoBucketName, ok := awsService.CredentialString("s3_video_bucket"); ok {
-				config.s3.videoBucket = s3VideoBucketName
+				config.videoBucket = s3VideoBucketName
 			}
 			if rdsUsername, ok := awsService.CredentialString("rds_username"); ok {
 				config.rds.username = rdsUsername
@@ -129,8 +147,8 @@ func NewAwsConfig() (AwsConfig, error) {
 		config.sessionToken = os.Getenv("AWS_SESSION_TOKEN")
 	}
 
-	if len(config.s3.videoBucket) == 0 {
-		config.s3.videoBucket = os.Getenv("AWS_S3_VIDEO_BUCKET")
+	if len(config.videoBucket) == 0 {
+		config.videoBucket = os.Getenv("AWS_S3_VIDEO_BUCKET")
 	}
 
 	if len(config.rds.username) == 0 {
@@ -169,8 +187,8 @@ func NewAwsConfig() (AwsConfig, error) {
 		missingConfig = append(missingConfig, "AccessKeyID")
 	}
 
-	if len(config.s3.videoBucket) == 0 {
-		missingConfig = append(missingConfig, "S3.VideoBucket")
+	if len(config.videoBucket) == 0 {
+		missingConfig = append(missingConfig, "VideoBucket")
 	}
 
 	if len(config.rds.username) == 0 {

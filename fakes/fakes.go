@@ -43,6 +43,26 @@ func FakeAdmin() *cohesioned.Profile {
 	}
 }
 
+func FakeVideo() *cohesioned.Video {
+	return &cohesioned.Video{
+		ID:         1,
+		Title:      "Test Video",
+		FileName:   "test.mp4",
+		TaxonomyID: FakeTaxonomy().ID,
+		Created:    time.Now(),
+		CreatedBy:  FakeProfile().ID,
+	}
+}
+
+func FakeTaxonomy() *cohesioned.Taxonomy {
+	return &cohesioned.Taxonomy{
+		ID:        1,
+		Name:      "Test Taxonomy",
+		Created:   time.Now(),
+		CreatedBy: FakeProfile().ID,
+	}
+}
+
 func RenderJSON(data interface{}) []byte {
 	buffer := bytes.NewBuffer(make([]byte, 0))
 	err := FakeRenderer.JSON(buffer, http.StatusOK, data)

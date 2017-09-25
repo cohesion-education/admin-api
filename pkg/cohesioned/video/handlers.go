@@ -5,21 +5,22 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/cohesion-education/api/pkg/cohesioned"
-	"github.com/cohesion-education/api/pkg/cohesioned/gcp"
+	"github.com/cohesion-education/api/pkg/cohesioned/config"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
 )
 
-type VideoAPIResponse struct {
+type APIResponse struct {
 	cohesioned.APIResponse
 	Video *cohesioned.Video   `json:"video,omitempty"`
 	List  []*cohesioned.Video `json:"list,omitempty"`
 }
 
-func NewAPIResponse(v *cohesioned.Video) *VideoAPIResponse {
-	resp := &VideoAPIResponse{
+func NewAPIResponse(v *cohesioned.Video) *APIResponse {
+	resp := &APIResponse{
 		Video: v,
 	}
 	resp.ID = v.ID
@@ -29,7 +30,7 @@ func NewAPIResponse(v *cohesioned.Video) *VideoAPIResponse {
 
 func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &VideoAPIResponse{}
+		resp := &APIResponse{}
 		videos, err := repo.List()
 		resp.List = videos
 		if err != nil {
@@ -45,7 +46,7 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &VideoAPIResponse{}
+		resp := &APIResponse{}
 
 		defer req.Body.Close()
 		decoder := json.NewDecoder(req.Body)
@@ -73,8 +74,9 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		video.CreatedBy = currentUser
-		video, err = repo.Add(video)
+		video.CreatedBy = currentUser.ID
+		id, err := repo.Save(video)
+		video.ID = id
 		if err != nil {
 			resp.SetErrMsg("Failed to save video %v", err)
 			fmt.Println(resp.ErrMsg)
@@ -82,7 +84,6 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		resp.ID = video.ID
 		resp.Video = video
 
 		r.JSON(w, http.StatusOK, resp)
@@ -93,7 +94,7 @@ func UploadHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		defer req.Body.Close()
 
-		resp := &VideoAPIResponse{}
+		resp := &APIResponse{}
 
 		pathParams := mux.Vars(req)
 		idParam := pathParams["id"]
@@ -128,7 +129,8 @@ func UploadHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		video.UpdatedBy = currentUser
+		video.UpdatedBy = currentUser.ID
+		video.Updated = time.Now()
 		video, err = repo.SetFile(req.Body, video)
 		if err != nil {
 			resp.SetErrMsg("An unknown error occurred when saving the video file: %v", err)
@@ -137,16 +139,14 @@ func UploadHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		resp.ID = video.ID
 		resp.Video = video
-
 		r.JSON(w, http.StatusOK, resp)
 	}
 }
 
 func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &VideoAPIResponse{}
+		resp := &APIResponse{}
 
 		vars := mux.Vars(req)
 		videoID, err := strconv.ParseInt(vars["id"], 10, 64)
@@ -180,7 +180,8 @@ func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		}
 
 		currentUser, err := cohesioned.GetCurrentUser(req)
-		existing.UpdatedBy = currentUser
+		existing.Updated = time.Now()
+		existing.UpdatedBy = currentUser.ID
 		if err != nil {
 			resp.SetErrMsg("An unexpected error occurred when trying to get the current user %v", err)
 			fmt.Println(resp.ErrMsg)
@@ -188,24 +189,21 @@ func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		existing, err = repo.Update(existing)
-		if err != nil {
+		if err := repo.Update(existing); err != nil {
 			resp.SetErrMsg("Failed to update video %v", err)
 			fmt.Println(resp.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, resp)
 			return
 		}
 
-		resp.ID = existing.ID
 		resp.Video = existing
-
 		r.JSON(w, http.StatusOK, resp)
 	}
 }
 
-func GetByIDHandler(r *render.Render, repo Repo, cfg *gcp.Config) http.HandlerFunc {
+func GetByIDHandler(r *render.Render, repo Repo, cfg config.AwsConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &VideoAPIResponse{}
+		resp := &APIResponse{}
 
 		vars := mux.Vars(req)
 		videoID, err := strconv.ParseInt(vars["id"], 10, 64)
@@ -222,7 +220,8 @@ func GetByIDHandler(r *render.Render, repo Repo, cfg *gcp.Config) http.HandlerFu
 			return
 		}
 
-		signedURL, err := gcp.CreateSignedURL(video, cfg)
+		// signedURL, err := gcp.CreateSignedURL(video, cfg)
+		signedURL, err := cfg.GetSignedURL(video.StorageBucket, video.StorageObjectName)
 		if err != nil {
 			resp.SetErrMsg("Failed to generate signed url %v", err)
 			r.JSON(w, http.StatusInternalServerError, resp)
@@ -238,7 +237,7 @@ func GetByIDHandler(r *render.Render, repo Repo, cfg *gcp.Config) http.HandlerFu
 
 func DeleteHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &VideoAPIResponse{}
+		resp := &APIResponse{}
 
 		vars := mux.Vars(req)
 		videoID, err := strconv.ParseInt(vars["id"], 10, 64)
