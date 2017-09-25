@@ -21,9 +21,14 @@ build:
   # Steps make up the actions in your pipeline
   # Read more about steps on our dev center:
   # http://devcenter.wercker.com/docs/steps/index.html
-  service:
-    - mysql
-    
+  services:
+    - id: mysql
+      env:
+        MYSQL_ROOT_PASSWORD: cohesion
+        MYSQL_USER: cohesion
+        MYSQL_PASSWORD: cohesion
+        MYSQL_DATABASE: cohesion
+
   steps:
     # Sets the go workspace and places you package
     # at the right place in the workspace tree
@@ -51,6 +56,18 @@ build:
     - script:
         name: integration test
         code: |
+          AWS_REGION=$X_AWS_REGION
+
+          AWS_ACCESS_KEY_ID=$X_AWS_ACCESS_KEY_ID
+          AWS_SECRET_ACCESS_KEY=$X_AWS_SECRET_ACCESS_KEY
+          AWS_S3_VIDEO_BUCKET=$X_AWS_S3_VIDEO_BUCKET
+
+          AWS_RDS_USERNAME=$MYSQL_USER
+          AWS_RDS_PASSWORD=$MYSQL_PASSWORD
+          AWS_RDS_HOST=$MYSQL_PORT_3306_TCP_ADDR
+          AWS_RDS_PORT=$MYSQL_PORT
+          AWS_RDS_DBNAME=$MYSQL_DATABASE
+
           go test ./pkg/cohesioned $(glide novendor) --cover -tags=integration
 deploy:
   steps:
