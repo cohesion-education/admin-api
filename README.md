@@ -23,7 +23,11 @@ Then, you can run the project.
 
 To run tests:
 
-    go test $(glide novendor) --cover
+    go test ./pkg/cohesioned $(glide novendor) --cover
+
+To run integration tests:
+
+    export $(cat .env | xargs) && go test ./pkg/cohesioned $(glide novendor) --cover -tags=integration -v
 
 Build locally using the Wercker CLI:
 
