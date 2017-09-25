@@ -10,7 +10,6 @@ import (
 	"github.com/cohesion-education/api/pkg/cohesioned/config"
 	"github.com/cohesion-education/api/pkg/cohesioned/video"
 	"github.com/cohesion-education/api/testutils"
-	"github.com/joho/godotenv"
 )
 
 var (
@@ -18,9 +17,9 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	if err := godotenv.Load("../../../.env"); err != nil {
-		panic("Failed to load .env file: " + err.Error())
-	}
+	// if err := godotenv.Load("../../../.env"); err != nil {
+	// 	panic("Failed to load .env file: " + err.Error())
+	// }
 
 	awsConfig, err := config.NewAwsConfig()
 	if err != nil {
