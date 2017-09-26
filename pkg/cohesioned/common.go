@@ -71,9 +71,9 @@ type APIResponse struct {
 	ValidationErrors []*ValidationError `json:"validation_errors,omitempty"`
 }
 
-func NewAPIErrorResponse(messageFormat string, err error) *APIResponse {
+func NewAPIErrorResponse(messageFormat string, a ...interface{}) *APIResponse {
 	return &APIResponse{
-		ErrMsg: fmt.Sprintf(messageFormat, err),
+		ErrMsg: fmt.Sprintf(messageFormat, a...),
 	}
 }
 

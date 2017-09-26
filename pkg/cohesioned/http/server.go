@@ -80,7 +80,7 @@ func newServer() *negroni.Negroni {
 
 	profileRepo := profile.NewAwsRepo(db)
 	taxonomyRepo := taxonomy.NewAwsRepo(db)
-	studentRepo := profile.NewAwsRepo(db)
+	studentRepo := student.NewAwsRepo(db)
 	videoRepo := video.NewAwsRepo(db, awsConfig)
 
 	n := negroni.Classic()
@@ -97,7 +97,7 @@ func newServer() *negroni.Negroni {
 	mx.Methods(http.MethodGet).Path("/api/taxonomy/flatten").Handler(taxonomy.FlatListHandler(apiRenderer, taxonomyRepo))
 
 	authMiddleware := negroni.New(
-		negroni.HandlerFunc(auth.CheckJwt(apiRenderer, authConfig)),
+		negroni.HandlerFunc(auth.CheckJwt(apiRenderer, profileRepo, authConfig)),
 	)
 
 	//endpoints that require Admin priveleges
@@ -112,9 +112,9 @@ func newServer() *negroni.Negroni {
 	//endpoints that only require Authentication
 	requiresAuth(http.MethodGet, "/api/profile", profile.GetCurrentUserHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile", profile.SaveHandler(apiRenderer, profileRepo), mx, authMiddleware)
+	requiresAuth(http.MethodPut, "/api/profile", profile.UpdateHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/profile/students", student.ListHandler(apiRenderer, studentRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile/students", student.SaveHandler(apiRenderer, studentRepo), mx, authMiddleware)
-	requiresAuth(http.MethodPut, "/api/profile/students", student.UpdateHandler(apiRenderer, studentRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile/preferences", profile.SavePreferencesHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/video/{id:[0-9]+}", video.GetByIDHandler(apiRenderer, videoRepo, awsConfig), mx, authMiddleware)
 

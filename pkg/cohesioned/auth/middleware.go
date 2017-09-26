@@ -10,9 +10,12 @@ import (
 	auth0 "github.com/auth0-community/go-auth0"
 	"github.com/cohesion-education/api/pkg/cohesioned"
 	"github.com/cohesion-education/api/pkg/cohesioned/config"
+	"github.com/cohesion-education/api/pkg/cohesioned/profile"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
 )
+
+var emailToProfileIDCache map[string]int64
 
 func IsAdmin(r *render.Render) negroni.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
@@ -33,7 +36,7 @@ func IsAdmin(r *render.Render) negroni.HandlerFunc {
 	}
 }
 
-func CheckJwt(r *render.Render, cfg *config.AuthConfig) negroni.HandlerFunc {
+func CheckJwt(r *render.Render, repo profile.Repo, cfg *config.AuthConfig) negroni.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 		jwksURI := fmt.Sprintf("%s/.well-known/jwks.json", cfg.Domain)
 		client := auth0.NewJWKClient(auth0.JWKClientOptions{URI: jwksURI})
@@ -59,8 +62,23 @@ func CheckJwt(r *render.Render, cfg *config.AuthConfig) negroni.HandlerFunc {
 				return
 			}
 
+			profile.ID = getProfileID(repo, profile.Email)
 			ctx := context.WithValue(req.Context(), cohesioned.CurrentUserKey, profile)
 			next(w, req.WithContext(ctx))
 		}
 	}
+}
+
+func getProfileID(repo profile.Repo, email string) int64 {
+	if val, ok := emailToProfileIDCache[email]; ok {
+		return val
+	}
+
+	profile, err := repo.FindByEmail(email)
+	if err != nil {
+		fmt.Printf("Failed to find user by email address: %v\n", err)
+		return 0
+	}
+
+	return profile.ID
 }

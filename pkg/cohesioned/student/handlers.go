@@ -13,6 +13,7 @@ import (
 type APIResponse struct {
 	cohesioned.APIResponse
 	Student *cohesioned.Student   `json:"student,omitempty"`
+	Profile *cohesioned.Profile   `json:"profile,omitempty"`
 	List    []*cohesioned.Student `json:"list,omitempty"`
 }
 
@@ -39,19 +40,21 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			list = []*cohesioned.Student{}
 		}
 
-		resp.List = list
+		resp.Profile = currentUser
+		currentUser.Students = list
+
 		r.JSON(w, http.StatusOK, resp)
 	}
 }
 
-func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
+func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		resp := &APIResponse{}
-		resp.Student = &cohesioned.Student{}
+		incomingList := make([]*cohesioned.Student, 0)
 
 		defer req.Body.Close()
 		decoder := json.NewDecoder(req.Body)
-		if err := decoder.Decode(&resp.Student); err != nil {
+		if err := decoder.Decode(&incomingList); err != nil {
 			resp.SetErrMsg("failed to unmarshall json %v", err)
 			fmt.Println(resp.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, resp)
@@ -66,56 +69,63 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		resp.Student.ParentID = currentUser.ID
-		resp.Student.CreatedBy = currentUser.ID
-		resp.Student.Created = time.Now()
-
-		id, err := repo.Save(resp.Student)
-		resp.Student.ID = id
+		existingStudents, err := repo.List(currentUser.ID)
 		if err != nil {
-			resp.SetErrMsg("Failed to save student %v", err)
+			resp.SetErrMsg("An unexpected error occurred when trying to retrieve your current list of students: %v", err)
 			fmt.Println(resp.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, resp)
 			return
+		}
+
+		resp.Profile = currentUser
+		currentUser.Students = make([]*cohesioned.Student, len(incomingList))
+
+		for _, incomingStudent := range incomingList {
+			if existingStudent := findStudent(incomingStudent.Name, existingStudents); existingStudent == nil {
+				fmt.Printf("incoming student does not exist - creating %v\n", incomingStudent)
+				incomingStudent.ParentID = currentUser.ID
+				incomingStudent.CreatedBy = currentUser.ID
+				incomingStudent.Created = time.Now()
+
+				id, err := repo.Save(incomingStudent)
+				if err != nil {
+					resp.SetErrMsg("Failed to save student %v", err)
+					fmt.Println(resp.ErrMsg)
+					r.JSON(w, http.StatusInternalServerError, resp)
+					return
+				}
+
+				incomingStudent.ID = id
+				currentUser.Students = append(currentUser.Students, incomingStudent)
+			} else {
+				fmt.Printf("incoming student exists - updating %v\n", existingStudent)
+				existingStudent.Name = incomingStudent.Name
+				existingStudent.Grade = incomingStudent.Grade
+				existingStudent.School = incomingStudent.School
+				existingStudent.UpdatedBy = currentUser.ID
+				existingStudent.Updated = time.Now()
+
+				if err := repo.Update(existingStudent); err != nil {
+					resp.SetErrMsg("Failed to save student %v", err)
+					fmt.Println(resp.ErrMsg)
+					r.JSON(w, http.StatusInternalServerError, resp)
+					return
+				}
+
+				currentUser.Students = append(currentUser.Students, existingStudent)
+			}
 		}
 
 		r.JSON(w, http.StatusOK, resp)
 	}
 }
 
-func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &APIResponse{}
-		resp.Student = &cohesioned.Student{}
-
-		defer req.Body.Close()
-		decoder := json.NewDecoder(req.Body)
-
-		if err := decoder.Decode(&resp.Student); err != nil {
-			resp.SetErrMsg("failed to unmarshall json %v", err)
-			fmt.Println(resp.ErrMsg)
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
+func findStudent(name string, students []*cohesioned.Student) *cohesioned.Student {
+	for _, existingStudent := range students {
+		if existingStudent.Name == name {
+			return existingStudent
 		}
-
-		currentUser, err := cohesioned.GetCurrentUser(req)
-		if err != nil {
-			resp.SetErrMsg("An unexpected error occurred when trying to get the current user %v", err)
-			fmt.Println(resp.ErrMsg)
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		resp.Student.UpdatedBy = currentUser.ID
-		resp.Student.Updated = time.Now()
-
-		if err = repo.Update(resp.Student); err != nil {
-			resp.SetErrMsg("Failed to save taxonomy %v", err)
-			fmt.Println(resp.ErrMsg)
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		r.JSON(w, http.StatusOK, resp)
 	}
+
+	return nil
 }

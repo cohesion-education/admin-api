@@ -1,6 +1,7 @@
 package cohesioned
 
 import (
+	"fmt"
 	"strings"
 	"time"
 )
@@ -20,6 +21,10 @@ type Student struct {
 	Updated   time.Time `json:"updated"`
 	CreatedBy int64     `json:"created_by"`
 	UpdatedBy int64     `json:"updated_by"`
+}
+
+func (s *Student) String() string {
+	return fmt.Sprintf("ID: %d Name: %s Grade: %s School: %s Parent ID: %d", s.ID, s.Name, s.Grade, s.School, s.ParentID)
 }
 
 //Profile represents a User of this system
@@ -43,7 +48,11 @@ type Profile struct {
 	Preferences Preferences `json:"preferences"`
 	State       string      `json:"state"`
 	County      string      `json:"county"`
-	Students    []Student   `json:"students"`
+	Students    []*Student  `json:"students"`
+}
+
+func (p *Profile) String() string {
+	return fmt.Sprintf("ID: %d Full Name: %s", p.ID, p.FullName)
 }
 
 //IsAdmin returns true if the user has a verified email address in the cohesioned.io domain
