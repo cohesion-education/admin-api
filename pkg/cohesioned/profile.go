@@ -11,9 +11,15 @@ type Preferences struct {
 }
 
 type Student struct {
-	Name   string `json:"name"`
-	Grade  string `json:"grade"`
-	School string `json:"school"`
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	Grade     string    `json:"grade"`
+	School    string    `json:"school"`
+	ParentID  int64     `json:"parent_id"`
+	Created   time.Time `json:"created"`
+	Updated   time.Time `json:"updated"`
+	CreatedBy int64     `json:"created_by"`
+	UpdatedBy int64     `json:"updated_by"`
 }
 
 //Profile represents a User of this system

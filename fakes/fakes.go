@@ -63,6 +63,18 @@ func FakeTaxonomy() *cohesioned.Taxonomy {
 	}
 }
 
+func FakeStudent() *cohesioned.Student {
+	return &cohesioned.Student{
+		ID:        2,
+		Name:      "Little Bobby Tables",
+		Grade:     "3rd",
+		School:    "Cohesion Ed Elementary",
+		ParentID:  FakeProfile().ID,
+		Created:   time.Now(),
+		CreatedBy: FakeProfile().ID,
+	}
+}
+
 func RenderJSON(data interface{}) []byte {
 	buffer := bytes.NewBuffer(make([]byte, 0))
 	err := FakeRenderer.JSON(buffer, http.StatusOK, data)

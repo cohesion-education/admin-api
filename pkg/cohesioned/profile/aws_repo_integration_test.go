@@ -50,6 +50,8 @@ func TestMain(m *testing.M) {
 
 func TestRepoSave(t *testing.T) {
 	profile := fakes.FakeProfile()
+	profile.Preferences.BetaProgram = true
+	profile.Preferences.Newsletter = true
 
 	id, err := repo.Save(profile)
 

@@ -90,6 +90,7 @@ func TestSave(t *testing.T) {
 }
 
 func TestSavePreferences(t *testing.T) {
+	fakeUser := fakes.FakeProfile()
 	prefs := `{"newsletter":true, "beta_program":true}`
 
 	req, err := http.NewRequest("POST", "/api/profile/preferences", strings.NewReader(prefs))
@@ -100,7 +101,8 @@ func TestSavePreferences(t *testing.T) {
 
 	renderer := fakes.FakeRenderer
 	repo := new(fakes.FakeProfileRepo)
-	repo.SaveReturns(5, nil)
+	repo.FindByEmailReturns(fakeUser, nil)
+	repo.UpdateReturns(nil)
 
 	handler := profile.SavePreferencesHandler(renderer, repo)
 	rr := httptest.NewRecorder()

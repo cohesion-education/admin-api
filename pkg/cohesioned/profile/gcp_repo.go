@@ -72,8 +72,8 @@ func (repo *gcpDatastoreRepo) FindByEmail(email string) (*cohesioned.Profile, er
 			fmt.Printf("error getting next; %v\n", err)
 		}
 
+		p.ID = key.ID
 		return &p, nil
-		fmt.Printf("Key: %v - Profile: %v\n", key, p)
 	}
 
 	return nil, nil

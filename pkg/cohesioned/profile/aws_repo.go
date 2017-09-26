@@ -31,10 +31,12 @@ func (repo *awsRepo) Save(p *cohesioned.Profile) (int64, error) {
 		locale,
 		enabled,
 		verified,
+		beta_program,
+		newsletter,
 		sub,
 		state,
 		county
-	) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	stmt, err := repo.Prepare(sql)
 	if err != nil {
@@ -52,6 +54,8 @@ func (repo *awsRepo) Save(p *cohesioned.Profile) (int64, error) {
 		p.Locale,
 		p.Enabled,
 		p.EmailVerified,
+		p.Preferences.BetaProgram,
+		p.Preferences.Newsletter,
 		p.Sub,
 		p.State,
 		p.County,
@@ -81,6 +85,8 @@ func (repo *awsRepo) Update(p *cohesioned.Profile) error {
 		locale = ?,
 		enabled = ?,
 		verified = ?,
+		beta_program = ?,
+		newsletter = ?,
 		sub = ?,
 		state = ?,
 		county = ?
@@ -102,6 +108,8 @@ func (repo *awsRepo) Update(p *cohesioned.Profile) error {
 		p.Locale,
 		p.Enabled,
 		p.EmailVerified,
+		p.Preferences.BetaProgram,
+		p.Preferences.Newsletter,
 		p.Sub,
 		p.State,
 		p.County,
@@ -136,6 +144,8 @@ func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
 		locale,
 		enabled,
 		verified,
+		beta_program,
+		newsletter,
 		sub,
 		state,
 		county
@@ -153,6 +163,8 @@ func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
 	var county sql.NullString
 	var enabled sql.NullInt64
 	var verified sql.NullInt64
+	var betaProgram sql.NullInt64
+	var newsletter sql.NullInt64
 
 	err := row.Scan(
 		&profile.ID,
@@ -167,15 +179,19 @@ func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
 		&locale,
 		&enabled,
 		&verified,
+		&betaProgram,
+		&newsletter,
 		&sub,
 		&state,
 		&county,
 	)
 
 	if err != nil {
-		//TODO - check error types
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 
-		return profile, err
+		return nil, err
 	}
 
 	profile.Updated = updated.Time
@@ -188,6 +204,8 @@ func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
 
 	profile.Enabled = enabled.Int64 == 1
 	profile.EmailVerified = verified.Int64 == 1
+	profile.Preferences.BetaProgram = betaProgram.Int64 == 1
+	profile.Preferences.Newsletter = betaProgram.Int64 == 1
 
 	return profile, nil
 }

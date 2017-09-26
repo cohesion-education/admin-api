@@ -11,6 +11,7 @@ import (
 func SetupDB(db *sql.DB) error {
 	setupSql := `
 		insert into user (created, email, full_name, first_name, last_name) values (now(), 'test@cohesioned.io', 'Test User', 'Test', 'User');
+		insert into student(name, grade, school, user_id, created, created_by) values ('Hijo', '1st', 'Cohesion Ed', 1, now(), 1);
 		insert into taxonomy (name, created_by, created) values ('test-taxonomy', 1, now());
 		insert into taxonomy (name, created_by, created) values ('test-parent', 1, now());
 		insert into taxonomy (name, created_by, created, parent_id) values ('test-child', 1, now(), 2);

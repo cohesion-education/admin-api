@@ -2,9 +2,9 @@
 -- Table `cohesion`.`student`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cohesion`.`student` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL,
-  `grade` INT NOT NULL,
+  `grade` VARCHAR(255) NOT NULL,
   `school` VARCHAR(255) NOT NULL,
   `user_id` INT NOT NULL,
   `created` DATETIME NOT NULL,

@@ -82,7 +82,10 @@ func SavePreferencesHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		}
 
 		if p == nil {
-			p = currentUser
+			apiResponse := cohesioned.NewAPIErrorResponse("We were unable to find your user", nil)
+			fmt.Println(apiResponse.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, apiResponse)
+			return
 		}
 
 		defer req.Body.Close()
@@ -97,12 +100,11 @@ func SavePreferencesHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
+		p.Updated = time.Now()
 		p.Preferences.Newsletter = preferences["newsletter"]
 		p.Preferences.BetaProgram = preferences["beta_program"]
 
-		id, err := repo.Save(p)
-		p.ID = id
-		if err != nil {
+		if err := repo.Update(p); err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("Failed to save User %v", err)
 			fmt.Println(apiResponse.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, apiResponse)
