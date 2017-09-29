@@ -161,10 +161,10 @@ func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
 	var sub sql.NullString
 	var state sql.NullString
 	var county sql.NullString
-	var enabled sql.NullInt64
-	var verified sql.NullInt64
-	var betaProgram sql.NullInt64
-	var newsletter sql.NullInt64
+	var enabled sql.NullBool
+	var verified sql.NullBool
+	var betaProgram sql.NullBool
+	var newsletter sql.NullBool
 
 	err := row.Scan(
 		&profile.ID,
@@ -202,10 +202,10 @@ func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
 	profile.State = state.String
 	profile.County = county.String
 
-	profile.Enabled = enabled.Int64 == 1
-	profile.EmailVerified = verified.Int64 == 1
-	profile.Preferences.BetaProgram = betaProgram.Int64 == 1
-	profile.Preferences.Newsletter = betaProgram.Int64 == 1
+	profile.Enabled = enabled.Bool
+	profile.EmailVerified = verified.Bool
+	profile.Preferences.BetaProgram = betaProgram.Bool
+	profile.Preferences.Newsletter = newsletter.Bool
 
 	return profile, nil
 }

@@ -59,7 +59,9 @@ func (repo *awsRepo) List() ([]*cohesioned.Taxonomy, error) {
 		updated,
 		updated_by
 	from
-		taxonomy`
+		taxonomy
+	where
+		parent_id is null`
 
 	rows, err := repo.Query(query)
 	if err != nil {
@@ -224,6 +226,50 @@ func (repo *awsRepo) Flatten(t *cohesioned.Taxonomy) ([]*cohesioned.Taxonomy, er
 	}
 
 	return flattened, nil
+}
+
+func (repo *awsRepo) ListRecursive() ([]*cohesioned.Taxonomy, error) {
+	var list []*cohesioned.Taxonomy
+
+	list, err := repo.List()
+	if err != nil {
+		return list, err
+	}
+
+	for _, t := range list {
+		children, err := repo.listChildrenRecursive(t)
+		if err != nil {
+			return list, fmt.Errorf("Failed to get listChildrenRecursive for %s %v\n", t.ID, err)
+		}
+		t.Children = children
+	}
+
+	return list, nil
+}
+
+func (repo *awsRepo) listChildrenRecursive(t *cohesioned.Taxonomy) ([]*cohesioned.Taxonomy, error) {
+	var list []*cohesioned.Taxonomy
+
+	if t == nil {
+		return list, nil
+	}
+
+	list, err := repo.ListChildren(t.ID)
+	if err != nil {
+		return list, err
+	}
+
+	t.Children = list
+	for _, child := range t.Children {
+		children, err := repo.listChildrenRecursive(child)
+		if err != nil {
+			return list, fmt.Errorf("Failed to get children for %s %v\n", child.ID, err)
+		}
+
+		child.Children = children
+	}
+
+	return list, nil
 }
 
 func (repo *awsRepo) mapRowToObject(rs db.RowScanner) (*cohesioned.Taxonomy, error) {

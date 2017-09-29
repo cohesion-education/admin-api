@@ -94,6 +94,7 @@ func newServer() *negroni.Negroni {
 	// mx.Methods(http.MethodGet).Path("/api/homepage").Handler(homepage.HomepageHandler(apiRenderer, homepageRepo))
 	mx.Methods(http.MethodGet).Path("/api/taxonomy").Handler(taxonomy.ListHandler(apiRenderer, taxonomyRepo))
 	mx.Methods(http.MethodGet).Path("/api/taxonomy/{id:[0-9]+}/children").Handler(taxonomy.ListChildrenHandler(apiRenderer, taxonomyRepo))
+	mx.Methods(http.MethodGet).Path("/api/taxonomy/recursive").Handler(taxonomy.RecursiveListHandler(apiRenderer, taxonomyRepo))
 	mx.Methods(http.MethodGet).Path("/api/taxonomy/flatten").Handler(taxonomy.FlatListHandler(apiRenderer, taxonomyRepo))
 
 	authMiddleware := negroni.New(

@@ -3,6 +3,7 @@ package taxonomy_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,10 +19,10 @@ var (
 )
 
 func TestAddHandler(t *testing.T) {
-	expectedTaxonomy := cohesioned.NewTaxonomy("Test", testUser)
-	expectedTaxonomy.ID = 1
-
-	testJSON, err := expectedTaxonomy.MarshalJSON()
+	testTaxonomy := cohesioned.NewTaxonomy("Test", testUser)
+	testTaxonomy.ID = 5
+	testTaxonomy.ParentID = 1
+	testJSON, err := testTaxonomy.MarshalJSON()
 	if err != nil {
 		t.Fatalf("failed to marshall taxonomy to json %v", err)
 	}
@@ -31,13 +32,12 @@ func TestAddHandler(t *testing.T) {
 		t.Fatalf("Failed to initialize create taxonomy request %v", err)
 	}
 
-	profile := fakes.FakeProfile()
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
+	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, testUser)
 	req = req.WithContext(ctx)
 
 	repo := new(fakes.FakeTaxonomyRepo)
-	repo.SaveReturns(expectedTaxonomy.ID, err)
+	repo.SaveReturns(testTaxonomy.ID, err)
 
 	handler := taxonomy.AddHandler(fakes.FakeRenderer, repo)
 	rr := httptest.NewRecorder()
@@ -47,16 +47,26 @@ func TestAddHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
 
-	data := struct {
-		ID int64 `json:"id"`
-	}{
-		expectedTaxonomy.ID,
+	actualResp := &taxonomy.TaxonomyResponse{}
+	decoder := json.NewDecoder(rr.Body)
+	if err = decoder.Decode(&actualResp); err != nil {
+		t.Errorf("Failed to unmarshall response json to APIResponse: %v", err)
 	}
 
-	expectedBody := fakes.RenderJSON(data)
+	if actualResp.Name != testTaxonomy.Name {
+		t.Errorf("expected name %s - got %s", testTaxonomy.Name, actualResp.Name)
+	}
 
-	if bytes.Compare(expectedBody, rr.Body.Bytes()) != 0 {
-		t.Errorf("The expected json was not generated.\n\nExpected:\n%s\n\nActual:\n%s", string(expectedBody), rr.Body.String())
+	if actualResp.CreatedBy != testTaxonomy.CreatedBy {
+		t.Errorf("expected created by %d - got %d", testTaxonomy.CreatedBy, actualResp.CreatedBy)
+	}
+
+	if actualResp.ParentID != testTaxonomy.ParentID {
+		t.Errorf("expected parent id %d - got %d", testTaxonomy.ParentID, actualResp.ParentID)
+	}
+
+	if len(actualResp.Children) != len(testTaxonomy.Children) {
+		t.Errorf("expected children length of %d - got %d", len(testTaxonomy.Children), len(actualResp.Children))
 	}
 }
 

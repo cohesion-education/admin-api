@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -12,6 +11,20 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
 )
+
+type TaxonomyResponse struct {
+	*cohesioned.APIResponse
+	*cohesioned.Taxonomy
+}
+
+func NewTaxonomyResponse(t *cohesioned.Taxonomy) *TaxonomyResponse {
+	return &TaxonomyResponse{
+		Taxonomy: t,
+		APIResponse: &cohesioned.APIResponse{
+			ID: t.ID,
+		},
+	}
+}
 
 func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
@@ -32,30 +45,27 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+		t := &cohesioned.Taxonomy{}
+		resp := NewTaxonomyResponse(t)
+
 		defer req.Body.Close()
 		decoder := json.NewDecoder(req.Body)
-
-		t := &cohesioned.Taxonomy{}
-
 		if err := decoder.Decode(&t); err != nil {
-			fmt.Printf("failed to unmarshall json %v\n", err)
-			http.Redirect(w, req, "/500", http.StatusSeeOther)
+			resp.SetErrMsg("Unable to process Taxonomy payload. Error: %v\n", err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusBadRequest, resp)
 			return
 		}
 
-		profile, ok := req.Context().Value(cohesioned.CurrentUserKey).(*cohesioned.Profile)
-		if profile == nil {
-			http.Redirect(w, req, "/401", http.StatusInternalServerError)
+		currentUser, err := cohesioned.GetCurrentUser(req)
+		if err != nil {
+			resp.SetErrMsg("An unexpected error occurred when trying to get the current user %v", err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, resp)
 			return
 		}
 
-		if !ok {
-			fmt.Printf("profile not of the proper type: %s\n", reflect.TypeOf(profile).String())
-			http.Redirect(w, req, "/500", http.StatusSeeOther)
-			return
-		}
-
-		t.CreatedBy = profile.ID
+		t.CreatedBy = currentUser.ID
 		t.Created = time.Now()
 
 		//TODO - validate taxonomy, and if fail, redirect back to form page with validation failure messages
@@ -66,18 +76,13 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		id, err := repo.Save(t)
 		t.ID = id
 		if err != nil {
-			fmt.Printf("Failed to save taxonomy %v %v\n", t, err)
-			http.Redirect(w, req, "/500", http.StatusSeeOther)
+			resp.SetErrMsg("Failed to save taxonomy %v", err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, resp)
 			return
 		}
 
-		data := struct {
-			ID int64 `json:"id"`
-		}{
-			t.ID,
-		}
-
-		r.JSON(w, http.StatusOK, data)
+		r.JSON(w, http.StatusOK, resp)
 	}
 }
 
@@ -209,5 +214,21 @@ func FlatListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		}
 
 		r.JSON(w, http.StatusOK, flattened)
+	}
+}
+
+func RecursiveListHandler(r *render.Render, repo Repo) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		resp := &TaxonomyResponse{}
+		list, err := repo.ListRecursive()
+
+		if err != nil {
+			resp.SetErrMsg("Failed to recursively list taxonomy parents and children: %v\n", err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, resp)
+			return
+		}
+
+		r.JSON(w, http.StatusOK, list)
 	}
 }

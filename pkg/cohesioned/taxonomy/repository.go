@@ -12,4 +12,5 @@ type Repo interface {
 	Save(t *cohesioned.Taxonomy) (int64, error)
 	Update(t *cohesioned.Taxonomy) error
 	Flatten(t *cohesioned.Taxonomy) ([]*cohesioned.Taxonomy, error)
+	ListRecursive() ([]*cohesioned.Taxonomy, error)
 }

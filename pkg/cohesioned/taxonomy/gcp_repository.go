@@ -106,3 +106,9 @@ func (repo *gcpDatastoreRepo) Flatten(t *cohesioned.Taxonomy) ([]*cohesioned.Tax
 
 	return flattened, nil
 }
+
+func (repo *gcpDatastoreRepo) ListRecursive() ([]*cohesioned.Taxonomy, error) {
+	var list []*cohesioned.Taxonomy
+
+	return list, nil
+}

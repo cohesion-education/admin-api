@@ -17,6 +17,11 @@ func (r *FakeTaxonomyRepo) ListReturns(list []*cohesioned.Taxonomy, err error) {
 	r.err = err
 }
 
+func (r *FakeTaxonomyRepo) ListRecursiveReturns(list []*cohesioned.Taxonomy, err error) {
+	r.list = list
+	r.err = err
+}
+
 func (r *FakeTaxonomyRepo) GetReturns(t *cohesioned.Taxonomy, err error) {
 	r.t = t
 	r.err = err
@@ -58,4 +63,8 @@ func (r *FakeTaxonomyRepo) Update(t *cohesioned.Taxonomy) error {
 }
 func (r *FakeTaxonomyRepo) Flatten(t *cohesioned.Taxonomy) ([]*cohesioned.Taxonomy, error) {
 	return r.flattened, r.err
+}
+
+func (r *FakeTaxonomyRepo) ListRecursive() ([]*cohesioned.Taxonomy, error) {
+	return r.list, r.err
 }
