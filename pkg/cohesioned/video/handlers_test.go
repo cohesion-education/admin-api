@@ -43,7 +43,7 @@ func TestListHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 	}
 
-	fakeResp := &video.APIResponse{
+	fakeResp := &video.VideoResponse{
 		List: videos,
 	}
 
@@ -87,7 +87,7 @@ func TestGetByIDHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 	}
 
-	fakeResp := &video.APIResponse{
+	fakeResp := &video.VideoResponse{
 		Video: testVideo,
 	}
 
@@ -96,7 +96,7 @@ func TestGetByIDHandler(t *testing.T) {
 		t.Errorf("The expected json was not generated.\n\nExpected: %s\n\nActual: %s", string(expectedBody), rr.Body.String())
 	}
 
-	expectedResp := &video.APIResponse{}
+	expectedResp := &video.VideoResponse{}
 
 	decoder := json.NewDecoder(rr.Body)
 	if err = decoder.Decode(&expectedResp); err != nil {
@@ -136,7 +136,7 @@ func TestAddHandler(t *testing.T) {
 	profile := fakes.FakeProfile()
 	testVideo := fakes.FakeVideo()
 
-	testJSON, err := testVideo.MarshalJSON()
+	testJSON, err := json.Marshal(testVideo)
 	if err != nil {
 		t.Fatalf("Failed to marshall video json: %v", err)
 	}
@@ -164,7 +164,7 @@ func TestAddHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 	}
 
-	fakeResp := &video.APIResponse{
+	fakeResp := &video.VideoResponse{
 		Video: testVideo,
 	}
 
@@ -209,7 +209,7 @@ func TestUploadHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 	}
 
-	fakeResp := &video.APIResponse{
+	fakeResp := &video.VideoResponse{
 		Video: testVideo,
 	}
 
@@ -240,7 +240,7 @@ func TestUpdateHandler(t *testing.T) {
 		CreatedBy:  existingVideo.CreatedBy,
 	}
 
-	testJSON, err := testVideo.MarshalJSON()
+	testJSON, err := json.Marshal(testVideo)
 	if err != nil {
 		t.Fatalf("Failed to marshall video json: %v", err)
 	}
@@ -274,7 +274,7 @@ func TestUpdateHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 	}
 
-	fakeResp := &video.APIResponse{}
+	fakeResp := &video.VideoResponse{}
 
 	decoder := json.NewDecoder(rr.Body)
 	if err := decoder.Decode(&fakeResp); err != nil {

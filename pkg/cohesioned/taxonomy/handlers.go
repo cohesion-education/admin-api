@@ -20,9 +20,6 @@ type TaxonomyResponse struct {
 func NewTaxonomyResponse(t *cohesioned.Taxonomy) *TaxonomyResponse {
 	return &TaxonomyResponse{
 		Taxonomy: t,
-		APIResponse: &cohesioned.APIResponse{
-			ID: t.ID,
-		},
 	}
 }
 

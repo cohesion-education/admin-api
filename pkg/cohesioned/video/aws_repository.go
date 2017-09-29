@@ -183,7 +183,7 @@ func (repo *awsRepo) Save(v *cohesioned.Video) (int64, error) {
 func (repo *awsRepo) Update(v *cohesioned.Video) error {
 	updateSql := `update video set
 		title = ?,
-		taxononmy_id = ?,
+		taxonomy_id = ?,
 		file_name = ?,
 		file_type = ?,
 		file_size = ?,
@@ -231,8 +231,15 @@ func (repo *awsRepo) Update(v *cohesioned.Video) error {
 }
 
 func (r *awsRepo) SetFile(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error) {
-	//TODO
-	return nil, nil
+	if err := r.writeFileToStorage(fileReader, video.StorageObjectName); err != nil {
+		return video, fmt.Errorf("Failed to write file to storage: %v", err)
+	}
+
+	if err := r.Update(video); err != nil {
+		return video, fmt.Errorf("Failed to update video record: %v", err)
+	}
+
+	return video, nil
 }
 
 func (r *awsRepo) writeFileToStorage(fileReader io.Reader, objectName string) error {

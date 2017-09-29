@@ -65,7 +65,6 @@ type ValidationError struct {
 }
 
 type APIResponse struct {
-	ID               int64              `json:"id,omitempty"`
 	ErrMsg           string             `json:"error,omitempty"`
 	RedirectURL      string             `json:"redirect_url,omitempty"`
 	ValidationErrors []*ValidationError `json:"validation_errors,omitempty"`

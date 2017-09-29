@@ -1,7 +1,6 @@
 package cohesioned
 
 import (
-	"encoding/json"
 	"time"
 )
 
@@ -37,17 +36,6 @@ func NewVideo(title, fileName string, id int64, createdBy *Profile) *Video {
 	}
 
 	return v
-}
-
-func (v *Video) MarshalJSON() ([]byte, error) {
-	type Alias Video
-	return json.Marshal(&struct {
-		ID int64 `json:"id"`
-		*Alias
-	}{
-		ID:    v.ID,
-		Alias: (*Alias)(v),
-	})
 }
 
 func (v *Video) Validate() bool {

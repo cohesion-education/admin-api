@@ -13,24 +13,22 @@ import (
 	"github.com/unrolled/render"
 )
 
-type APIResponse struct {
-	cohesioned.APIResponse
-	Video *cohesioned.Video   `json:"video,omitempty"`
-	List  []*cohesioned.Video `json:"list,omitempty"`
+type VideoResponse struct {
+	*cohesioned.APIResponse
+	*cohesioned.Video
+	List []*cohesioned.Video `json:"list,omitempty"`
 }
 
-func NewAPIResponse(v *cohesioned.Video) *APIResponse {
-	resp := &APIResponse{
-		Video: v,
+func NewAPIResponse(v *cohesioned.Video) *VideoResponse {
+	return &VideoResponse{
+		Video:       v,
+		APIResponse: &cohesioned.APIResponse{},
 	}
-	resp.ID = v.ID
-
-	return resp
 }
 
 func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &APIResponse{}
+		resp := &VideoResponse{}
 		videos, err := repo.List()
 		resp.List = videos
 		if err != nil {
@@ -46,7 +44,7 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &APIResponse{}
+		resp := &VideoResponse{}
 
 		defer req.Body.Close()
 		decoder := json.NewDecoder(req.Body)
@@ -94,7 +92,7 @@ func UploadHandler(r *render.Render, repo Repo, cfg config.AwsConfig) http.Handl
 	return func(w http.ResponseWriter, req *http.Request) {
 		defer req.Body.Close()
 
-		resp := &APIResponse{}
+		resp := NewAPIResponse(nil)
 
 		pathParams := mux.Vars(req)
 		idParam := pathParams["id"]
@@ -133,8 +131,8 @@ func UploadHandler(r *render.Render, repo Repo, cfg config.AwsConfig) http.Handl
 		video.StorageObjectName = fmt.Sprintf("%d-%s", video.ID, video.FileName)
 		video.UpdatedBy = currentUser.ID
 		video.Updated = time.Now()
-		video, err = repo.SetFile(req.Body, video)
-		if err != nil {
+
+		if _, err = repo.SetFile(req.Body, video); err != nil {
 			resp.SetErrMsg("An unknown error occurred when saving the video file: %v", err)
 			fmt.Println(resp.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, resp)
@@ -148,7 +146,7 @@ func UploadHandler(r *render.Render, repo Repo, cfg config.AwsConfig) http.Handl
 
 func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &APIResponse{}
+		resp := &VideoResponse{}
 
 		vars := mux.Vars(req)
 		videoID, err := strconv.ParseInt(vars["id"], 10, 64)
@@ -205,7 +203,7 @@ func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 func GetByIDHandler(r *render.Render, repo Repo, cfg config.AwsConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &APIResponse{}
+		resp := &VideoResponse{}
 
 		vars := mux.Vars(req)
 		videoID, err := strconv.ParseInt(vars["id"], 10, 64)
@@ -239,7 +237,7 @@ func GetByIDHandler(r *render.Render, repo Repo, cfg config.AwsConfig) http.Hand
 
 func DeleteHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &APIResponse{}
+		resp := &VideoResponse{}
 
 		vars := mux.Vars(req)
 		videoID, err := strconv.ParseInt(vars["id"], 10, 64)
