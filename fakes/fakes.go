@@ -2,6 +2,7 @@ package fakes
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -51,6 +52,7 @@ func FakeVideo() *cohesioned.Video {
 		TaxonomyID: FakeTaxonomy().ID,
 		Created:    time.Now(),
 		CreatedBy:  FakeProfile().ID,
+		SignedURL:  "http://fake-signed-url",
 	}
 }
 
@@ -73,6 +75,22 @@ func FakeStudent() *cohesioned.Student {
 		Created:   time.Now(),
 		CreatedBy: FakeProfile().ID,
 	}
+}
+
+func NewRequestWithContext(method, urlStr string, body io.Reader, user *cohesioned.Profile) *http.Request {
+	req, err := http.NewRequest(method, urlStr, body)
+	if err != nil {
+		panic(fmt.Sprintf("http.NewRequest failed. Method: %s URL: %s", method, urlStr))
+	}
+
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, user)
+	req = req.WithContext(ctx)
+	return req
+}
+
+func WithContext(req *http.Request, user *cohesioned.Profile) {
+
 }
 
 func RenderJSON(data interface{}) []byte {
@@ -117,12 +135,11 @@ func NewMultipartFileUploadRequest(method string, uri string, params map[string]
 	return req, err
 }
 
-func NewFileUploadRequest(method string, uri string, localFilePath string) (*http.Request, error) {
+func NewFileUploadRequestWithContext(method string, uri string, localFilePath string, user *cohesioned.Profile) *http.Request {
 	file, err := os.Open(localFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("%s does not seem to be a valid file path: %v", localFilePath, err)
+		panic(fmt.Sprintf("%s does not seem to be a valid file path: %v", localFilePath, err))
 	}
 
-	req, err := http.NewRequest(method, uri, file)
-	return req, err
+	return NewRequestWithContext(method, uri, file, user)
 }

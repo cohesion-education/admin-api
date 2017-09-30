@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/cohesion-education/api/pkg/cohesioned"
-	"github.com/cohesion-education/api/pkg/cohesioned/config"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
 )
@@ -26,10 +24,10 @@ func NewAPIResponse(v *cohesioned.Video) *VideoResponse {
 	}
 }
 
-func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
+func ListHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		resp := &VideoResponse{}
-		videos, err := repo.List()
+		videos, err := svc.List()
 		resp.List = videos
 		if err != nil {
 			resp.SetErrMsg("Failed to list videos %v", err)
@@ -42,7 +40,7 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	}
 }
 
-func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
+func AddHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		resp := &VideoResponse{}
 
@@ -64,18 +62,8 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		currentUser, err := cohesioned.GetCurrentUser(req)
-		if err != nil {
-			resp.SetErrMsg("An unexpected error occurred when trying to get the current user %v", err)
-			fmt.Println(resp.ErrMsg)
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		video.CreatedBy = currentUser.ID
-		id, err := repo.Save(video)
-		video.ID = id
-		if err != nil {
+		ctx := req.Context()
+		if err := svc.Save(ctx, video); err != nil {
 			resp.SetErrMsg("Failed to save video %v", err)
 			fmt.Println(resp.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, resp)
@@ -83,12 +71,11 @@ func AddHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		}
 
 		resp.Video = video
-
 		r.JSON(w, http.StatusOK, resp)
 	}
 }
 
-func UploadHandler(r *render.Render, repo Repo, cfg config.AwsConfig) http.HandlerFunc {
+func UploadHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		defer req.Body.Close()
 
@@ -104,7 +91,7 @@ func UploadHandler(r *render.Render, repo Repo, cfg config.AwsConfig) http.Handl
 			return
 		}
 
-		video, err := repo.Get(id)
+		video, err := svc.Get(id)
 		if err != nil {
 			resp.SetErrMsg("Unable to retrieve video by id %v - %v", idParam, err)
 			fmt.Println(resp.ErrMsg)
@@ -119,20 +106,8 @@ func UploadHandler(r *render.Render, repo Repo, cfg config.AwsConfig) http.Handl
 			return
 		}
 
-		currentUser, err := cohesioned.GetCurrentUser(req)
-		if err != nil {
-			resp.SetErrMsg("An unexpected error occurred when trying to get the current user %v", err)
-			fmt.Println(resp.ErrMsg)
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		video.StorageBucket = cfg.GetVideoBucket()
-		video.StorageObjectName = fmt.Sprintf("%d-%s", video.ID, video.FileName)
-		video.UpdatedBy = currentUser.ID
-		video.Updated = time.Now()
-
-		if _, err = repo.SetFile(req.Body, video); err != nil {
+		ctx := req.Context()
+		if err := svc.SetFile(ctx, req.Body, video); err != nil {
 			resp.SetErrMsg("An unknown error occurred when saving the video file: %v", err)
 			fmt.Println(resp.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, resp)
@@ -144,7 +119,7 @@ func UploadHandler(r *render.Render, repo Repo, cfg config.AwsConfig) http.Handl
 	}
 }
 
-func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
+func UpdateHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		resp := &VideoResponse{}
 
@@ -156,7 +131,7 @@ func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		existing, err := repo.Get(videoID)
+		existing, err := svc.Get(videoID)
 		if err != nil {
 			resp.SetErrMsg("Failed to get video with id %d %v", videoID, err)
 			r.JSON(w, http.StatusNotFound, resp)
@@ -179,17 +154,8 @@ func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		currentUser, err := cohesioned.GetCurrentUser(req)
-		existing.Updated = time.Now()
-		existing.UpdatedBy = currentUser.ID
-		if err != nil {
-			resp.SetErrMsg("An unexpected error occurred when trying to get the current user %v", err)
-			fmt.Println(resp.ErrMsg)
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		if err := repo.Update(existing); err != nil {
+		ctx := req.Context()
+		if err := svc.Update(ctx, existing); err != nil {
 			resp.SetErrMsg("Failed to update video %v", err)
 			fmt.Println(resp.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, resp)
@@ -201,7 +167,7 @@ func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	}
 }
 
-func GetByIDHandler(r *render.Render, repo Repo, cfg config.AwsConfig) http.HandlerFunc {
+func GetByIDHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		resp := &VideoResponse{}
 
@@ -213,29 +179,20 @@ func GetByIDHandler(r *render.Render, repo Repo, cfg config.AwsConfig) http.Hand
 			return
 		}
 
-		video, err := repo.Get(videoID)
+		video, err := svc.Get(videoID)
 		if err != nil {
 			resp.SetErrMsg("Failed to get video with id %d %v", videoID, err)
 			r.JSON(w, http.StatusInternalServerError, resp)
 			return
 		}
 
-		// signedURL, err := gcp.CreateSignedURL(video, cfg)
-		signedURL, err := cfg.GetSignedURL(video.StorageBucket, video.StorageObjectName)
-		if err != nil {
-			resp.SetErrMsg("Failed to generate signed url %v", err)
-			r.JSON(w, http.StatusInternalServerError, resp)
-			return
-		}
-
-		video.SignedURL = signedURL
 		resp.Video = video
 
 		r.JSON(w, http.StatusOK, resp)
 	}
 }
 
-func DeleteHandler(r *render.Render, repo Repo) http.HandlerFunc {
+func DeleteHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		resp := &VideoResponse{}
 
@@ -247,7 +204,7 @@ func DeleteHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		if err := repo.Delete(videoID); err != nil {
+		if err := svc.Delete(videoID); err != nil {
 			resp.SetErrMsg("Failed to delete video with id %d %v", videoID, err)
 			r.JSON(w, http.StatusInternalServerError, resp)
 			return

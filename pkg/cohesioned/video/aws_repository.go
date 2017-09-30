@@ -3,12 +3,8 @@ package video
 import (
 	"database/sql"
 	"fmt"
-	"io"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/cohesion-education/api/pkg/cohesioned"
 	"github.com/cohesion-education/api/pkg/cohesioned/config"
 	"github.com/cohesion-education/api/pkg/cohesioned/db"
@@ -121,7 +117,7 @@ func (repo *awsRepo) List() ([]*cohesioned.Video, error) {
 	}
 
 	if err := rows.Err(); err != nil {
-		fmt.Errorf("rows had an error: %v", err)
+		return list, fmt.Errorf("rows had an error: %v", err)
 	}
 
 	return list, nil
@@ -225,46 +221,6 @@ func (repo *awsRepo) Update(v *cohesioned.Video) error {
 	rowsEffected, err := result.RowsAffected()
 	if err != nil || rowsEffected == 0 {
 		return fmt.Errorf("Failed to update video: %v", err)
-	}
-
-	return nil
-}
-
-func (r *awsRepo) SetFile(fileReader io.Reader, video *cohesioned.Video) (*cohesioned.Video, error) {
-	if err := r.writeFileToStorage(fileReader, video.StorageObjectName); err != nil {
-		return video, fmt.Errorf("Failed to write file to storage: %v", err)
-	}
-
-	if err := r.Update(video); err != nil {
-		return video, fmt.Errorf("Failed to update video record: %v", err)
-	}
-
-	return video, nil
-}
-
-func (r *awsRepo) writeFileToStorage(fileReader io.Reader, objectName string) error {
-	sess, err := r.awsConfig.NewSession()
-	if err != nil {
-		return fmt.Errorf("Error creating session %v", err)
-	}
-
-	svc := s3.New(sess)
-
-	// Upload input parameters
-	params := &s3manager.UploadInput{
-		Bucket: aws.String(r.awsConfig.GetVideoBucket()),
-		Key:    aws.String(objectName),
-		Body:   fileReader,
-	}
-
-	uploader := s3manager.NewUploaderWithClient(svc)
-
-	// Perform an upload.
-	if _, err := uploader.Upload(params, func(u *s3manager.Uploader) {
-		u.PartSize = 10 * 1024 * 1024 // 10MB part size
-		u.LeavePartsOnError = false
-	}); err != nil {
-		return fmt.Errorf("Failed to upload file to s3: %v", err)
 	}
 
 	return nil

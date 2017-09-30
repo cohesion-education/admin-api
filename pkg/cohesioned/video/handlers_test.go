@@ -2,12 +2,12 @@ package video_test
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/cohesion-education/api/fakes"
 	"github.com/cohesion-education/api/pkg/cohesioned"
@@ -17,24 +17,16 @@ import (
 
 func TestListHandler(t *testing.T) {
 	fakeUser := fakes.FakeProfile()
-	testVideo := cohesioned.NewVideo("Test Video", "test.mp4", 1234, fakeUser)
+	testVideo := fakes.FakeVideo()
 	videos := []*cohesioned.Video{testVideo}
 
-	req, err := http.NewRequest("GET", "/api/videos", nil)
-	if err != nil {
-		t.Fatalf("Failed to initialize get videos request %v", err)
-	}
+	fakeAdminService := new(fakes.FakeVideoAdminService)
+	fakeAdminService.ListReturns(videos, nil)
 
-	repo := new(fakes.FakeVideoRepo)
-	repo.ListReturns(videos, nil)
-
-	ctx := req.Context()
-	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, fakeUser)
-	req = req.WithContext(ctx)
-
-	renderer := fakes.FakeRenderer
-	handler := video.ListHandler(renderer, repo)
+	handler := video.ListHandler(fakes.FakeRenderer, fakeAdminService)
 	rr := httptest.NewRecorder()
+
+	req := fakes.NewRequestWithContext("GET", "/api/videos", nil, fakeUser)
 	handler.ServeHTTP(rr, req)
 
 	expectedStatus := http.StatusOK
@@ -55,30 +47,20 @@ func TestListHandler(t *testing.T) {
 
 func TestGetByIDHandler(t *testing.T) {
 	fakeUser := fakes.FakeProfile()
-	testVideo := cohesioned.NewVideo("Test Before", "test.mp4", 1234, fakeUser)
+	testVideo := fakes.FakeVideo()
 
 	apiURL := fmt.Sprintf("/api/video/%d", testVideo.ID)
-	req, err := http.NewRequest("GET", apiURL, nil)
-	if err != nil {
-		t.Fatalf("Failed to initialize create video request %v", err)
-	}
 
-	repo := new(fakes.FakeVideoRepo)
-	repo.GetReturns(testVideo, nil)
+	fakeAdminService := new(fakes.FakeVideoAdminService)
+	fakeAdminService.GetReturns(testVideo, nil)
 
-	ctx := req.Context()
-	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, fakeUser)
-	req = req.WithContext(ctx)
-
-	renderer := fakes.FakeRenderer
-	fakeAwsConfig := new(fakes.FakeAwsConfig)
-	fakeAwsConfig.GetSignedURLReturns("http://s3.aws.amazon.com.not.real", nil)
-	handler := video.GetByIDHandler(renderer, repo, fakeAwsConfig)
-
+	handler := video.GetByIDHandler(fakes.FakeRenderer, fakeAdminService)
 	router := mux.NewRouter()
 	router.HandleFunc("/api/video/{id:[0-9]+}", handler)
 
 	rr := httptest.NewRecorder()
+	req := fakes.NewRequestWithContext("GET", apiURL, nil, fakeUser)
+
 	router.ServeHTTP(rr, req)
 
 	expectedStatus := http.StatusOK
@@ -99,37 +81,13 @@ func TestGetByIDHandler(t *testing.T) {
 	expectedResp := &video.VideoResponse{}
 
 	decoder := json.NewDecoder(rr.Body)
-	if err = decoder.Decode(&expectedResp); err != nil {
+	if err := decoder.Decode(&expectedResp); err != nil {
 		t.Errorf("Failed to unmarshall response json to APIResponse: %v", err)
 	}
 
 	if len(expectedResp.Video.SignedURL) == 0 {
 		t.Errorf("api response did not contain a signed url")
 	}
-
-	// expectedHostName := "storage.googleapis.com"
-	// signedURL, err := url.Parse(expectedResp.Video.SignedURL)
-	// if err != nil {
-	// 	t.Fatalf("%s does not appear to be a valid URL: %v", expectedResp.Video.SignedURL, err)
-	// }
-	//
-	// if signedURL.Host != expectedHostName {
-	// 	t.Errorf("expected signed url host to be %s but was %s", expectedHostName, signedURL.Host)
-	// }
-	//
-	// q := signedURL.Query()
-	//
-	// if len(q.Get("GoogleAccessId")) == 0 {
-	// 	t.Errorf("Signed url did not have GoogleAccessId param")
-	// }
-	//
-	// if len(q.Get("Expires")) == 0 {
-	// 	t.Errorf("Signed url did not have Expires param")
-	// }
-	//
-	// if len(q.Get("Signature")) == 0 {
-	// 	t.Errorf("Signed url did not have Signature param")
-	// }
 }
 
 func TestAddHandler(t *testing.T) {
@@ -141,21 +99,13 @@ func TestAddHandler(t *testing.T) {
 		t.Fatalf("Failed to marshall video json: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", "/api/video", bytes.NewReader(testJSON))
-	if err != nil {
-		t.Fatalf("Failed to initialize create video request %v", err)
-	}
+	fakeAdminService := new(fakes.FakeVideoAdminService)
+	fakeAdminService.SaveReturns(nil)
 
-	repo := new(fakes.FakeVideoRepo)
-	repo.SaveReturns(testVideo.ID, nil)
-
-	ctx := req.Context()
-	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
-	req = req.WithContext(ctx)
-
-	renderer := fakes.FakeRenderer
-	handler := video.AddHandler(renderer, repo)
+	handler := video.AddHandler(fakes.FakeRenderer, fakeAdminService)
 	rr := httptest.NewRecorder()
+
+	req := fakes.NewRequestWithContext("POST", "/api/video", bytes.NewReader(testJSON), profile)
 	handler.ServeHTTP(rr, req)
 
 	expectedStatus := http.StatusOK
@@ -174,33 +124,24 @@ func TestAddHandler(t *testing.T) {
 	}
 }
 
+//TODO - broken
 func TestUploadHandler(t *testing.T) {
-	testVideo := cohesioned.NewVideo("Test After", "test.mp4", 1234, &cohesioned.Profile{FullName: "Test User"})
+	fakeUser := fakes.FakeProfile()
+	testVideo := fakes.FakeVideo()
 
 	videoUploadURI := fmt.Sprintf("/api/video/upload/%d", testVideo.ID)
-	req, err := fakes.NewFileUploadRequest("POST", videoUploadURI, "../../../testdata/file-upload.txt")
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	repo := new(fakes.FakeVideoRepo)
-	repo.GetReturns(testVideo, nil)
-	repo.SetFileReturns(testVideo, nil)
+	fakeAdminService := new(fakes.FakeVideoAdminService)
+	fakeAdminService.GetReturns(testVideo, nil)
+	fakeAdminService.SetFileReturns(nil)
 
-	profile := fakes.FakeProfile()
-	ctx := req.Context()
-	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, profile)
-	req = req.WithContext(ctx)
-
-	renderer := fakes.FakeRenderer
-	awsConfig := new(fakes.FakeAwsConfig)
-	awsConfig.GetVideoBucketReturns("fake-bucket")
-	handler := video.UploadHandler(renderer, repo, awsConfig)
+	handler := video.UploadHandler(fakes.FakeRenderer, fakeAdminService)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api/video/upload/{id:[0-9]+}", handler)
-
 	rr := httptest.NewRecorder()
+
+	req := fakes.NewFileUploadRequestWithContext("POST", videoUploadURI, "../../../testdata/file-upload.txt", fakeUser)
 	router.ServeHTTP(rr, req)
 
 	expectedStatus := http.StatusOK
@@ -238,6 +179,8 @@ func TestUpdateHandler(t *testing.T) {
 		FileName:   existingVideo.FileName,
 		Created:    existingVideo.Created,
 		CreatedBy:  existingVideo.CreatedBy,
+		Updated:    time.Now(),
+		UpdatedBy:  existingVideo.CreatedBy,
 	}
 
 	testJSON, err := json.Marshal(testVideo)
@@ -246,26 +189,17 @@ func TestUpdateHandler(t *testing.T) {
 	}
 
 	apiURL := fmt.Sprintf("/api/video/%d", testVideo.ID)
-	req, err := http.NewRequest("PUT", apiURL, bytes.NewReader(testJSON))
-	if err != nil {
-		t.Fatalf("Failed to initialize create video request %v", err)
-	}
 
-	repo := new(fakes.FakeVideoRepo)
-	repo.GetReturns(existingVideo, nil)
-	repo.UpdateReturns(nil)
+	fakeAdminService := new(fakes.FakeVideoAdminService)
+	fakeAdminService.GetReturns(existingVideo, nil)
+	fakeAdminService.UpdateReturns(nil)
 
-	ctx := req.Context()
-	ctx = context.WithValue(ctx, cohesioned.CurrentUserKey, fakeUser)
-	req = req.WithContext(ctx)
-
-	renderer := fakes.FakeRenderer
-	handler := video.UpdateHandler(renderer, repo)
-
+	handler := video.UpdateHandler(fakes.FakeRenderer, fakeAdminService)
 	router := mux.NewRouter()
 	router.HandleFunc("/api/video/{id:[0-9]+}", handler)
-
 	rr := httptest.NewRecorder()
+
+	req := fakes.NewRequestWithContext("PUT", apiURL, bytes.NewReader(testJSON), fakeUser)
 	router.ServeHTTP(rr, req)
 
 	expectedStatus := http.StatusOK

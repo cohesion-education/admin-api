@@ -1,6 +1,7 @@
 package cohesioned
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -26,37 +27,14 @@ func GetCurrentUser(req *http.Request) (*Profile, error) {
 	return profile, nil
 }
 
-type DashboardView map[string]interface{}
-
-func NewDashboardViewWithProfile(req *http.Request) (*DashboardView, error) {
-	d := &DashboardView{}
-	profile, err := GetCurrentUser(req)
-	if err != nil {
-		return nil, err
-	}
-	d.SetProfile(profile)
-	return d, nil
+func FromRequest(req *http.Request) (*Profile, bool) {
+	ctx := req.Context()
+	return FromContext(ctx)
 }
 
-func (d DashboardView) Profile() (*Profile, error) {
-	profile, ok := d.Get(profileKey).(*Profile)
-	if !ok {
-		return nil, fmt.Errorf("profile was not of type *cohesion.Profile was %s", reflect.TypeOf(profile).String())
-	}
-
-	return profile, nil
-}
-
-func (d DashboardView) SetProfile(p *Profile) {
-	d.Set(profileKey, p)
-}
-
-func (d DashboardView) Set(key string, value interface{}) {
-	d[key] = value
-}
-
-func (d DashboardView) Get(key string) interface{} {
-	return d[key]
+func FromContext(ctx context.Context) (*Profile, bool) {
+	user, ok := ctx.Value(CurrentUserKey).(*Profile)
+	return user, ok
 }
 
 type ValidationError struct {

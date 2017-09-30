@@ -37,41 +37,10 @@ func newServer() *negroni.Negroni {
 		log.Fatal(err)
 	}
 
-	// gcpKeyfileLocation := os.Getenv("GCP_KEYFILE_LOCATION")
-	// if len(gcpKeyfileLocation) == 0 {
-	// 	log.Fatal("Required env var GCP_KEYFILE_LOCATION not set")
-	// }
-	//
-	// videoStorageBucketName := os.Getenv("GCP_STORAGE_VIDEO_BUCKET")
-	// if len(videoStorageBucketName) == 0 {
-	// 	log.Fatal("Required env var GCP_STORAGE_VIDEO_BUCKET not set")
-	// }
-	//
-	// gcpConfig, err := gcp.NewConfig(gcpKeyfileLocation)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
 	awsConfig, err := config.NewAwsConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// ctx := context.TODO()
-	// datastoreClient, err := gcp.NewDatastoreClient(ctx, gcpConfig)
-	// if err != nil {
-	// 	log.Fatalf("Failed to get datastore client %v", err)
-	// }
-	//
-	// storageClient, err := gcp.NewStorageClient(ctx, gcpConfig)
-	// if err != nil {
-	// 	log.Fatalf("Failed to get storage client %v", err)
-	// }
-	//
-	// homepageRepo := homepage.NewGCPDatastoreRepo(datastoreClient)
-	// profileRepo := profile.NewGCPDatastoreRepo(datastoreClient)
-	// taxonomyRepo := taxonomy.NewGCPDatastoreRepo(datastoreClient)
-	// videoRepo := video.NewGCPRepo(datastoreClient, storageClient, videoStorageBucketName)
 
 	db, err := awsConfig.DialRDS()
 	if err != nil {
@@ -82,6 +51,8 @@ func newServer() *negroni.Negroni {
 	taxonomyRepo := taxonomy.NewAwsRepo(db)
 	studentRepo := student.NewAwsRepo(db)
 	videoRepo := video.NewAwsRepo(db, awsConfig)
+
+	adminVideoService := video.NewService(videoRepo, awsConfig)
 
 	n := negroni.Classic()
 	mx := mux.NewRouter()
@@ -104,11 +75,11 @@ func newServer() *negroni.Negroni {
 	//endpoints that require Admin priveleges
 	requiresAdmin(http.MethodPost, "/api/taxonomy", taxonomy.AddHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
 	requiresAdmin(http.MethodPut, "/api/taxonomy/{id:[0-9]+}", taxonomy.UpdateHandler(apiRenderer, taxonomyRepo), mx, authMiddleware)
-	requiresAdmin(http.MethodGet, "/api/videos", video.ListHandler(apiRenderer, videoRepo), mx, authMiddleware)
-	requiresAdmin(http.MethodPost, "/api/video", video.AddHandler(apiRenderer, videoRepo), mx, authMiddleware)
-	requiresAdmin(http.MethodPost, "/api/video/upload/{id:[0-9]+}", video.UploadHandler(apiRenderer, videoRepo, awsConfig), mx, authMiddleware)
-	requiresAdmin(http.MethodDelete, "/api/video/{id:[0-9]+}", video.DeleteHandler(apiRenderer, videoRepo), mx, authMiddleware)
-	requiresAdmin(http.MethodPut, "/api/video/{id:[0-9]+}", video.UpdateHandler(apiRenderer, videoRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodGet, "/api/videos", video.ListHandler(apiRenderer, adminVideoService), mx, authMiddleware)
+	requiresAdmin(http.MethodPost, "/api/video", video.AddHandler(apiRenderer, adminVideoService), mx, authMiddleware)
+	requiresAdmin(http.MethodPost, "/api/video/upload/{id:[0-9]+}", video.UploadHandler(apiRenderer, adminVideoService), mx, authMiddleware)
+	requiresAdmin(http.MethodDelete, "/api/video/{id:[0-9]+}", video.DeleteHandler(apiRenderer, adminVideoService), mx, authMiddleware)
+	requiresAdmin(http.MethodPut, "/api/video/{id:[0-9]+}", video.UpdateHandler(apiRenderer, adminVideoService), mx, authMiddleware)
 
 	//endpoints that only require Authentication
 	requiresAuth(http.MethodGet, "/api/profile", profile.GetCurrentUserHandler(apiRenderer, profileRepo), mx, authMiddleware)
@@ -117,7 +88,7 @@ func newServer() *negroni.Negroni {
 	requiresAuth(http.MethodGet, "/api/profile/students", student.ListHandler(apiRenderer, studentRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile/students", student.SaveHandler(apiRenderer, studentRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile/preferences", profile.SavePreferencesHandler(apiRenderer, profileRepo), mx, authMiddleware)
-	requiresAuth(http.MethodGet, "/api/video/{id:[0-9]+}", video.GetByIDHandler(apiRenderer, videoRepo, awsConfig), mx, authMiddleware)
+	// requiresAuth(http.MethodGet, "/api/video/{id:[0-9]+}", video.GetByIDHandler(apiRenderer, videoRepo, awsConfig), mx, authMiddleware)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
 	allowedHeaders := handlers.AllowedHeaders([]string{"authorization", "content-type", "content-length"})

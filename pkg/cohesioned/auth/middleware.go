@@ -19,9 +19,9 @@ var emailToProfileIDCache map[string]int64
 
 func IsAdmin(r *render.Render) negroni.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-		profile, err := cohesioned.GetCurrentUser(req)
-		if err != nil {
-			resp := cohesioned.NewAPIErrorResponse("error getting current user from request context %v", err)
+		profile, ok := cohesioned.FromRequest(req)
+		if !ok {
+			resp := cohesioned.NewAPIErrorResponse("failed to get current user from request context")
 			fmt.Printf("%s\n", resp.ErrMsg)
 			r.JSON(w, http.StatusUnauthorized, resp)
 			return
