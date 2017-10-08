@@ -12,6 +12,7 @@ type Taxonomy struct {
 	CreatedBy int64       `json:"created_by"`
 	UpdatedBy int64       `json:"updated_by"`
 	Name      string      `json:"name"`
+	Parent    *Taxonomy   `json:"parent"`
 	ParentID  int64       `schema:"parent_id" json:"parent_id"`
 	Children  []*Taxonomy `json:"children"`
 }

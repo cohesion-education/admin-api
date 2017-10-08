@@ -88,7 +88,7 @@ func newServer() *negroni.Negroni {
 	requiresAuth(http.MethodGet, "/api/profile/students", student.ListHandler(apiRenderer, studentRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile/students", student.SaveHandler(apiRenderer, studentRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile/preferences", profile.SavePreferencesHandler(apiRenderer, profileRepo), mx, authMiddleware)
-	// requiresAuth(http.MethodGet, "/api/video/{id:[0-9]+}", video.GetByIDHandler(apiRenderer, videoRepo, awsConfig), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/api/video/{id:[0-9]+}", video.GetByIDHandler(apiRenderer, adminVideoService), mx, authMiddleware)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
 	allowedHeaders := handlers.AllowedHeaders([]string{"authorization", "content-type", "content-length"})

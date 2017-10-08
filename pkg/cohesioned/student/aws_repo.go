@@ -133,6 +133,26 @@ func (repo *awsRepo) List(parentID int64) ([]*cohesioned.Student, error) {
 	return list, nil
 }
 
+func (repo *awsRepo) Delete(id int64) error {
+	deleteSql := `delete from student where id = ?`
+	result, err := repo.Exec(deleteSql, id)
+
+	if err != nil {
+		return fmt.Errorf("Failed to delete student with id %d: %v", id, err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("Failed to get number of rows affected from result: %v", err)
+	}
+
+	if rowsAffected != 1 {
+		return fmt.Errorf("Failed to delete student with id %d (rows affected != 1)", id)
+	}
+
+	return nil
+}
+
 func (repo *awsRepo) mapRowToObject(rs db.RowScanner) (*cohesioned.Student, error) {
 	student := &cohesioned.Student{}
 	var updated db.NullTime

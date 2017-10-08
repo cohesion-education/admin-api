@@ -11,9 +11,9 @@ import (
 )
 
 type APIResponse struct {
-	cohesioned.APIResponse
+	*cohesioned.APIResponse
+	*cohesioned.Profile
 	Student *cohesioned.Student   `json:"student,omitempty"`
-	Profile *cohesioned.Profile   `json:"profile,omitempty"`
 	List    []*cohesioned.Student `json:"list,omitempty"`
 }
 
@@ -69,6 +69,8 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
+		//TODO - move this mess into a profile service...
+
 		existingStudents, err := repo.List(currentUser.ID)
 		if err != nil {
 			resp.SetErrMsg("An unexpected error occurred when trying to retrieve your current list of students: %v", err)
@@ -78,8 +80,22 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		}
 
 		resp.Profile = currentUser
-		currentUser.Students = make([]*cohesioned.Student, len(incomingList))
+		currentUser.Students = make([]*cohesioned.Student, 0)
 
+		// checks the existing student against the incoming student list for any students that have been removed and deletes those students
+		for _, existingStudent := range existingStudents {
+			if removedStudent := findStudent(existingStudent.Name, incomingList); removedStudent == nil {
+				fmt.Printf("%s was not present in the incoming students list - deleting student", existingStudent.Name)
+				if err := repo.Delete(existingStudent.ID); err != nil {
+					resp.SetErrMsg("Failed to remove student %v", err)
+					fmt.Println(resp.ErrMsg)
+					r.JSON(w, http.StatusInternalServerError, resp)
+					return
+				}
+			}
+		}
+
+		// checks incoming student list against existing students, and creates any newly added students or updates existing students
 		for _, incomingStudent := range incomingList {
 			if existingStudent := findStudent(incomingStudent.Name, existingStudents); existingStudent == nil {
 				fmt.Printf("incoming student does not exist - creating %v\n", incomingStudent)
