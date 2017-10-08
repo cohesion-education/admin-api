@@ -52,7 +52,7 @@ func TestGetByIDHandler(t *testing.T) {
 	apiURL := fmt.Sprintf("/api/video/%d", testVideo.ID)
 
 	fakeAdminService := new(fakes.FakeVideoAdminService)
-	fakeAdminService.GetReturns(testVideo, nil)
+	fakeAdminService.GetWithSignedURLReturns(testVideo, nil)
 
 	handler := video.GetByIDHandler(fakes.FakeRenderer, fakeAdminService)
 	router := mux.NewRouter()
@@ -124,7 +124,6 @@ func TestAddHandler(t *testing.T) {
 	}
 }
 
-//TODO - broken
 func TestUploadHandler(t *testing.T) {
 	fakeUser := fakes.FakeProfile()
 	testVideo := fakes.FakeVideo()

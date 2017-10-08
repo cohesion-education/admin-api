@@ -179,7 +179,7 @@ func GetByIDHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 			return
 		}
 
-		video, err := svc.Get(videoID)
+		video, err := svc.GetWithSignedURL(videoID)
 		if err != nil {
 			resp.SetErrMsg("Failed to get video with id %d %v", videoID, err)
 			r.JSON(w, http.StatusInternalServerError, resp)

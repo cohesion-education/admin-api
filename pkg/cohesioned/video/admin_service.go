@@ -16,6 +16,7 @@ import (
 type AdminService interface {
 	List() ([]*cohesioned.Video, error)
 	Get(id int64) (*cohesioned.Video, error)
+	GetWithSignedURL(id int64) (*cohesioned.Video, error)
 	Delete(id int64) error
 	Save(ctx context.Context, video *cohesioned.Video) error
 	Update(ctx context.Context, video *cohesioned.Video) error
@@ -44,13 +45,21 @@ func (s *adminService) Get(id int64) (*cohesioned.Video, error) {
 		return nil, fmt.Errorf("Failed to get video by ID: %v", err)
 	}
 
+	return video, nil
+}
+
+func (s *adminService) GetWithSignedURL(id int64) (*cohesioned.Video, error) {
+	video, err := s.Get(id)
+	if err != nil {
+		return nil, err
+	}
+
 	signedURL, err := s.cfg.GetSignedURL(video.StorageBucket, video.StorageObjectName)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to generate signed url %v", err)
 	}
 
 	video.SignedURL = signedURL
-
 	return video, nil
 }
 

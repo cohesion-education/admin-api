@@ -21,6 +21,11 @@ func (s *FakeVideoAdminService) GetReturns(v *cohesioned.Video, err error) {
 	s.v = v
 	s.err = err
 }
+func (s *FakeVideoAdminService) GetWithSignedURLReturns(v *cohesioned.Video, err error) {
+	s.v = v
+	s.err = err
+}
+
 func (s *FakeVideoAdminService) DeleteReturns(err error) {
 	s.err = err
 }
@@ -38,6 +43,9 @@ func (s *FakeVideoAdminService) List() ([]*cohesioned.Video, error) {
 	return s.list, s.err
 }
 func (s *FakeVideoAdminService) Get(id int64) (*cohesioned.Video, error) {
+	return s.v, s.err
+}
+func (s *FakeVideoAdminService) GetWithSignedURL(id int64) (*cohesioned.Video, error) {
 	return s.v, s.err
 }
 func (s *FakeVideoAdminService) Delete(id int64) error {
