@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/elastictranscoder"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/cohesion-education/api/pkg/cohesioned"
@@ -100,6 +101,10 @@ func (s *adminService) SetFile(ctx context.Context, fileReader io.Reader, video 
 		return fmt.Errorf("Failed to write file to storage: %v", err)
 	}
 
+	if err := s.submitTranscodingJobs(video); err != nil {
+		return fmt.Errorf("Failed to submit transcoding jobs: %v", err)
+	}
+
 	if err := s.Update(ctx, video); err != nil {
 		return fmt.Errorf("Failed to update video record: %v", err)
 	}
@@ -132,5 +137,39 @@ func (s *adminService) writeFileToStorage(fileReader io.Reader, bucketName, obje
 		return fmt.Errorf("Failed to upload file to s3: %v", err)
 	}
 
+	return nil
+}
+
+func (s *adminService) submitTranscodingJobs(v *cohesioned.Video) error {
+	sess, err := s.cfg.NewSession()
+	if err != nil {
+		return fmt.Errorf("Error creating session %v", err)
+	}
+
+	svc := elastictranscoder.New(sess)
+
+	pipelineID := "1507471006678-grs7px"
+	outputFolder := "outputs/"
+	outputKeyPrefix := "480p-16x9"
+	outputPresetID := "1351620000001-000020"
+
+	input := &elastictranscoder.CreateJobInput{}
+	input.SetPipelineId(pipelineID)
+	input.SetOutputKeyPrefix(outputFolder)
+	input.SetInput(&elastictranscoder.JobInput{
+		Key: aws.String(v.StorageObjectName),
+	})
+	input.SetOutput(&elastictranscoder.CreateJobOutput{
+		Key:              aws.String(fmt.Sprintf("%s-%s", outputKeyPrefix, v.StorageObjectName)),
+		PresetId:         aws.String(outputPresetID),
+		ThumbnailPattern: aws.String(fmt.Sprintf("%s-{resolution}-{count}", v.StorageObjectName)),
+	})
+
+	resp, err := svc.CreateJob(input)
+	if err != nil {
+		return fmt.Errorf("Failed to create job: %v", err)
+	}
+
+	fmt.Printf("create job response: %v\n", resp)
 	return nil
 }
