@@ -101,9 +101,9 @@ func (s *adminService) SetFile(ctx context.Context, fileReader io.Reader, video 
 		return fmt.Errorf("Failed to write file to storage: %v", err)
 	}
 
-	if err := s.submitTranscodingJobs(video); err != nil {
-		return fmt.Errorf("Failed to submit transcoding jobs: %v", err)
-	}
+	// if err := s.submitTranscodingJobs(video); err != nil {
+	// 	return fmt.Errorf("Failed to submit transcoding jobs: %v", err)
+	// }
 
 	if err := s.Update(ctx, video); err != nil {
 		return fmt.Errorf("Failed to update video record: %v", err)
@@ -148,6 +148,7 @@ func (s *adminService) submitTranscodingJobs(v *cohesioned.Video) error {
 
 	svc := elastictranscoder.New(sess)
 
+	//TODO - grab this config from s.cfg.TranscodingParams
 	pipelineID := "1507471006678-grs7px"
 	outputFolder := "outputs/"
 	outputKeyPrefix := "480p-16x9"
