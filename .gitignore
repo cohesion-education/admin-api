@@ -1,4 +1,5 @@
 .env
+environments.md
 .aws
 .DS_Store
 vendor/
