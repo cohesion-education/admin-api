@@ -53,31 +53,6 @@ build:
         code: |
           go test ./pkg/cohesioned $(glide novendor) --cover
 
-    - script:
-        name: install flyway cli
-        code: |
-          wget -O flyway.tgz https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/4.2.0/flyway-commandline-4.2.0-linux-x64.tar.gz
-          tar -zxf flyway.tgz
-          export PATH=./flyway-4.2.0/:$PATH
-          flyway -version
-
-    - script:
-        name: integration test flyway db migration
-        code: |
-          ls -la ./flyway/sql/
-
-          flyway -user=root -password=$MYSQL_ENV_MYSQL_ROOT_PASSWORD -url=jdbc:mysql://$MYSQL_PORT_3306_TCP_ADDR:$MYSQL_PORT_3306_TCP_PORT/$MYSQL_ENV_MYSQL_DATABASE -locations=filesystem:./flyway/sql/ migrate
-
-    - script:
-        name: integration test
-        code: |
-          export AWS_RDS_USERNAME=$MYSQL_ENV_MYSQL_USER
-          export AWS_RDS_PASSWORD=$MYSQL_ENV_MYSQL_PASSWORD
-          export AWS_RDS_HOST=$MYSQL_PORT_3306_TCP_ADDR
-          export AWS_RDS_PORT=$MYSQL_PORT_3306_TCP_PORT
-          export AWS_RDS_DBNAME=$MYSQL_ENV_MYSQL_DATABASE
-
-          go test ./pkg/cohesioned $(glide novendor) --cover -tags=integration
 deploy:
   steps:
     - setup-go-workspace:
