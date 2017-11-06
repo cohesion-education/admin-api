@@ -34,13 +34,17 @@ type Profile struct {
 	Updated       time.Time `json:"updated"`
 	Enabled       bool      `json:"enabled"`
 	EmailVerified bool      `json:"email_verified"`
-	Email         string    `json:"email"`
-	FullName      string    `json:"name"`
-	FirstName     string    `json:"given_name"`
-	LastName      string    `json:"family_name"`
-	Nickname      string    `json:"nickname"`
-	PictureURL    string    `json:"picture"`
-	Locale        string    `json:"locale"`
+	Onboarded     bool      `json:"onboarded"`
+	TrialStart    time.Time `json:"trial_start"`
+	BillingStatus string    `json:"billing_status"`
+
+	Email      string `json:"email"`
+	FullName   string `json:"name"`
+	FirstName  string `json:"given_name"`
+	LastName   string `json:"family_name"`
+	Nickname   string `json:"nickname"`
+	PictureURL string `json:"picture"`
+	Locale     string `json:"locale"`
 
 	// UserID        string      `json:"user_id"`
 	// ClientID      string      `json:"client_id"`

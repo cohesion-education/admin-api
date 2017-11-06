@@ -13,8 +13,10 @@ import (
 type key int
 
 const (
-	CurrentUserKey key    = iota
-	profileKey     string = "profile"
+	CurrentUserKey            key    = iota
+	profileKey                string = "profile"
+	BillingStatusTrial        string = "TRIAL"
+	BillingStatusTrialExpired string = "TRIAL_EXPIRED"
 )
 
 func GetCurrentUser(req *http.Request) (*Profile, error) {

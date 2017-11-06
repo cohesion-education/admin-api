@@ -35,8 +35,11 @@ func (repo *awsRepo) Save(p *cohesioned.Profile) (int64, error) {
 		newsletter,
 		sub,
 		state,
-		county
-	) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		county,
+		onboarded,
+		billing_status,
+		trial_start
+	) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	stmt, err := repo.Prepare(sql)
 	if err != nil {
@@ -59,6 +62,9 @@ func (repo *awsRepo) Save(p *cohesioned.Profile) (int64, error) {
 		p.Sub,
 		p.State,
 		p.County,
+		p.Onboarded,
+		p.BillingStatus,
+		p.TrialStart,
 	)
 
 	if err != nil {
@@ -89,7 +95,10 @@ func (repo *awsRepo) Update(p *cohesioned.Profile) error {
 		newsletter = ?,
 		sub = ?,
 		state = ?,
-		county = ?
+		county = ?,
+		onboarded = ?,
+		billing_status = ?,
+		trial_start = ?
 	where id = ?`
 
 	stmt, err := repo.Prepare(sql)
@@ -113,6 +122,9 @@ func (repo *awsRepo) Update(p *cohesioned.Profile) error {
 		p.Sub,
 		p.State,
 		p.County,
+		p.Onboarded,
+		p.BillingStatus,
+		p.TrialStart,
 		p.ID,
 	)
 
@@ -148,7 +160,10 @@ func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
 		newsletter,
 		sub,
 		state,
-		county
+		county,
+		onboarded,
+		billing_status,
+		trial_start
 	from user
 		where email = ?`
 
@@ -165,6 +180,9 @@ func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
 	var verified sql.NullBool
 	var betaProgram sql.NullBool
 	var newsletter sql.NullBool
+	var onboarded sql.NullBool
+	var billingStatus sql.NullString
+	var trialStart db.NullTime
 
 	err := row.Scan(
 		&profile.ID,
@@ -184,6 +202,9 @@ func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
 		&sub,
 		&state,
 		&county,
+		&onboarded,
+		&billingStatus,
+		&trialStart,
 	)
 
 	if err != nil {
@@ -206,6 +227,10 @@ func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
 	profile.EmailVerified = verified.Bool
 	profile.Preferences.BetaProgram = betaProgram.Bool
 	profile.Preferences.Newsletter = newsletter.Bool
+
+	profile.Onboarded = onboarded.Bool
+	profile.BillingStatus = billingStatus.String
+	profile.TrialStart = trialStart.Time
 
 	return profile, nil
 }

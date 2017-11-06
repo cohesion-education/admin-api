@@ -80,5 +80,9 @@ func getProfileID(repo profile.Repo, email string) int64 {
 		return 0
 	}
 
-	return profile.ID
+	if profile != nil {
+		return profile.ID
+	}
+
+	return -1
 }

@@ -82,6 +82,7 @@ func newServer() *negroni.Negroni {
 	requiresAdmin(http.MethodPut, "/api/video/{id:[0-9]+}", video.UpdateHandler(apiRenderer, adminVideoService), mx, authMiddleware)
 
 	//endpoints that only require Authentication
+	requiresAuth(http.MethodPost, "/api/profile/get_or_create", profile.GetOrCreateHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/profile", profile.GetCurrentUserHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile", profile.SaveHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPut, "/api/profile", profile.UpdateHandler(apiRenderer, profileRepo), mx, authMiddleware)

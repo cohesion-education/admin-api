@@ -20,6 +20,9 @@ CREATE TABLE IF NOT EXISTS `user` (
   `user_id` VARCHAR(45) NULL,
   `newsletter` TINYINT NULL,
   `beta_program` TINYINT NULL,
+  `billing_status` VARCHAR(255) NULL,
+  `trial_start` DATETIME NULL,
+  `onboarded` TINYINT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC))
 ENGINE = InnoDB;

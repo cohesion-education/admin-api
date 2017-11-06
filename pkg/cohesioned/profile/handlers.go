@@ -10,6 +10,51 @@ import (
 	"github.com/unrolled/render"
 )
 
+func GetOrCreateHandler(r *render.Render, repo Repo) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		defer req.Body.Close()
+		decoder := json.NewDecoder(req.Body)
+
+		incoming := &cohesioned.Profile{
+			Created:       time.Now(),
+			TrialStart:    time.Now(),
+			BillingStatus: cohesioned.BillingStatusTrial,
+		}
+
+		if err := decoder.Decode(&incoming); err != nil {
+			apiResponse := cohesioned.NewAPIErrorResponse("failed to unmarshall json %v", err)
+			fmt.Println(apiResponse.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, apiResponse)
+			return
+		}
+
+		existing, err := repo.FindByEmail(incoming.Email)
+		if err != nil {
+			apiResponse := cohesioned.NewAPIErrorResponse("An unexpected error occurred when trying to find user by email %s: %v", incoming.Email, err)
+			fmt.Println(apiResponse.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, apiResponse)
+			return
+		}
+
+		if existing != nil {
+			fmt.Println("returning existing user ", existing.Email)
+			r.JSON(w, http.StatusOK, existing)
+			return
+		}
+
+		id, err := repo.Save(incoming)
+		incoming.ID = id
+		if err != nil {
+			apiResponse := cohesioned.NewAPIErrorResponse("Failed to create user %s: %v", incoming.Email, err)
+			fmt.Println(apiResponse.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, apiResponse)
+			return
+		}
+
+		r.JSON(w, http.StatusOK, incoming)
+	}
+}
+
 func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		currentUser, err := cohesioned.GetCurrentUser(req)
