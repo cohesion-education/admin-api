@@ -1,7 +1,7 @@
 -- -----------------------------------------------------
--- Table `cohesion`.`user`
+-- Table `user`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cohesion`.`user` (
+CREATE TABLE IF NOT EXISTS `user` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `created` DATETIME NOT NULL,
   `updated` DATETIME NULL,

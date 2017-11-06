@@ -5,7 +5,7 @@ echo $(cat <<-EOF
   "region":"$AWS_REGION",
   "access_key_id":"$AWS_ACCESS_KEY_ID",
   "secret_access_key":"$AWS_SECRET_ACCESS_KEY",
-  "s3_video_bucket":"$AWS_S3_VIDEO_BUCKET"
+  "s3_video_bucket":"$AWS_S3_VIDEO_BUCKET",
   "rds_username":"$AWS_RDS_USERNAME",
   "rds_password":"$AWS_RDS_PASSWORD",
   "rds_host":"$AWS_RDS_HOST",

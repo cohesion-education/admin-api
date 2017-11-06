@@ -1,7 +1,7 @@
 -- -----------------------------------------------------
--- Table `cohesion`.`video`
+-- Table `video`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cohesion`.`video` (
+CREATE TABLE IF NOT EXISTS `video` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(255) NULL,
   `taxonomy_id` INT NOT NULL,
@@ -23,17 +23,17 @@ CREATE TABLE IF NOT EXISTS `cohesion`.`video` (
   INDEX `fk_video_updated_by_idx` (`updated_by` ASC),
   CONSTRAINT `ffk_video_created_by`
     FOREIGN KEY (`created_by`)
-    REFERENCES `cohesion`.`user` (`id`)
+    REFERENCES `user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_video_updated_by`
     FOREIGN KEY (`updated_by`)
-    REFERENCES `cohesion`.`user` (`id`)
+    REFERENCES `user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_video_taxonomy`
     FOREIGN KEY (`taxonomy_id`)
-    REFERENCES `cohesion`.`taxonomy` (`id`)
+    REFERENCES `taxonomy` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

@@ -1,7 +1,7 @@
 -- -----------------------------------------------------
--- Table `cohesion`.`student`
+-- Table `student`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cohesion`.`student` (
+CREATE TABLE IF NOT EXISTS `student` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL,
   `grade` VARCHAR(255) NOT NULL,
@@ -18,17 +18,17 @@ CREATE TABLE IF NOT EXISTS `cohesion`.`student` (
   INDEX `fk_student_updated_by_idx` (`updated_by` ASC),
   CONSTRAINT `ffk_student_created_by`
     FOREIGN KEY (`created_by`)
-    REFERENCES `cohesion`.`user` (`id`)
+    REFERENCES `user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_student_updated_by`
     FOREIGN KEY (`updated_by`)
-    REFERENCES `cohesion`.`user` (`id`)
+    REFERENCES `user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_student_user`
     FOREIGN KEY (`user_id`)
-    REFERENCES `cohesion`.`user` (`id`)
+    REFERENCES `user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

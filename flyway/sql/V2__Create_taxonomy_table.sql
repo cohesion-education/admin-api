@@ -1,7 +1,7 @@
 -- -----------------------------------------------------
--- Table `cohesion`.`taxonomy`
+-- Table `taxonomy`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `cohesion`.`taxonomy` (
+CREATE TABLE IF NOT EXISTS `taxonomy` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NULL,
   `parent_id` INT NULL,
@@ -15,17 +15,17 @@ CREATE TABLE IF NOT EXISTS `cohesion`.`taxonomy` (
   INDEX `fk_taxonomy_updated_by_idx` (`updated_by` ASC),
   CONSTRAINT `ffk_taxonomy_created_by`
     FOREIGN KEY (`created_by`)
-    REFERENCES `cohesion`.`user` (`id`)
+    REFERENCES `user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_taxonomy_updated_by`
     FOREIGN KEY (`updated_by`)
-    REFERENCES `cohesion`.`user` (`id`)
+    REFERENCES `user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_taxonomy_parent_id`
     FOREIGN KEY (`parent_id`)
-    REFERENCES `cohesion`.`taxonomy` (`id`)
+    REFERENCES `taxonomy` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
