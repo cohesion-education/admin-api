@@ -65,7 +65,15 @@ func (s *adminService) GetWithSignedURL(id int64) (*cohesioned.Video, error) {
 }
 
 func (s *adminService) Delete(id int64) error {
-	//TODO - also delete file!
+	video, err := s.Get(id)
+	if err != nil {
+		return fmt.Errorf("Failed to find video with id %d: %v", id, err)
+	}
+
+	if err := s.deleteFile(video.StorageBucket, video.StorageObjectName); err != nil {
+		return fmt.Errorf("Failed to delete the video file: %v", err)
+	}
+
 	return s.repo.Delete(id)
 }
 
@@ -110,6 +118,27 @@ func (s *adminService) SetFile(ctx context.Context, fileReader io.Reader, video 
 	}
 
 	return nil
+}
+
+func (s *adminService) deleteFile(bucketName, objectName string) error {
+	sess, err := s.cfg.NewSession()
+	if err != nil {
+		return fmt.Errorf("Error creating session %v", err)
+	}
+
+	svc := s3.New(sess)
+
+	deleteInput := &s3.DeleteObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objectName),
+	}
+
+	if _, err := svc.DeleteObject(deleteInput); err != nil {
+		return fmt.Errorf("Failed to delete %s/%s: %v", bucketName, objectName, err)
+	}
+
+	return nil
+
 }
 
 func (s *adminService) writeFileToStorage(fileReader io.Reader, bucketName, objectName string) error {
