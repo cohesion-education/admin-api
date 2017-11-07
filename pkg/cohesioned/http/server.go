@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/cohesion-education/api/pkg/cohesioned/auth"
+	"github.com/cohesion-education/api/pkg/cohesioned/billing"
 	"github.com/cohesion-education/api/pkg/cohesioned/config"
 	"github.com/cohesion-education/api/pkg/cohesioned/profile"
 	"github.com/cohesion-education/api/pkg/cohesioned/student"
@@ -51,7 +52,7 @@ func newServer() *negroni.Negroni {
 	taxonomyRepo := taxonomy.NewAwsRepo(db)
 	studentRepo := student.NewAwsRepo(db)
 	videoRepo := video.NewAwsRepo(db, awsConfig)
-
+	paymentDetailsRepo := billing.NewAwsRepo(db)
 	adminVideoService := video.NewService(videoRepo, awsConfig)
 
 	n := negroni.Classic()
@@ -86,6 +87,7 @@ func newServer() *negroni.Negroni {
 	requiresAuth(http.MethodGet, "/api/profile", profile.GetCurrentUserHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile", profile.SaveHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPut, "/api/profile", profile.UpdateHandler(apiRenderer, profileRepo), mx, authMiddleware)
+	requiresAuth(http.MethodPost, "/api/profile/paymentdetails", billing.SavePaymentDetailsHandler(apiRenderer, paymentDetailsRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/profile/students", student.ListHandler(apiRenderer, studentRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile/students", student.SaveHandler(apiRenderer, studentRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile/preferences", profile.SavePreferencesHandler(apiRenderer, profileRepo), mx, authMiddleware)
