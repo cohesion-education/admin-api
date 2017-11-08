@@ -55,12 +55,14 @@ func (s *adminService) GetWithSignedURL(id int64) (*cohesioned.Video, error) {
 		return nil, err
 	}
 
-	signedURL, err := s.cfg.GetSignedURL(video.StorageBucket, video.StorageObjectName)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to generate signed url %v", err)
+	if len(video.StorageBucket) != 0 && len(video.StorageObjectName) != 0 {
+		signedURL, err := s.cfg.GetSignedURL(video.StorageBucket, video.StorageObjectName)
+		video.SignedURL = signedURL
+		if err != nil {
+			return nil, fmt.Errorf("Failed to generate signed url %v", err)
+		}
 	}
 
-	video.SignedURL = signedURL
 	return video, nil
 }
 
@@ -70,8 +72,10 @@ func (s *adminService) Delete(id int64) error {
 		return fmt.Errorf("Failed to find video with id %d: %v", id, err)
 	}
 
-	if err := s.deleteFile(video.StorageBucket, video.StorageObjectName); err != nil {
-		return fmt.Errorf("Failed to delete the video file: %v", err)
+	if len(video.StorageBucket) != 0 && len(video.StorageObjectName) != 0 {
+		if err := s.deleteFile(video.StorageBucket, video.StorageObjectName); err != nil {
+			return fmt.Errorf("Failed to delete the video file: %v", err)
+		}
 	}
 
 	return s.repo.Delete(id)

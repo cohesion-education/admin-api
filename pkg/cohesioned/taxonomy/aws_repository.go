@@ -211,7 +211,7 @@ func (repo *awsRepo) Flatten(t *cohesioned.Taxonomy) ([]*cohesioned.Taxonomy, er
 	}
 
 	if len(children) == 0 {
-		fmt.Printf("Flattened: %s\n", t.Name)
+		// fmt.Printf("Flattened: %s\n", t.Name)
 		flattened = append(flattened, t)
 		return flattened, nil
 	}
