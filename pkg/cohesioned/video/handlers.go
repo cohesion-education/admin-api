@@ -26,7 +26,7 @@ func NewAPIResponse(v *cohesioned.Video) *VideoResponse {
 
 func ListHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &VideoResponse{}
+		resp := NewAPIResponse(nil)
 		videos, err := svc.List()
 		resp.List = videos
 		if err != nil {
@@ -42,7 +42,7 @@ func ListHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 
 func AddHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &VideoResponse{}
+		resp := NewAPIResponse(nil)
 
 		defer req.Body.Close()
 		decoder := json.NewDecoder(req.Body)
@@ -121,7 +121,7 @@ func UploadHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 
 func UpdateHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &VideoResponse{}
+		resp := NewAPIResponse(nil)
 
 		vars := mux.Vars(req)
 		videoID, err := strconv.ParseInt(vars["id"], 10, 64)
@@ -169,7 +169,7 @@ func UpdateHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 
 func GetByIDHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &VideoResponse{}
+		resp := NewAPIResponse(nil)
 
 		vars := mux.Vars(req)
 		videoID, err := strconv.ParseInt(vars["id"], 10, 64)
