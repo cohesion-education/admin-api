@@ -194,7 +194,7 @@ func GetByIDHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 
 func DeleteHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &VideoResponse{}
+		resp := NewAPIResponse(nil)
 
 		vars := mux.Vars(req)
 		videoID, err := strconv.ParseInt(vars["id"], 10, 64)
