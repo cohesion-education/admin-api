@@ -4,7 +4,7 @@ applications:
   buildpack: binary_buildpack
   path: ./build
   command: ./cohesion-api
-  memory: 64M
+  memory: 1G
   instances: 2
   services:
    - auth0-admin
