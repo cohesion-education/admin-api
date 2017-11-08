@@ -12,9 +12,6 @@ applications:
   routes:
    - route: www.cohesioned.io/api
   env:
-    DATASTORE_PROJECT_ID: cohesion-education
-    GCP_STORAGE_VIDEO_BUCKET: cohesion-videos
-    GCP_KEYFILE_LOCATION: gcp-keyfile.json
     AUTH0_DOMAIN: cohesioned.auth0.com
     AUTH0_CLIENT_ID: M9NDGtCD4iS1ZZCkzUzd8BR8jXW3DsmA
     CALLBACK_URL: http://www.cohesioned.io/callback

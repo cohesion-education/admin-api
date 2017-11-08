@@ -101,11 +101,6 @@ deploy:
           ./scripts/cups-aws
 
     - script:
-        name: gcp-keyfile
-        code: |
-          echo "$GCP_KEY" > ./build/gcp-keyfile.json
-
-    - script:
         name: cf-push
         code: |
           cf zero-downtime-push api -f ${CF_SPACE}-manifest.yml
