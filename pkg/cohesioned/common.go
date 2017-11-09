@@ -19,6 +19,10 @@ const (
 	BillingStatusTrialExpired string = "TRIAL_EXPIRED"
 )
 
+var (
+	EmptyTime time.Time = time.Time{}
+)
+
 func GetCurrentUser(req *http.Request) (*Profile, error) {
 	currentUser := req.Context().Value(CurrentUserKey)
 	profile, ok := currentUser.(*Profile)

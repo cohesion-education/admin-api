@@ -1,6 +1,7 @@
 package cohesioned
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -70,4 +71,58 @@ func (p *Profile) IsAdmin() bool {
 	}
 
 	return strings.HasSuffix(p.Email, "@cohesioned.io")
+}
+
+func (p *Profile) InTrial() bool {
+	if len(p.BillingStatus) == 0 {
+		return false
+	}
+
+	return p.BillingStatus == BillingStatusTrial
+}
+
+func (p *Profile) TrialExpires() time.Time {
+	if !p.InTrial() {
+		return EmptyTime
+	}
+
+	if p.TrialStart == EmptyTime {
+		return EmptyTime
+	}
+
+	freeTrialExpiry := p.TrialStart.AddDate(0, 0, 15)
+	return freeTrialExpiry
+}
+
+func (p *Profile) DaysRemainingInTrial() int {
+	if !p.InTrial() {
+		return 0
+	}
+
+	if p.TrialStart == EmptyTime {
+		return 0
+	}
+
+	freeTrialExpiry := p.TrialExpires()
+	if freeTrialExpiry == EmptyTime {
+		return 0
+	}
+
+	until := time.Until(freeTrialExpiry)
+	return int(until.Hours() / 24)
+}
+
+func (p *Profile) MarshalJSON() ([]byte, error) {
+	type Alias Profile
+	return json.Marshal(&struct {
+		InTrial              bool      `json:"in_trial"`
+		DaysRemainingInTrial int       `json:"days_remaining_in_trial"`
+		TrialExpiry          time.Time `json:"trial_expiry"`
+		*Alias
+	}{
+		InTrial:              p.InTrial(),
+		DaysRemainingInTrial: p.DaysRemainingInTrial(),
+		TrialExpiry:          p.TrialExpires(),
+		Alias:                (*Alias)(p),
+	})
 }
