@@ -139,7 +139,8 @@ func UpdateHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		existing.Email = incoming.Email
 		existing.State = incoming.State
 		existing.County = incoming.County
-		existing.Students = incoming.Students
+		existing.Onboarded = incoming.Onboarded
+		// existing.Students = incoming.Students
 		existing.Updated = time.Now()
 
 		if repo.Update(existing); err != nil {
