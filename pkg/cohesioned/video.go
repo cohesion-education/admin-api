@@ -9,10 +9,13 @@ type Video struct {
 	ID                  int64     `json:"id"`
 	Created             time.Time `json:"created"`
 	Updated             time.Time `json:"updated"`
-	CreatedBy           int64     `json:"created_by"`
-	UpdatedBy           int64     `json:"updated_by"`
+	CreatedByID         int64     `json:"created_by_id"`
+	CreatedBy           *Profile  `json:"created_by"`
+	UpdatedByID         int64     `json:"updated_by_id"`
+	UpdatedBy           *Profile  `json:"updated_by"`
 	Title               string    `json:"title"`
 	TaxonomyID          int64     `json:"taxonomy_id"`
+	Taxonomy            *Taxonomy `json:"taxonomy"`
 	KeyTerms            []string  `json:"key_terms,omitempty"`
 	StateStandards      []string  `json:"state_standards,omitempty"`
 	CommonCoreStandards []string  `json:"common_core_standards,omitempty"`
@@ -28,11 +31,11 @@ type Video struct {
 //NewVideo creates a Video with the Auditable fields initialized
 func NewVideo(title, fileName string, id int64, createdBy *Profile) *Video {
 	v := &Video{
-		Title:     title,
-		FileName:  fileName,
-		ID:        id,
-		Created:   time.Now(),
-		CreatedBy: createdBy.ID,
+		Title:       title,
+		FileName:    fileName,
+		ID:          id,
+		Created:     time.Now(),
+		CreatedByID: createdBy.ID,
 	}
 
 	return v

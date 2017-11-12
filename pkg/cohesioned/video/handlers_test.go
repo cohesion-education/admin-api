@@ -172,14 +172,14 @@ func TestUpdateHandler(t *testing.T) {
 	fakeUser := fakes.FakeProfile()
 	existingVideo := fakes.FakeVideo()
 	testVideo := &cohesioned.Video{
-		ID:         existingVideo.ID,
-		Title:      "Updated Video Title",
-		TaxonomyID: existingVideo.TaxonomyID,
-		FileName:   existingVideo.FileName,
-		Created:    existingVideo.Created,
-		CreatedBy:  existingVideo.CreatedBy,
-		Updated:    time.Now(),
-		UpdatedBy:  existingVideo.CreatedBy,
+		ID:          existingVideo.ID,
+		Title:       "Updated Video Title",
+		TaxonomyID:  existingVideo.TaxonomyID,
+		FileName:    existingVideo.FileName,
+		Created:     existingVideo.Created,
+		CreatedByID: existingVideo.CreatedByID,
+		Updated:     time.Now(),
+		UpdatedByID: existingVideo.CreatedByID,
 	}
 
 	testJSON, err := json.Marshal(testVideo)
@@ -214,7 +214,7 @@ func TestUpdateHandler(t *testing.T) {
 		t.Errorf("Failed to unmarshall response json to APIResponse: %v", err)
 	}
 
-	if fakeResp.Video.UpdatedBy != fakeUser.ID {
-		t.Errorf("Video UpdatedBy was not set correctly; expected: %d - actual: %d", fakeUser.ID, fakeResp.Video.UpdatedBy)
+	if fakeResp.Video.UpdatedByID != fakeUser.ID {
+		t.Errorf("Video UpdatedBy was not set correctly; expected: %d - actual: %d", fakeUser.ID, fakeResp.Video.UpdatedByID)
 	}
 }

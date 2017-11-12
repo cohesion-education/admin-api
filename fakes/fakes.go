@@ -46,13 +46,14 @@ func FakeAdmin() *cohesioned.Profile {
 
 func FakeVideo() *cohesioned.Video {
 	return &cohesioned.Video{
-		ID:         1,
-		Title:      "Test Video",
-		FileName:   "test.mp4",
-		TaxonomyID: FakeTaxonomy().ID,
-		Created:    time.Now(),
-		CreatedBy:  FakeProfile().ID,
-		SignedURL:  "http://fake-signed-url",
+		ID:          1,
+		Title:       "Test Video",
+		FileName:    "test.mp4",
+		TaxonomyID:  FakeTaxonomy().ID,
+		Created:     time.Now(),
+		CreatedBy:   FakeProfile(),
+		CreatedByID: FakeProfile().ID,
+		SignedURL:   "http://fake-signed-url",
 	}
 }
 

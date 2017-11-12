@@ -84,7 +84,7 @@ func (s *adminService) Delete(id int64) error {
 //Save saves the given video, looking for the current user in the given context argument. Sets the resulting ID from the save operation on the video instance
 func (s *adminService) Save(ctx context.Context, video *cohesioned.Video) error {
 	currentUser, _ := cohesioned.FromContext(ctx)
-	video.CreatedBy = currentUser.ID
+	video.CreatedByID = currentUser.ID
 
 	id, err := s.repo.Save(video)
 	if err != nil {
@@ -98,7 +98,7 @@ func (s *adminService) Save(ctx context.Context, video *cohesioned.Video) error 
 func (s *adminService) Update(ctx context.Context, video *cohesioned.Video) error {
 	currentUser, _ := cohesioned.FromContext(ctx)
 	video.Updated = time.Now()
-	video.UpdatedBy = currentUser.ID
+	video.UpdatedByID = currentUser.ID
 
 	return s.repo.Update(video)
 }

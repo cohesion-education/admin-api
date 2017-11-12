@@ -25,25 +25,31 @@ func NewAwsRepo(db *sql.DB, awsConfig config.AwsConfig) Repo {
 
 func (repo *awsRepo) Get(id int64) (*cohesioned.Video, error) {
 	selectQuery := `select
-		id,
-		title,
-		taxonomy_id,
-		file_name,
-		file_type,
-		file_size,
-		bucket,
-		object_key,
-		key_terms,
-		state_standards,
-		common_core_standards,
-		created,
-		created_by,
-		updated,
-		updated_by
+		v.id,
+		v.title,
+		v.taxonomy_id,
+		v.file_name,
+		v.file_type,
+		v.file_size,
+		v.bucket,
+		v.object_key,
+		v.key_terms,
+		v.state_standards,
+		v.common_core_standards,
+		v.created,
+		v.created_by,
+		v.updated,
+		v.updated_by,
+		u.full_name,
+		t.name
 	from
-		video
+		video v, user u, taxonomy t
 	where
-		id = ?`
+		v.id = ?
+	and
+		v.taxonomy_id = t.id
+	and
+		v.created_by = u.id`
 
 	row := repo.QueryRow(selectQuery, id)
 	video, err := repo.mapRowToObject(row)
@@ -83,23 +89,29 @@ func (repo *awsRepo) List() ([]*cohesioned.Video, error) {
 	var list []*cohesioned.Video
 
 	selectQuery := `select
-		id,
-		title,
-		taxonomy_id,
-		file_name,
-		file_type,
-		file_size,
-		bucket,
-		object_key,
-		key_terms,
-		state_standards,
-		common_core_standards,
-		created,
-		created_by,
-		updated,
-		updated_by
-	from
-		video`
+		v.id,
+		v.title,
+		v.taxonomy_id,
+		v.file_name,
+		v.file_type,
+		v.file_size,
+		v.bucket,
+		v.object_key,
+		v.key_terms,
+		v.state_standards,
+		v.common_core_standards,
+		v.created,
+		v.created_by,
+		v.updated,
+		v.updated_by,
+		u.full_name,
+		t.name
+		from
+			video v, user u, taxonomy t
+		where
+			v.taxonomy_id = t.id
+		and
+			v.created_by = u.id`
 
 	rows, err := repo.Query(selectQuery)
 	if err != nil {
@@ -161,7 +173,7 @@ func (repo *awsRepo) Save(v *cohesioned.Video) (int64, error) {
 		strings.Join(v.StateStandards, ","),
 		strings.Join(v.CommonCoreStandards, ","),
 		v.Created,
-		v.CreatedBy,
+		v.CreatedByID,
 	)
 
 	if err != nil {
@@ -210,7 +222,7 @@ func (repo *awsRepo) Update(v *cohesioned.Video) error {
 		strings.Join(v.StateStandards, ","),
 		strings.Join(v.CommonCoreStandards, ","),
 		v.Updated,
-		v.UpdatedBy,
+		v.UpdatedByID,
 		v.ID,
 	)
 
@@ -230,7 +242,7 @@ func (repo *awsRepo) mapRowToObject(rs db.RowScanner) (*cohesioned.Video, error)
 	video := &cohesioned.Video{}
 	var updated db.NullTime
 	var fileSize, updatedBy sql.NullInt64
-	var fileType, keyTerms, stateStandards, commonCoreStandards sql.NullString
+	var createdByFullName, taxonomyName, fileType, keyTerms, stateStandards, commonCoreStandards sql.NullString
 
 	err := rs.Scan(
 		&video.ID,
@@ -245,19 +257,23 @@ func (repo *awsRepo) mapRowToObject(rs db.RowScanner) (*cohesioned.Video, error)
 		&stateStandards,
 		&commonCoreStandards,
 		&video.Created,
-		&video.CreatedBy,
+		&video.CreatedByID,
 		&updated,
 		&updatedBy,
+		&createdByFullName,
+		&taxonomyName,
 	)
 
 	if err != nil {
-		return video, fmt.Errorf("faled to map row to video: %v", err)
+		return video, fmt.Errorf("failed to map row to video: %v", err)
 	}
 
 	video.FileType = fileType.String
 	video.FileSize = fileSize.Int64
+	video.CreatedBy = &cohesioned.Profile{ID: video.CreatedByID, FullName: createdByFullName.String}
+	video.Taxonomy = &cohesioned.Taxonomy{ID: video.TaxonomyID, Name: taxonomyName.String}
 	video.Updated = updated.Time
-	video.UpdatedBy = updatedBy.Int64
+	video.UpdatedByID = updatedBy.Int64
 
 	if len(keyTerms.String) > 0 {
 		video.KeyTerms = strings.Split(keyTerms.String, ",")
