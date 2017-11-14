@@ -10,15 +10,21 @@ import (
 	"github.com/unrolled/render"
 )
 
-type APIResponse struct {
+type studentAPIResponse struct {
 	*cohesioned.APIResponse
 	Student *cohesioned.Student   `json:"student,omitempty"`
 	List    []*cohesioned.Student `json:"students,omitempty"`
 }
 
+func newStudentAPIResponse() *studentAPIResponse {
+	return &studentAPIResponse{
+		APIResponse: &cohesioned.APIResponse{},
+	}
+}
+
 func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &APIResponse{}
+		resp := newStudentAPIResponse()
 
 		currentUser, err := cohesioned.GetCurrentUser(req)
 		if err != nil {
@@ -49,7 +55,7 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		resp := &APIResponse{}
+		resp := newStudentAPIResponse()
 		incomingList := make([]*cohesioned.Student, 0)
 
 		defer req.Body.Close()
@@ -80,7 +86,7 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		}
 
 		// resp.Profile = currentUser
-		currentUser.Students = make([]*cohesioned.Student, 0)
+		resp.List = make([]*cohesioned.Student, 0)
 
 		// checks the existing student against the incoming student list for any students that have been removed and deletes those students
 		for _, existingStudent := range existingStudents {
@@ -112,7 +118,7 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 				}
 
 				incomingStudent.ID = id
-				currentUser.Students = append(currentUser.Students, incomingStudent)
+				resp.List = append(resp.List, incomingStudent)
 			} else {
 				fmt.Printf("incoming student exists - updating %v\n", existingStudent)
 				existingStudent.Name = incomingStudent.Name
@@ -128,7 +134,7 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 					return
 				}
 
-				currentUser.Students = append(currentUser.Students, existingStudent)
+				resp.List = append(resp.List, existingStudent)
 			}
 		}
 
