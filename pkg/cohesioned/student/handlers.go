@@ -12,7 +12,6 @@ import (
 
 type APIResponse struct {
 	*cohesioned.APIResponse
-	*cohesioned.Profile
 	Student *cohesioned.Student   `json:"student,omitempty"`
 	List    []*cohesioned.Student `json:"list,omitempty"`
 }
@@ -40,7 +39,7 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			list = []*cohesioned.Student{}
 		}
 
-		resp.Profile = currentUser
+		// resp.Profile = currentUser
 		currentUser.Students = list
 
 		r.JSON(w, http.StatusOK, resp)
@@ -79,7 +78,7 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		resp.Profile = currentUser
+		// resp.Profile = currentUser
 		currentUser.Students = make([]*cohesioned.Student, 0)
 
 		// checks the existing student against the incoming student list for any students that have been removed and deletes those students
