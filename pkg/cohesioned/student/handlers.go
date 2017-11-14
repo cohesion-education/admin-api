@@ -13,7 +13,7 @@ import (
 type APIResponse struct {
 	*cohesioned.APIResponse
 	Student *cohesioned.Student   `json:"student,omitempty"`
-	List    []*cohesioned.Student `json:"list,omitempty"`
+	List    []*cohesioned.Student `json:"students,omitempty"`
 }
 
 func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
@@ -40,7 +40,8 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 		}
 
 		// resp.Profile = currentUser
-		currentUser.Students = list
+		// currentUser.Students = list
+		resp.List = list
 
 		r.JSON(w, http.StatusOK, resp)
 	}
