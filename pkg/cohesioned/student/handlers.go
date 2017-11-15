@@ -34,7 +34,7 @@ func ListHandler(r *render.Render, repo Repo) http.HandlerFunc {
 			return
 		}
 
-		list, err := repo.List(currentUser.ID)
+		list, err := repo.FindByUserID(currentUser.ID)
 		if err != nil {
 			apiResponse := cohesioned.NewAPIErrorResponse("An unexpected error occurred listing Student entities %v", err)
 			r.JSON(w, http.StatusInternalServerError, apiResponse)
@@ -77,7 +77,7 @@ func SaveHandler(r *render.Render, repo Repo) http.HandlerFunc {
 
 		//TODO - move this mess into a profile service...
 
-		existingStudents, err := repo.List(currentUser.ID)
+		existingStudents, err := repo.FindByUserID(currentUser.ID)
 		if err != nil {
 			resp.SetErrMsg("An unexpected error occurred when trying to retrieve your current list of students: %v", err)
 			fmt.Println(resp.ErrMsg)

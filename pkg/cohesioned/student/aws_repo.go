@@ -92,7 +92,46 @@ func (repo *awsRepo) Update(s *cohesioned.Student) error {
 	return nil
 }
 
-func (repo *awsRepo) List(parentID int64) ([]*cohesioned.Student, error) {
+func (repo *awsRepo) List() ([]*cohesioned.Student, error) {
+	var list []*cohesioned.Student
+
+	query := `
+	select
+	  id,
+		name,
+		grade,
+		school,
+		user_id,
+		created,
+		created_by,
+		updated,
+		updated_by
+	from
+		student`
+
+	rows, err := repo.Query(query)
+	if err != nil {
+		return list, fmt.Errorf("Failed to list students: %v", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		student, err := repo.mapRowToObject(rows)
+		if err != nil {
+			return list, fmt.Errorf("an unexpected error occurred while processing the result set from the db: %v", err)
+		}
+
+		list = append(list, student)
+	}
+
+	if err := rows.Err(); err != nil {
+		return list, fmt.Errorf("db rows returned unexpected error: %v", err)
+	}
+
+	return list, nil
+}
+
+func (repo *awsRepo) FindByUserID(parentID int64) ([]*cohesioned.Student, error) {
 	var list []*cohesioned.Student
 
 	query := `

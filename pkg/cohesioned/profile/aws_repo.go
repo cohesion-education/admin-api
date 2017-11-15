@@ -18,6 +18,55 @@ func NewAwsRepo(db *sql.DB) Repo {
 	}
 }
 
+func (repo *awsRepo) List() ([]*cohesioned.Profile, error) {
+	var list []*cohesioned.Profile
+
+	selectQuery := `select
+			id,
+			created,
+			updated,
+			email,
+			full_name,
+			first_name,
+			last_name,
+			nickname,
+			profile_pic_url,
+			locale,
+			enabled,
+			verified,
+			beta_program,
+			newsletter,
+			sub,
+			state,
+			county,
+			onboarded,
+			billing_status,
+			trial_start
+		from
+			user`
+
+	rows, err := repo.Query(selectQuery)
+	if err != nil {
+		return list, fmt.Errorf("Failed to execute query: %v", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		p, err := repo.mapRowToObject(rows)
+		if err != nil {
+			return list, fmt.Errorf("an unexpected error occurred while processing the result set from the db: %v", err)
+		}
+
+		list = append(list, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		return list, fmt.Errorf("rows had an error: %v", err)
+	}
+
+	return list, nil
+}
+
 func (repo *awsRepo) Save(p *cohesioned.Profile) (int64, error) {
 	sql := `insert into user
 	(
@@ -141,8 +190,6 @@ func (repo *awsRepo) Update(p *cohesioned.Profile) error {
 }
 
 func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
-	profile := new(cohesioned.Profile)
-
 	query := `select
 		id,
 		created,
@@ -169,6 +216,22 @@ func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
 
 	row := repo.QueryRow(query, email)
 
+	p, err := repo.mapRowToObject(row)
+	if err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			return nil, nil
+		default:
+			return nil, fmt.Errorf("Unexpected error querying for user by email %s: %v", email, err)
+		}
+	}
+
+	return p, nil
+}
+
+func (repo *awsRepo) mapRowToObject(rs db.RowScanner) (*cohesioned.Profile, error) {
+	profile := new(cohesioned.Profile)
+
 	var updated db.NullTime
 	var nickname sql.NullString
 	var pictureURL sql.NullString
@@ -184,7 +247,7 @@ func (repo *awsRepo) FindByEmail(email string) (*cohesioned.Profile, error) {
 	var billingStatus sql.NullString
 	var trialStart db.NullTime
 
-	err := row.Scan(
+	err := rs.Scan(
 		&profile.ID,
 		&profile.Created,
 		&updated,

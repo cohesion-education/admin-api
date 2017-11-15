@@ -58,7 +58,7 @@ func (repo *awsRepo) Get(id int64) (*cohesioned.Video, error) {
 		case err == sql.ErrNoRows:
 			return nil, fmt.Errorf("No video with ID %d", id)
 		default:
-			return nil, fmt.Errorf("Unexpected error querying for user by id %d: %v", id, err)
+			return nil, fmt.Errorf("Unexpected error querying for video by id %d: %v", id, err)
 		}
 	}
 

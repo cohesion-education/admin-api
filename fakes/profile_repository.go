@@ -5,11 +5,17 @@ import "github.com/cohesion-education/api/pkg/cohesioned"
 type FakeProfileRepo struct {
 	id      int64
 	profile *cohesioned.Profile
+	list    []*cohesioned.Profile
 	err     error
 }
 
 func (r *FakeProfileRepo) SaveReturns(id int64, e error) {
 	r.id = id
+	r.err = e
+}
+
+func (r *FakeProfileRepo) ListReturns(list []*cohesioned.Profile, e error) {
+	r.list = list
 	r.err = e
 }
 
@@ -32,4 +38,8 @@ func (r *FakeProfileRepo) FindByEmail(email string) (*cohesioned.Profile, error)
 
 func (r *FakeProfileRepo) Update(p *cohesioned.Profile) error {
 	return r.err
+}
+
+func (r *FakeProfileRepo) List() ([]*cohesioned.Profile, error) {
+	return r.list, r.err
 }

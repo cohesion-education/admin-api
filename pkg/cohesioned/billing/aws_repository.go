@@ -18,6 +18,68 @@ func NewAwsRepo(db *sql.DB) Repo {
 	}
 }
 
+func (repo *awsRepo) List() ([]*cohesioned.PaymentDetails, error) {
+	var list []*cohesioned.PaymentDetails
+
+	selectQuery := `select
+		id,
+		created,
+		created_by,
+		updated,
+		updated_by,
+		token_created,
+		token_id,
+		token_client_ip,
+		token_used,
+		token_live_mode,
+		token_type,
+		card_id,
+		card_brand,
+		card_funding,
+		card_tokenization_method,
+		card_fingerprint,
+		card_name,
+		card_country,
+		card_currency,
+		card_exp_month,
+		card_exp_year,
+		card_cvc_check,
+		card_last4,
+		card_dynamic_last4,
+		card_address_line1,
+		card_address_line1_check,
+		card_address_line2,
+		card_address_line2_check,
+		card_address_country,
+		card_address_state,
+		card_address_city,
+		card_address_zip,
+		card_address_zip_check
+	from
+		payment_detail`
+
+	rows, err := repo.Query(selectQuery)
+	if err != nil {
+		return list, fmt.Errorf("Failed to execute list payment detail query: %v", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		p, err := repo.mapRowToObject(rows)
+		if err != nil {
+			return list, fmt.Errorf("an unexpected error occurred while processing the list payment detail result set from the db: %v", err)
+		}
+
+		list = append(list, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		return list, fmt.Errorf("list payment detail rows had an error: %v", err)
+	}
+
+	return list, nil
+}
+
 func (repo *awsRepo) FindByCreatedByID(id int64) (*cohesioned.PaymentDetails, error) {
 	selectQuery := `select
 		id,

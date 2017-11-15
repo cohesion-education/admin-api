@@ -9,6 +9,7 @@ import (
 	"github.com/cohesion-education/api/pkg/cohesioned/billing"
 	"github.com/cohesion-education/api/pkg/cohesioned/config"
 	"github.com/cohesion-education/api/pkg/cohesioned/profile"
+	"github.com/cohesion-education/api/pkg/cohesioned/report"
 	"github.com/cohesion-education/api/pkg/cohesioned/student"
 	"github.com/cohesion-education/api/pkg/cohesioned/taxonomy"
 	"github.com/cohesion-education/api/pkg/cohesioned/video"
@@ -81,6 +82,9 @@ func newServer() *negroni.Negroni {
 	requiresAdmin(http.MethodPost, "/api/video/upload/{id:[0-9]+}", video.UploadHandler(apiRenderer, adminVideoService), mx, authMiddleware)
 	requiresAdmin(http.MethodDelete, "/api/video/{id:[0-9]+}", video.DeleteHandler(apiRenderer, adminVideoService), mx, authMiddleware)
 	requiresAdmin(http.MethodPut, "/api/video/{id:[0-9]+}", video.UpdateHandler(apiRenderer, adminVideoService), mx, authMiddleware)
+	requiresAdmin(http.MethodGet, "/api/report/profiles", report.GetUserList(apiRenderer, profileRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodGet, "/api/report/students", report.GetStudentList(apiRenderer, studentRepo), mx, authMiddleware)
+	requiresAdmin(http.MethodGet, "/api/report/paymentdetails", report.GetPaymentDetailList(apiRenderer, paymentDetailsRepo), mx, authMiddleware)
 
 	//endpoints that only require Authentication
 	requiresAuth(http.MethodPost, "/api/profile/get_or_create", profile.GetOrCreateHandler(apiRenderer, profileRepo), mx, authMiddleware)
