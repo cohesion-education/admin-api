@@ -18,6 +18,37 @@ func NewAwsRepo(db *sql.DB) Repo {
 	}
 }
 
+func (repo *awsRepo) FindGradeByName(name string) (*cohesioned.Taxonomy, error) {
+	taxonomy := new(cohesioned.Taxonomy)
+
+	query := `select
+		id,
+		name,
+		parent_id,
+		created,
+		created_by,
+		updated,
+		updated_by
+	from
+		taxonomy
+	where
+		name = ?
+	and
+		parent_id is null`
+
+	row := repo.QueryRow(query, name)
+	taxonomy, err := repo.mapRowToObject(row)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("can't find grade with name %s", name)
+		}
+
+		return nil, err
+	}
+
+	return taxonomy, nil
+}
+
 func (repo *awsRepo) Get(id int64) (*cohesioned.Taxonomy, error) {
 	taxonomy := new(cohesioned.Taxonomy)
 
@@ -38,7 +69,7 @@ func (repo *awsRepo) Get(id int64) (*cohesioned.Taxonomy, error) {
 	taxonomy, err := repo.mapRowToObject(row)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("%d is not a valid taxonomy id", id)
+			return nil, nil
 		}
 
 		return nil, err
@@ -228,6 +259,29 @@ func (repo *awsRepo) Flatten(t *cohesioned.Taxonomy) ([]*cohesioned.Taxonomy, er
 	return flattened, nil
 }
 
+func (repo *awsRepo) ReverseFlatten(t *cohesioned.Taxonomy) (*cohesioned.Taxonomy, error) {
+	if t == nil {
+		return nil, nil
+	}
+
+	parent, err := repo.Get(t.ParentID)
+	if err != nil {
+		return t, fmt.Errorf("Failed to get parent for %s %v\n", t.Name, err)
+	}
+
+	if parent == nil {
+		return t, nil
+	}
+	t.Parent = parent
+	flattenedParent, err := repo.ReverseFlatten(parent)
+	if err != nil {
+		return t, fmt.Errorf("Failed to flatten parent of %s: %v", t.Name, err)
+	}
+
+	t.Name = fmt.Sprintf("%s > %s", flattenedParent.Name, t.Name)
+	return t, nil
+}
+
 func (repo *awsRepo) ListRecursive() ([]*cohesioned.Taxonomy, error) {
 	var list []*cohesioned.Taxonomy
 
@@ -245,6 +299,20 @@ func (repo *awsRepo) ListRecursive() ([]*cohesioned.Taxonomy, error) {
 	}
 
 	return list, nil
+}
+
+func (repo *awsRepo) ListChildrenRecursive(parentID int64) ([]*cohesioned.Taxonomy, error) {
+	parent, err := repo.Get(parentID)
+	if err != nil {
+		return nil, err
+	}
+
+	children, err := repo.listChildrenRecursive(parent)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get ListChildrenRecursive for %s %v\n", parentID, err)
+	}
+
+	return children, nil
 }
 
 func (repo *awsRepo) listChildrenRecursive(t *cohesioned.Taxonomy) ([]*cohesioned.Taxonomy, error) {
@@ -289,6 +357,10 @@ func (repo *awsRepo) mapRowToObject(rs db.RowScanner) (*cohesioned.Taxonomy, err
 	)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, err
+		}
+
 		return taxonomy, fmt.Errorf("faled to map row to taxonomy: %v", err)
 	}
 

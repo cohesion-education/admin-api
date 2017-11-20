@@ -14,13 +14,15 @@ import (
 type VideoResponse struct {
 	*cohesioned.APIResponse
 	*cohesioned.Video
-	List []*cohesioned.Video `json:"list,omitempty"`
+	List    []*cohesioned.Video            `json:"list,omitempty"`
+	ByGrade map[string][]*cohesioned.Video `json:"by_grade,omitempty"`
 }
 
 func NewAPIResponse(v *cohesioned.Video) *VideoResponse {
 	return &VideoResponse{
 		Video:       v,
 		APIResponse: &cohesioned.APIResponse{},
+		ByGrade:     make(map[string][]*cohesioned.Video),
 	}
 }
 
@@ -31,6 +33,53 @@ func ListHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 		resp.List = videos
 		if err != nil {
 			resp.SetErrMsg("Failed to list videos %v", err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, resp)
+			return
+		}
+
+		r.JSON(w, http.StatusOK, resp)
+	}
+}
+
+func FindByGradeHandler(r *render.Render, svc AdminService) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		resp := NewAPIResponse(nil)
+
+		pathParams := mux.Vars(req)
+		grade := pathParams["grade"]
+
+		videosByGrade, err := svc.FindByGrade(grade)
+		resp.ByGrade = videosByGrade
+		if err != nil {
+			resp.SetErrMsg("Failed to list videos by grade %s: %v", grade, err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, resp)
+			return
+		}
+
+		r.JSON(w, http.StatusOK, resp)
+	}
+}
+
+func FindByTaxonomyHandler(r *render.Render, svc AdminService) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		resp := NewAPIResponse(nil)
+
+		pathParams := mux.Vars(req)
+		taxonomyIDParam := pathParams["taxonomy_id"]
+		taxonomyID, err := strconv.ParseInt(taxonomyIDParam, 10, 64)
+		if err != nil {
+			resp.SetErrMsg("%s is not a valid taxonomy ID; %v", taxonomyIDParam, err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusBadRequest, resp)
+			return
+		}
+
+		videos, err := svc.FindByTaxonomyID(taxonomyID)
+		resp.List = videos
+		if err != nil {
+			resp.SetErrMsg("Failed to list videos by taxonomy id %d: %v", taxonomyID, err)
 			fmt.Println(resp.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, resp)
 			return

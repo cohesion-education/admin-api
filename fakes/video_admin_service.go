@@ -8,9 +8,20 @@ import (
 )
 
 type FakeVideoAdminService struct {
-	v    *cohesioned.Video
-	err  error
-	list []*cohesioned.Video
+	v                       *cohesioned.Video
+	err                     error
+	list                    []*cohesioned.Video
+	videoByFlattendTaxonomy map[string][]*cohesioned.Video
+}
+
+func (s *FakeVideoAdminService) FindByTaxonomyIDReturns(list []*cohesioned.Video, err error) {
+	s.list = list
+	s.err = err
+}
+
+func (s *FakeVideoAdminService) FindByGradeReturns(videoByFlattendTaxonomy map[string][]*cohesioned.Video, err error) {
+	s.videoByFlattendTaxonomy = videoByFlattendTaxonomy
+	s.err = err
 }
 
 func (s *FakeVideoAdminService) ListReturns(list []*cohesioned.Video, err error) {
@@ -42,6 +53,14 @@ func (s *FakeVideoAdminService) SetFileReturns(err error) {
 func (s *FakeVideoAdminService) List() ([]*cohesioned.Video, error) {
 	return s.list, s.err
 }
+func (s *FakeVideoAdminService) FindByTaxonomyID(taxonomyID int64) ([]*cohesioned.Video, error) {
+	return s.list, s.err
+}
+
+func (s *FakeVideoAdminService) FindByGrade(gradeName string) (map[string][]*cohesioned.Video, error) {
+	return s.videoByFlattendTaxonomy, s.err
+}
+
 func (s *FakeVideoAdminService) Get(id int64) (*cohesioned.Video, error) {
 	return s.v, s.err
 }

@@ -10,4 +10,5 @@ type Repo interface {
 	Delete(id int64) error
 	Save(video *cohesioned.Video) (int64, error)
 	Update(video *cohesioned.Video) error
+	FindByTaxonomyID(id int64) ([]*cohesioned.Video, error)
 }

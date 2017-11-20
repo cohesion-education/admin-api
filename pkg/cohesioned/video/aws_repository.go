@@ -11,6 +11,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+const videoThumbnailURLTemplate string = "https://s3.amazonaws.com/%s/transcoded/thumbnails/%s-192x108-00003.png"
+
 type awsRepo struct {
 	*sql.DB
 	awsConfig config.AwsConfig
@@ -21,6 +23,11 @@ func NewAwsRepo(db *sql.DB, awsConfig config.AwsConfig) Repo {
 		DB:        db,
 		awsConfig: awsConfig,
 	}
+}
+
+//temporary func based on pattern for thumbnails created by transcoding service
+func (repo *awsRepo) getThumbnailURL(video *cohesioned.Video) string {
+	return fmt.Sprintf(videoThumbnailURLTemplate, repo.awsConfig.GetVideoBucket(), video.StorageObjectName)
 }
 
 func (repo *awsRepo) Get(id int64) (*cohesioned.Video, error) {
@@ -41,7 +48,8 @@ func (repo *awsRepo) Get(id int64) (*cohesioned.Video, error) {
 		v.updated,
 		v.updated_by,
 		u.full_name,
-		t.name
+		t.name,
+		t.parent_id
 	from
 		video v, user u, taxonomy t
 	where
@@ -61,6 +69,8 @@ func (repo *awsRepo) Get(id int64) (*cohesioned.Video, error) {
 			return nil, fmt.Errorf("Unexpected error querying for video by id %d: %v", id, err)
 		}
 	}
+
+	video.ThumbnailURL = repo.getThumbnailURL(video)
 
 	return video, nil
 }
@@ -85,6 +95,60 @@ func (repo *awsRepo) Delete(id int64) error {
 	return nil
 }
 
+func (repo *awsRepo) FindByTaxonomyID(taxonomyID int64) ([]*cohesioned.Video, error) {
+	var list []*cohesioned.Video
+
+	selectQuery := `select
+		v.id,
+		v.title,
+		v.taxonomy_id,
+		v.file_name,
+		v.file_type,
+		v.file_size,
+		v.bucket,
+		v.object_key,
+		v.key_terms,
+		v.state_standards,
+		v.common_core_standards,
+		v.created,
+		v.created_by,
+		v.updated,
+		v.updated_by,
+		u.full_name,
+		t.name,
+		t.parent_id
+		from
+			video v, user u, taxonomy t
+		where
+			v.taxonomy_id = ?
+		and
+			v.taxonomy_id = t.id
+		and
+			v.created_by = u.id`
+
+	rows, err := repo.Query(selectQuery, taxonomyID)
+	if err != nil {
+		return list, fmt.Errorf("Failed to execute find by taxonomy id query: %v", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		video, err := repo.mapRowToObject(rows)
+		if err != nil {
+			return list, fmt.Errorf("an unexpected error occurred while processing the result set from the db: %v", err)
+		}
+
+		video.ThumbnailURL = repo.getThumbnailURL(video)
+		list = append(list, video)
+	}
+
+	if err := rows.Err(); err != nil {
+		return list, fmt.Errorf("rows had an error: %v", err)
+	}
+
+	return list, nil
+}
+
 func (repo *awsRepo) List() ([]*cohesioned.Video, error) {
 	var list []*cohesioned.Video
 
@@ -105,7 +169,8 @@ func (repo *awsRepo) List() ([]*cohesioned.Video, error) {
 		v.updated,
 		v.updated_by,
 		u.full_name,
-		t.name
+		t.name,
+		t.parent_id
 		from
 			video v, user u, taxonomy t
 		where
@@ -125,6 +190,7 @@ func (repo *awsRepo) List() ([]*cohesioned.Video, error) {
 			return list, fmt.Errorf("an unexpected error occurred while processing the result set from the db: %v", err)
 		}
 
+		video.ThumbnailURL = repo.getThumbnailURL(video)
 		list = append(list, video)
 	}
 
@@ -241,7 +307,7 @@ func (repo *awsRepo) Update(v *cohesioned.Video) error {
 func (repo *awsRepo) mapRowToObject(rs db.RowScanner) (*cohesioned.Video, error) {
 	video := &cohesioned.Video{}
 	var updated db.NullTime
-	var fileSize, updatedBy sql.NullInt64
+	var fileSize, updatedBy, taxonomyParentID sql.NullInt64
 	var createdByFullName, taxonomyName, fileType, keyTerms, stateStandards, commonCoreStandards sql.NullString
 
 	err := rs.Scan(
@@ -262,6 +328,7 @@ func (repo *awsRepo) mapRowToObject(rs db.RowScanner) (*cohesioned.Video, error)
 		&updatedBy,
 		&createdByFullName,
 		&taxonomyName,
+		&taxonomyParentID,
 	)
 
 	if err != nil {
@@ -271,7 +338,7 @@ func (repo *awsRepo) mapRowToObject(rs db.RowScanner) (*cohesioned.Video, error)
 	video.FileType = fileType.String
 	video.FileSize = fileSize.Int64
 	video.CreatedBy = &cohesioned.Profile{ID: video.CreatedByID, FullName: createdByFullName.String}
-	video.Taxonomy = &cohesioned.Taxonomy{ID: video.TaxonomyID, Name: taxonomyName.String}
+	video.Taxonomy = &cohesioned.Taxonomy{ID: video.TaxonomyID, Name: taxonomyName.String, ParentID: taxonomyParentID.Int64}
 	video.Updated = updated.Time
 	video.UpdatedByID = updatedBy.Int64
 

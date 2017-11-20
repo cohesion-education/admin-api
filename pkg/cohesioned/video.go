@@ -25,6 +25,7 @@ type Video struct {
 	StorageBucket       string    `json:"bucket"`
 	StorageObjectName   string    `json:"object_name"`
 	SignedURL           string    `json:"signed_url,omitempty"`
+	ThumbnailURL        string    `json:thumbnail_url`
 	//TODO - Teacher, Related Videos, FAQs
 }
 

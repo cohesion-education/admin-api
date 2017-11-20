@@ -54,7 +54,7 @@ func newServer() *negroni.Negroni {
 	studentRepo := student.NewAwsRepo(db)
 	videoRepo := video.NewAwsRepo(db, awsConfig)
 	paymentDetailsRepo := billing.NewAwsRepo(db)
-	adminVideoService := video.NewService(videoRepo, awsConfig)
+	adminVideoService := video.NewService(videoRepo, taxonomyRepo, awsConfig)
 
 	n := negroni.Classic()
 	mx := mux.NewRouter()
@@ -96,6 +96,8 @@ func newServer() *negroni.Negroni {
 	requiresAuth(http.MethodGet, "/api/profile/students", student.ListHandler(apiRenderer, studentRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile/students", student.SaveHandler(apiRenderer, studentRepo), mx, authMiddleware)
 	requiresAuth(http.MethodPost, "/api/profile/preferences", profile.SavePreferencesHandler(apiRenderer, profileRepo), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/api/videos/by_taxonomy/{taxonomy_id:[0-9]+}", video.FindByTaxonomyHandler(apiRenderer, adminVideoService), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/api/videos/by_grade/{grade}", video.FindByGradeHandler(apiRenderer, adminVideoService), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/video/{id:[0-9]+}", video.GetByIDHandler(apiRenderer, adminVideoService), mx, authMiddleware)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})

@@ -12,10 +12,13 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/cohesion-education/api/pkg/cohesioned"
 	"github.com/cohesion-education/api/pkg/cohesioned/config"
+	"github.com/cohesion-education/api/pkg/cohesioned/taxonomy"
 )
 
 type AdminService interface {
 	List() ([]*cohesioned.Video, error)
+	FindByTaxonomyID(taxonomyID int64) ([]*cohesioned.Video, error)
+	FindByGrade(gradeName string) (map[string][]*cohesioned.Video, error)
 	Get(id int64) (*cohesioned.Video, error)
 	GetWithSignedURL(id int64) (*cohesioned.Video, error)
 	Delete(id int64) error
@@ -25,25 +28,70 @@ type AdminService interface {
 }
 
 type adminService struct {
-	repo Repo
-	cfg  config.AwsConfig
+	videoRepo    Repo
+	taxonomyRepo taxonomy.Repo
+	cfg          config.AwsConfig
 }
 
-func NewService(repo Repo, cfg config.AwsConfig) AdminService {
+func NewService(videoRepo Repo, taxonomyRepo taxonomy.Repo, cfg config.AwsConfig) AdminService {
 	return &adminService{
-		repo: repo,
-		cfg:  cfg,
+		videoRepo:    videoRepo,
+		taxonomyRepo: taxonomyRepo,
+		cfg:          cfg,
 	}
 }
 
 func (s *adminService) List() ([]*cohesioned.Video, error) {
-	return s.repo.List()
+	return s.videoRepo.List()
+}
+
+func (s *adminService) FindByTaxonomyID(taxonomyID int64) ([]*cohesioned.Video, error) {
+	return s.videoRepo.FindByTaxonomyID(taxonomyID)
+}
+
+func (s *adminService) FindByGrade(gradeName string) (map[string][]*cohesioned.Video, error) {
+	videosByFlattenedTaxonomy := make(map[string][]*cohesioned.Video)
+
+	grade, err := s.taxonomyRepo.FindGradeByName(gradeName)
+	if err != nil {
+		return videosByFlattenedTaxonomy, fmt.Errorf("Failed to find grade %s: %v", gradeName, err)
+	}
+
+	children, err := s.taxonomyRepo.ListChildren(grade.ID)
+	if err != nil {
+		return videosByFlattenedTaxonomy, fmt.Errorf("Failed to get taxonomy children for grade with ID %d: %v", grade.ID, err)
+	}
+
+	for _, child := range children {
+		flattened, err := s.taxonomyRepo.Flatten(child)
+		if err != nil {
+			fmt.Printf("Failed to flatten child %v: %v\n", child, err)
+			continue
+		}
+
+		for _, f := range flattened {
+			videos, err := s.videoRepo.FindByTaxonomyID(f.ID)
+			if err != nil {
+				fmt.Printf("Failed to find videos by taxonomy ID %d: %v\n", f.ID, err)
+				continue
+			}
+
+			videosByFlattenedTaxonomy[f.Name] = videos
+		}
+	}
+
+	return videosByFlattenedTaxonomy, nil
 }
 
 func (s *adminService) Get(id int64) (*cohesioned.Video, error) {
-	video, err := s.repo.Get(id)
+	video, err := s.videoRepo.Get(id)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get video by ID: %v", err)
+	}
+
+	video.Taxonomy, err = s.taxonomyRepo.ReverseFlatten(video.Taxonomy)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get full taxonomy for video: %v", err)
 	}
 
 	return video, nil
@@ -78,7 +126,7 @@ func (s *adminService) Delete(id int64) error {
 		}
 	}
 
-	return s.repo.Delete(id)
+	return s.videoRepo.Delete(id)
 }
 
 //Save saves the given video, looking for the current user in the given context argument. Sets the resulting ID from the save operation on the video instance
@@ -86,7 +134,7 @@ func (s *adminService) Save(ctx context.Context, video *cohesioned.Video) error 
 	currentUser, _ := cohesioned.FromContext(ctx)
 	video.CreatedByID = currentUser.ID
 
-	id, err := s.repo.Save(video)
+	id, err := s.videoRepo.Save(video)
 	if err != nil {
 		return err
 	}
@@ -100,7 +148,7 @@ func (s *adminService) Update(ctx context.Context, video *cohesioned.Video) erro
 	video.Updated = time.Now()
 	video.UpdatedByID = currentUser.ID
 
-	return s.repo.Update(video)
+	return s.videoRepo.Update(video)
 }
 
 func (s *adminService) SetFile(ctx context.Context, fileReader io.Reader, video *cohesioned.Video) error {
