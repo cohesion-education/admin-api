@@ -104,7 +104,9 @@ func (s *adminService) GetWithSignedURL(id int64) (*cohesioned.Video, error) {
 	}
 
 	if len(video.StorageBucket) != 0 && len(video.StorageObjectName) != 0 {
-		signedURL, err := s.cfg.GetSignedURL(video.StorageBucket, video.StorageObjectName)
+		transcodedVideoKey := fmt.Sprintf("transcoded/480p-16x9-%s", video.StorageObjectName)
+
+		signedURL, err := s.cfg.GetSignedURL(video.StorageBucket, transcodedVideoKey)
 		video.SignedURL = signedURL
 		if err != nil {
 			return nil, fmt.Errorf("Failed to generate signed url %v", err)
