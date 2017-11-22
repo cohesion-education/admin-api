@@ -11,7 +11,8 @@ type FakeVideoAdminService struct {
 	v                       *cohesioned.Video
 	err                     error
 	list                    []*cohesioned.Video
-	videoByFlattendTaxonomy map[string][]*cohesioned.Video
+	videosByGrade map[string][]*cohesioned.Video
+	videosBySubject map[string][]*cohesioned.Video
 }
 
 func (s *FakeVideoAdminService) FindByTaxonomyIDReturns(list []*cohesioned.Video, err error) {
@@ -19,8 +20,13 @@ func (s *FakeVideoAdminService) FindByTaxonomyIDReturns(list []*cohesioned.Video
 	s.err = err
 }
 
-func (s *FakeVideoAdminService) FindByGradeReturns(videoByFlattendTaxonomy map[string][]*cohesioned.Video, err error) {
-	s.videoByFlattendTaxonomy = videoByFlattendTaxonomy
+func (s *FakeVideoAdminService) FindByGradeReturns(videosByGrade map[string][]*cohesioned.Video, err error) {
+	s.videosByGrade = videosByGrade
+	s.err = err
+}
+
+func (s *FakeVideoAdminService) FindBySubjectReturns(videosBySubject map[string][]*cohesioned.Video, err error) {
+	s.videosBySubject = videosBySubject
 	s.err = err
 }
 
@@ -58,7 +64,11 @@ func (s *FakeVideoAdminService) FindByTaxonomyID(taxonomyID int64) ([]*cohesione
 }
 
 func (s *FakeVideoAdminService) FindByGrade(gradeName string) (map[string][]*cohesioned.Video, error) {
-	return s.videoByFlattendTaxonomy, s.err
+	return s.videosByGrade, s.err
+}
+
+func (s *FakeVideoAdminService) FindBySubject(gradeName, subjectName string) (map[string][]*cohesioned.Video, error) {
+	return s.videosBySubject, s.err
 }
 
 func (s *FakeVideoAdminService) Get(id int64) (*cohesioned.Video, error) {

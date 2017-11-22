@@ -19,6 +19,7 @@ type AdminService interface {
 	List() ([]*cohesioned.Video, error)
 	FindByTaxonomyID(taxonomyID int64) ([]*cohesioned.Video, error)
 	FindByGrade(gradeName string) (map[string][]*cohesioned.Video, error)
+	FindBySubject(gradeName, subjectName string) (map[string][]*cohesioned.Video, error)
 	Get(id int64) (*cohesioned.Video, error)
 	GetWithSignedURL(id int64) (*cohesioned.Video, error)
 	Delete(id int64) error
@@ -60,6 +61,58 @@ func (s *adminService) FindByGrade(gradeName string) (map[string][]*cohesioned.V
 	children, err := s.taxonomyRepo.ListChildren(grade.ID)
 	if err != nil {
 		return videosByFlattenedTaxonomy, fmt.Errorf("Failed to get taxonomy children for grade with ID %d: %v", grade.ID, err)
+	}
+
+	for _, child := range children {
+		flattened, err := s.taxonomyRepo.Flatten(child)
+		if err != nil {
+			fmt.Printf("Failed to flatten child %v: %v\n", child, err)
+			continue
+		}
+
+		for _, f := range flattened {
+			videos, err := s.videoRepo.FindByTaxonomyID(f.ID)
+			if err != nil {
+				fmt.Printf("Failed to find videos by taxonomy ID %d: %v\n", f.ID, err)
+				continue
+			}
+
+			videosByFlattenedTaxonomy[f.Name] = videos
+		}
+	}
+
+	return videosByFlattenedTaxonomy, nil
+}
+
+func (s *adminService) FindBySubject(gradeName, subjectName string) (map[string][]*cohesioned.Video, error) {
+	videosByFlattenedTaxonomy := make(map[string][]*cohesioned.Video)
+
+	grade, err := s.taxonomyRepo.FindGradeByName(gradeName)
+	if err != nil {
+		return videosByFlattenedTaxonomy, fmt.Errorf("Failed to find grade %s: %v", gradeName, err)
+	}
+
+	subjects, err := s.taxonomyRepo.ListChildren(grade.ID)
+	if err != nil {
+		return videosByFlattenedTaxonomy, fmt.Errorf("Failed to get subjects (children) for grade with ID %d: %v", grade.ID, err)
+	}
+
+	var subject *cohesioned.Taxonomy
+
+	for _, s := range subjects {
+		if s.Name == subjectName {
+				subject = s
+				break
+			}
+	}
+
+	if subject == nil {
+		return videosByFlattenedTaxonomy, fmt.Errorf("Could not find subject with name %s under grade %s", subjectName, gradeName)
+	}
+
+	children, err := s.taxonomyRepo.ListChildren(subject.ID)
+	if err != nil {
+		return videosByFlattenedTaxonomy, fmt.Errorf("Failed to get children of taxonomy %d: %v", subject.ID, err)
 	}
 
 	for _, child := range children {

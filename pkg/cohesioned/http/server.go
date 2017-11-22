@@ -98,6 +98,7 @@ func newServer() *negroni.Negroni {
 	requiresAuth(http.MethodPost, "/api/profile/preferences", profile.SavePreferencesHandler(apiRenderer, profileRepo), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/videos/by_taxonomy/{taxonomy_id:[0-9]+}", video.FindByTaxonomyHandler(apiRenderer, adminVideoService), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/videos/by_grade/{grade}", video.FindByGradeHandler(apiRenderer, adminVideoService), mx, authMiddleware)
+	requiresAuth(http.MethodGet, "/api/videos/by_grade/{grade}/by_subject/{subject}", video.FindBySubjectHandler(apiRenderer, adminVideoService), mx, authMiddleware)
 	requiresAuth(http.MethodGet, "/api/video/{id:[0-9]+}", video.GetByIDHandler(apiRenderer, adminVideoService), mx, authMiddleware)
 
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})

@@ -16,6 +16,7 @@ type VideoResponse struct {
 	*cohesioned.Video
 	List    []*cohesioned.Video            `json:"list,omitempty"`
 	ByGrade map[string][]*cohesioned.Video `json:"by_grade,omitempty"`
+	BySubject map[string][]*cohesioned.Video `json:"by_subject,omitempty"`
 }
 
 func NewAPIResponse(v *cohesioned.Video) *VideoResponse {
@@ -53,6 +54,27 @@ func FindByGradeHandler(r *render.Render, svc AdminService) http.HandlerFunc {
 		resp.ByGrade = videosByGrade
 		if err != nil {
 			resp.SetErrMsg("Failed to list videos by grade %s: %v", grade, err)
+			fmt.Println(resp.ErrMsg)
+			r.JSON(w, http.StatusInternalServerError, resp)
+			return
+		}
+
+		r.JSON(w, http.StatusOK, resp)
+	}
+}
+
+func FindBySubjectHandler(r *render.Render, svc AdminService) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		resp := NewAPIResponse(nil)
+
+		pathParams := mux.Vars(req)
+		grade := pathParams["grade"]
+		subject := pathParams["subject"]
+
+		videosBySubject, err := svc.FindBySubject(grade, subject)
+		resp.BySubject = videosBySubject
+		if err != nil {
+			resp.SetErrMsg("Failed to list videos by grade %s and subject %s: %v", grade, subject, err)
 			fmt.Println(resp.ErrMsg)
 			r.JSON(w, http.StatusInternalServerError, resp)
 			return
